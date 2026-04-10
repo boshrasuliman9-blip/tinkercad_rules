@@ -4,5 +4,5 @@
 # VS Code settings
 .vscode/
 
-# Large media files (optional - remove if you want to include the video)
-# hero-circuits.mp4
+# Large media files
+hero-circuits.mp4
