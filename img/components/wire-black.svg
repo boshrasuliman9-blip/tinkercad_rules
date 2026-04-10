@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="blackWire" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#475569"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 26c10 0 18 8 24 18 7 11 14 18 28 18" fill="none" stroke="url(#blackWire)" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="14" cy="26" r="6" fill="#020617"/>
+  <circle cx="66" cy="62" r="6" fill="#020617"/>
+</svg>

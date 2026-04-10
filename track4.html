@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>الإنجازات — المسار ٤</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/main.css">
+<link rel="stylesheet" href="./css/track4.css">
+<style>
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="page-hdr">
+  <a href="./tracks.html" class="brand">
+    <div class="brand-logo">⚡</div>
+    <span class="brand-name">Circuit Quest</span>
+  </a>
+  <a href="./tracks.html" class="btn-back">← المسارات</a>
+</header>
+
+<main class="page-body">
+
+  <div class="track-banner">
+    <img src="./tracks/4.png" alt="المسار الرابع">
+    <div class="track-banner-overlay">
+      <div class="track-banner-copy">
+        <span class="badge badge-red">المسار الرابع</span>
+        <h1 class="track-banner-title">الإنجازات<br>وشاهد الأعمال المميزة</h1>
+        <p class="track-banner-sub">هنا تظهر أعمال الطلاب التي تمت الموافقة عليها. تصفح الإنجازات واستلهم من النماذج المميزة بعد إرسال عملك.</p>
+        <div class="track-banner-pills">
+          <span class="track-banner-pill">🏆 أعمال الطلاب</span>
+          <span class="track-banner-pill">👀 للمشاهدة والإلهام</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Challenge filter -->
+  <div>
+    <div class="section-label" style="margin-bottom:.8rem">التحديات</div>
+    <div class="challenge-tabs" id="filter-tabs">
+      <button class="ch-tab active" onclick="filterBy('all')">🏅 الكل</button>
+      <button class="ch-tab" onclick="filterBy('push-button')">🔘 زر الضغط</button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading-state" style="display:none;flex-direction:column;align-items:center;padding:3rem;gap:.8rem;color:var(--gray)">
+    <div style="font-size:2rem">⏳</div>
+    <div style="font-size:.88rem;font-weight:700">جاري تحميل الإنجازات...</div>
+  </div>
+
+  <!-- Empty state (shown when no achievements) -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">📭</div>
+    <div class="empty-title">لا توجد إنجازات بعد</div>
+    <p class="empty-sub">
+      أرسل عملك من المسار الثالث وستظهر هنا بعد موافقة المشرف
+    </p>
+    <a href="./track3.html" class="btn-main" style="margin-top:.5rem">📤 أرسل عملك ←</a>
+  </div>
+
+  <!-- Achievements grid -->
+  <div class="achievements-grid" id="achievements-grid">
+
+    <!--
+      ════════════════════════════════════════
+      لإضافة إنجاز جديد، انسخ البلوك التالي
+      وعدّل البيانات:
+      ════════════════════════════════════════
+
+      <div class="achievement-card" data-challenge="push-button">
+        <img src="PATH_TO_IMAGE" alt="اسم الطالب">
+        <div class="achievement-info">
+          <div class="achievement-name">اسم الطالب</div>
+          <div class="achievement-school">اسم المدرسة</div>
+          <span class="achievement-challenge">زر الضغط</span>
+        </div>
+      </div>
+    -->
+
+  </div>
+
+  <!-- CTA -->
+  <div style="display:flex;justify-content:center;padding-top:.5rem">
+    <a href="./track3.html" class="btn-main outline">📤 أرسل عملك أنت الآخر ←</a>
+  </div>
+
+</main>
+
+<script src="./js/main.js"></script>
+<script src="./js/config.js"></script>
+<script src="./js/track4.js"></script>
+</body>
+</html>

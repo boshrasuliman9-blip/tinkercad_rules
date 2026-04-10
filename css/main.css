@@ -1,0 +1,668 @@
+/* ============================================
+   Circuit Quest — Main Stylesheet
+   ============================================ */
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html { -webkit-text-size-adjust: 100%; }
+
+:root {
+  --red: #f04e23;
+  --red-dark: #c93a12;
+  --red-light: #fff3f0;
+  --bg: #e8eff5;
+  --white: #ffffff;
+  --dark: #0f172a;
+  --mid: #334155;
+  --gray: #64748b;
+  --border: #dde3ea;
+  --card: #ffffff;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+}
+
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  min-height: 100vh;
+  direction: rtl;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── Utilities ── */
+.hidden { display: none !important; }
+.accent { color: var(--red); }
+
+/* ── Buttons ── */
+.btn-main {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--red);
+  color: #fff;
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  padding: 13px 28px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  min-height: 48px;
+  touch-action: manipulation;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-main:hover { background: var(--red-dark); transform: translateY(-1px); }
+.btn-main:active { transform: translateY(1px); }
+.btn-main.secondary {
+  background: var(--mid);
+}
+.btn-main.outline {
+  background: transparent;
+  color: var(--red);
+  border: 2px solid var(--red);
+}
+.btn-main.outline:hover { background: var(--red-light); }
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: 'Tajawal', sans-serif;
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--gray);
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all .15s;
+}
+.btn-back:hover { background: var(--bg); color: var(--dark); }
+
+/* ── Shared Header ── */
+.page-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--white);
+  border-bottom: 1.5px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.brand-logo {
+  width: 32px; height: 32px;
+  background: var(--red);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.brand-name {
+  font-weight: 800;
+  font-size: .95rem;
+  color: var(--dark);
+}
+
+/* ── Badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: .74rem;
+  font-weight: 700;
+}
+.badge-red { background: var(--red); color: #fff; }
+.badge-outline { border: 1.5px solid var(--border); color: var(--gray); background: var(--white); }
+.badge-dot {
+  width: 6px; height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Card ── */
+.card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 1.4rem;
+}
+
+/* ── Page wrapper ── */
+.page-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.6rem 1.2rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* ── Section title ── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--gray);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.section-label::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: var(--red);
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ── Carousel ── */
+.carousel-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+}
+.carousel-track {
+  display: flex;
+  transition: transform .35s ease;
+}
+.carousel-slide {
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.carousel-img {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.carousel-img img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.carousel-body {
+  padding: 1.2rem 1.4rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+.carousel-step {
+  font-size: .72rem; font-weight: 700;
+  color: var(--red);
+}
+.carousel-title {
+  font-size: 1rem; font-weight: 800;
+  color: var(--dark);
+}
+.carousel-desc {
+  font-size: .84rem;
+  color: var(--gray);
+  line-height: 1.8;
+}
+.carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .8rem 1.2rem;
+  border-top: 1.5px solid var(--border);
+  background: var(--bg);
+}
+.carousel-dots {
+  display: flex;
+  gap: 6px;
+}
+.carousel-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  transition: all .2s;
+  padding: 0;
+}
+.carousel-dot.active {
+  background: var(--red);
+  width: 22px;
+  border-radius: 4px;
+}
+.carousel-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all .15s;
+  color: var(--dark);
+}
+.carousel-btn:hover { border-color: var(--red); color: var(--red); }
+.carousel-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ── No-bg carousel (track 2) ── */
+.carousel-wrap.nobg { background: transparent; border: none; }
+.carousel-wrap.nobg .carousel-slide { background: transparent; }
+.carousel-wrap.nobg .carousel-img {
+  height: 260px;
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.carousel-wrap.nobg .carousel-img img { object-fit: contain; }
+.carousel-wrap.nobg .carousel-nav {
+  background: transparent;
+  border-top: none;
+}
+
+/* ── Video section ── */
+.video-section {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  position: relative;
+  background: #000;
+}
+.video-section video {
+  width: 100%;
+  display: block;
+  max-height: 300px;
+  object-fit: cover;
+}
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 50%);
+  display: flex;
+  align-items: flex-end;
+  padding: 1.4rem;
+}
+.video-overlay .btn-main {
+  font-size: 1rem;
+  padding: 14px 32px;
+}
+
+/* ── Track card (tracks.html) ── */
+.track-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+  color: inherit;
+}
+.track-card:hover {
+  border-color: var(--red);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240,78,35,.12);
+}
+.track-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.track-icon.red { background: var(--red-light); }
+.track-icon.blue { background: #eff6ff; }
+.track-icon.green { background: #f0fdf4; }
+.track-icon.orange { background: #fff7ed; }
+.track-icon.purple { background: #faf5ff; }
+.track-info { flex: 1; }
+.track-title {
+  font-weight: 800;
+  font-size: .95rem;
+  color: var(--dark);
+  margin-bottom: 3px;
+}
+.track-sub {
+  font-size: .78rem;
+  color: var(--gray);
+}
+.track-arrow {
+  color: var(--gray);
+  font-size: 1.1rem;
+  transition: transform .2s;
+}
+.track-card:hover .track-arrow { transform: translateX(-4px); color: var(--red); }
+
+/* ── Hero image band ── */
+.hero-band {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 18px;
+  position: relative;
+}
+.hero-band img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.hero-band-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(240,78,35,.75) 0%, rgba(15,23,42,.55) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.6rem;
+}
+.hero-band-title {
+  color: #fff;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+.hero-band-sub {
+  color: rgba(255,255,255,.85);
+  font-size: .85rem;
+}
+
+/* ── Compact Page Header (for task/step pages) ── */
+.page-header {
+  border-radius: 16px;
+  padding: 1.25rem 1.6rem;
+  background: linear-gradient(135deg, rgba(240,78,35,.92) 0%, rgba(15,23,42,.88) 100%);
+  display: flex;
+  align-items: center;
+}
+.page-header-copy { text-align: right; width: 100%; }
+.page-header-title {
+  color: #fff;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 800;
+  line-height: 1.25;
+  margin-top: .3rem;
+}
+.page-header-pills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: .6rem;
+}
+.page-header-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.92);
+  font-size: .73rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+/* ── Track / Challenge Banner ── */
+.track-banner {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  border: 1.5px solid rgba(221, 227, 234, .95);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+}
+.track-banner > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.track-banner-overlay {
+  position: relative;
+  z-index: 1;
+  min-height: 220px;
+  padding: 1.8rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(240,78,35,.75) 0%, rgba(15,23,42,.55) 100%);
+}
+.track-banner-copy {
+  width: 100%;
+  text-align: right;
+}
+.track-banner-title {
+  color: #fff;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.25;
+  margin: .45rem 0 6px;
+}
+.track-banner-sub {
+  color: rgba(255,255,255,.85);
+  font-size: .85rem;
+  line-height: 1.7;
+}
+.track-banner-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: .8rem;
+  justify-content: flex-end;
+}
+.track-banner-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.92);
+  font-size: .74rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 50px;
+}
+
+/* ── Upload form ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.form-label {
+  font-size: .84rem;
+  font-weight: 700;
+  color: var(--mid);
+}
+.form-input {
+  font-family: 'Tajawal', sans-serif;
+  font-size: .9rem;
+  color: var(--dark);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s;
+  direction: rtl;
+}
+.form-input:focus { border-color: var(--red); background: var(--white); }
+.form-input::placeholder { color: var(--gray); }
+.form-select {
+  font-family: 'Tajawal', sans-serif;
+  font-size: .9rem;
+  color: var(--dark);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  direction: rtl;
+}
+.form-select:focus { border-color: var(--red); }
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--bg);
+}
+.upload-area:hover, .upload-area.drag { border-color: var(--red); background: var(--red-light); }
+.upload-icon { font-size: 2.5rem; margin-bottom: .5rem; }
+.upload-text { font-size: .84rem; color: var(--gray); line-height: 1.7; }
+.upload-text strong { color: var(--red); }
+#file-input { display: none; }
+.upload-preview {
+  display: none;
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-top: .8rem;
+}
+
+/* ── Achievement cards ── */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.achievement-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform .2s;
+}
+.achievement-card:hover { transform: translateY(-3px); }
+.achievement-card img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+.achievement-info {
+  padding: .7rem .8rem;
+}
+.achievement-name {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+.achievement-school {
+  font-size: .73rem;
+  color: var(--gray);
+  margin-top: 2px;
+}
+.achievement-challenge {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--red);
+  background: var(--red-light);
+  padding: 2px 7px;
+  border-radius: 50px;
+  margin-top: 4px;
+}
+
+/* ── Step list ── */
+.step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.step-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--red);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-text {
+  font-size: .86rem;
+  color: var(--mid);
+  line-height: 1.7;
+  padding-top: 3px;
+}
+.step-text b { color: var(--dark); }
+
+/* ── Tip boxes ── */
+.tip {
+  border-radius: 0 10px 10px 0;
+  padding: 10px 14px;
+  font-size: .8rem;
+  line-height: 1.7;
+}
+.tip-yellow { background: #fffbeb; border-right: 3px solid var(--yellow); color: #78350f; }
+.tip-red { background: var(--red-light); border-right: 3px solid var(--red); color: var(--red-dark); }
+
+/* ── Success screen ── */
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.4rem;
+  text-align: center;
+  gap: 1rem;
+}
+.success-icon { font-size: 3.5rem; }
+.success-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--dark);
+}
+.success-sub { font-size: .88rem; color: var(--gray); max-width: 320px; line-height: 1.7; }
+
+/* ── Responsive ── */
+@media (min-width: 640px) {
+  .page-body { padding: 2rem 1.6rem 3rem; }
+  .carousel-img { height: 280px; }
+  .hero-band { height: 240px; }
+  .achievements-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+
+@media (min-width: 768px) {
+  .page-hdr { padding: 14px 32px; }
+  .page-body { padding: 2.5rem 2rem 4rem; }
+  .btn-main { font-size: 1rem; }
+  .carousel-img { height: 320px; }
+  .hero-band { height: 280px; }
+}

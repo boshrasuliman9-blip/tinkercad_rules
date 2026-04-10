@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>تعرف على Tinkercad — المسار ١</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/main.css">
+<style>
+#connect-carousel .carousel-img {
+  height: 340px;
+  background: var(--white);
+}
+
+#connect-carousel .carousel-img img {
+  object-fit: cover;
+  object-position: top;
+}
+
+#connect-carousel .carousel-nav {
+  background: var(--bg);
+}
+
+#workspace-carousel .carousel-img {
+  height: 360px;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+#workspace-carousel .carousel-img img {
+  width: 100%;
+  height: calc(100% + 18px);
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center top;
+  transform: translateY(-2px);
+}
+
+#workspace-carousel .carousel-img img.workspace-img-full {
+  height: 100%;
+  object-fit: contain;
+  transform: none;
+}
+
+.intro-stage {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1.5px solid rgba(15, 23, 42, .06);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
+  background: var(--white);
+}
+
+.intro-stage .video-section {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.intro-stage .video-overlay {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 1.25rem;
+  background: linear-gradient(to top, rgba(9, 32, 23, .6) 0%, rgba(9, 32, 23, .18) 48%, transparent 100%);
+}
+
+.intro-stage .video-overlay .btn-main {
+  min-width: 280px;
+  border-radius: 16px;
+  padding: 15px 30px;
+  box-shadow: 0 10px 24px rgba(240, 78, 35, .28);
+}
+
+.intro-copy {
+  padding: 1.25rem 1.35rem 1.35rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(255,248,242,.92) 100%);
+}
+
+.intro-copy p {
+  font-size: .98rem;
+  color: var(--mid);
+  line-height: 2;
+}
+
+.intro-tip {
+  margin-top: 1rem;
+  background: #fff8e8;
+  border: 1px solid rgba(245, 158, 11, .24);
+  border-right: 4px solid var(--yellow);
+  border-radius: 16px;
+  padding: .95rem 1rem;
+  color: #8a4b00;
+  font-size: .83rem;
+  line-height: 1.9;
+}
+
+.step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: opacity .2s ease;
+}
+
+.step-panel.is-locked {
+  opacity: .55;
+}
+
+.step-panel.is-completed {
+  opacity: 1;
+}
+
+.step-panel.is-completed .section-label {
+  color: var(--gray);
+}
+
+.step-panel.is-locked .step-content {
+  display: none;
+}
+
+.step-panel.is-completed .step-content {
+  display: none;
+}
+
+.step-panel.is-completed.is-expanded .step-content {
+  display: block;
+}
+
+/* Step header card */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: default;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.step-panel.is-unlocked .step-header {
+  border-color: var(--red);
+  box-shadow: 0 4px 16px rgba(240,78,35,.10);
+}
+
+.step-panel.is-completed .step-header {
+  cursor: pointer;
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.step-panel.is-completed .step-header:hover {
+  box-shadow: 0 4px 16px rgba(34,197,94,.12);
+}
+
+/* Number badge */
+.step-num-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--gray);
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .18s, color .18s;
+}
+
+.step-panel.is-unlocked .step-num-badge {
+  background: var(--red);
+  color: #fff;
+}
+
+.step-panel.is-completed .step-num-badge {
+  background: #22c55e;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+/* Title + meta row */
+.step-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.step-header-title {
+  font-size: .97rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+
+.step-panel.is-locked .step-header-title {
+  color: var(--gray);
+}
+
+.step-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.step-duration {
+  font-size: .77rem;
+  color: var(--mid);
+  font-weight: 500;
+}
+
+.step-status {
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.step-panel.is-locked    .step-status { background: #f1f5f9; color: var(--gray); }
+.step-panel.is-unlocked  .step-status { background: #fff1ee; color: var(--red); }
+.step-panel.is-completed .step-status { background: #dcfce7; color: #16a34a; }
+
+/* Expand/collapse arrow */
+.step-toggle {
+  display: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #d1fae5;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+
+.step-panel.is-completed .step-toggle {
+  display: inline-flex;
+}
+
+.step-toggle::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #16a34a;
+  border-bottom: 2px solid #16a34a;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform .18s ease;
+}
+
+.step-panel.is-completed.is-expanded .step-toggle::before {
+  transform: rotate(225deg) translateY(-1px);
+}
+
+.step-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: .6rem;
+}
+
+.step-actions.is-hidden {
+  display: none;
+}
+
+.step-done-btn {
+  min-width: 220px;
+}
+
+</style>
+</head>
+<body>
+
+<header class="page-hdr">
+  <a href="./tracks.html" class="brand">
+    <div class="brand-logo">⚡</div>
+    <span class="brand-name">Circuit Quest</span>
+  </a>
+  <a href="./tracks.html" class="btn-back">← المسارات</a>
+</header>
+
+<main class="page-body">
+
+  <div class="track-banner">
+    <img src="./tracks/1.png" alt="المسار الأول">
+    <div class="track-banner-overlay">
+      <div class="track-banner-copy">
+        <span class="badge badge-red">المسار الأول</span>
+        <h1 class="track-banner-title">تعرّف على Tinkercad<br>وابدأ من الأساس</h1>
+        <p class="track-banner-sub">في هذا المسار ستتعرف على منصة Tinkercad، وطريقة الدخول إليها وربطها وفهم مساحة العمل قبل بدء التحديات العملية.</p>
+        <div class="track-banner-pills">
+          <span class="track-banner-pill">📚 4 مراحل</span>
+          <span class="track-banner-pill">⏱ ~20 دقيقة</span>
+          <span class="track-banner-pill">🔰 للمبتدئين</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="step-panel is-unlocked" data-step="1">
+    <div class="step-header">
+      <div class="step-num-badge">١</div>
+      <div class="step-header-info">
+        <div class="step-header-title">الدخول على Tinkercad</div>
+        <div class="step-header-meta">
+          <span class="step-duration">⏱ 3 دقائق</span>
+          <span class="step-status">● نشطة</span>
+        </div>
+      </div>
+      <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+    </div>
+    <div class="step-content">
+      <div class="intro-stage">
+        <div class="video-section">
+          <video autoplay muted loop playsinline>
+            <source src="./hero-circuits.mp4" type="video/mp4">
+          </video>
+          <div class="video-overlay">
+            <a href="https://www.tinkercad.com" target="_blank" class="btn-main" style="font-size:1.05rem">
+              🌐 ادخل على Tinkercad
+            </a>
+          </div>
+        </div>
+
+        <div class="intro-copy">
+          <p>
+            <b>Tinkercad</b> هو موقع مجاني من <b>Autodesk</b> يتيح لك محاكاة الدوائر الإلكترونية مباشرة
+            من المتصفح بدون أي تثبيت. يمكنك إضافة مكونات مثل Arduino والمقاومات والأزرار
+            وتوصيل الأسلاك وتشغيل المحاكاة كلها داخل الموقع.
+          </p>
+          <div class="intro-tip">
+            💡 تأكد من أن لديك اتصالًا بالإنترنت، ثم اضغط الزر أعلاه لفتح Tinkercad في تبويب جديد
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button type="button" class="btn-main step-done-btn" data-unlock="2">أنهيت الخطوة الأولى</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="step-panel is-locked" data-step="2">
+    <div class="step-header">
+      <div class="step-num-badge">٢</div>
+      <div class="step-header-info">
+        <div class="step-header-title">اربط البرنامج مع Tinkercad</div>
+        <div class="step-header-meta">
+          <span class="step-duration">⏱ 5 دقائق</span>
+          <span class="step-status">🔒 مقفلة</span>
+        </div>
+      </div>
+      <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+    </div>
+    <div class="step-content">
+      <div class="carousel-wrap" id="connect-carousel">
+        <div class="carousel-track">
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./sp_img/1.png" alt="خطوة الربط ١">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./sp_img/2.png" alt="خطوة الربط ٢">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./sp_img/3.png" alt="خطوة الربط ٣">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./sp_img/4.png" alt="خطوة الربط ٤">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./sp_img/5.png" alt="خطوة الربط ٥">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./sp_img/6.png" alt="خطوة الربط ٦">
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-nav">
+          <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+          <div class="carousel-dots">
+            <button class="carousel-dot active" aria-label="١"></button>
+            <button class="carousel-dot" aria-label="٢"></button>
+            <button class="carousel-dot" aria-label="٣"></button>
+            <button class="carousel-dot" aria-label="٤"></button>
+            <button class="carousel-dot" aria-label="٥"></button>
+            <button class="carousel-dot" aria-label="٦"></button>
+          </div>
+          <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+        </div>
+      </div>
+
+      <div class="step-actions is-hidden" data-watch-carousel="connect-carousel">
+        <button type="button" class="btn-main step-done-btn" data-unlock="3">أنهيت الخطوة الثانية</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="step-panel is-locked" data-step="3">
+    <div class="step-header">
+      <div class="step-num-badge">٣</div>
+      <div class="step-header-info">
+        <div class="step-header-title">عمل حساب على Tinkercad</div>
+        <div class="step-header-meta">
+          <span class="step-duration">⏱ 5 دقائق</span>
+          <span class="step-status">🔒 مقفلة</span>
+        </div>
+      </div>
+      <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+    </div>
+    <div class="step-content">
+      <div class="carousel-wrap" id="account-carousel">
+        <div class="carousel-track">
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./img/2.png" alt="أنشئ حساباً">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./img/3.png" alt="تحقق من البريد">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./img/4.png" alt="سجّل الدخول">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./img/5.png" alt="جاهز للبناء">
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-nav">
+          <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+          <div class="carousel-dots">
+            <button class="carousel-dot active" aria-label="١"></button>
+            <button class="carousel-dot" aria-label="٢"></button>
+            <button class="carousel-dot" aria-label="٣"></button>
+            <button class="carousel-dot" aria-label="٤"></button>
+          </div>
+          <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+        </div>
+      </div>
+
+      <div class="step-actions is-hidden" data-watch-carousel="account-carousel">
+        <button type="button" class="btn-main step-done-btn" data-unlock="4">أنهيت الخطوة الثالثة</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="step-panel is-locked" data-step="4">
+    <div class="step-header">
+      <div class="step-num-badge">٤</div>
+      <div class="step-header-info">
+        <div class="step-header-title">اكتشف بيئة العمل</div>
+        <div class="step-header-meta">
+          <span class="step-duration">⏱ 7 دقائق</span>
+          <span class="step-status">🔒 مقفلة</span>
+        </div>
+      </div>
+      <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+    </div>
+    <div class="step-content">
+      <div class="carousel-wrap" id="workspace-carousel">
+        <div class="carousel-track">
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/1.png" alt="بيئة العمل ١">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/2.png" alt="بيئة العمل ٢">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/3.png" alt="بيئة العمل ٣">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/4.png" alt="بيئة العمل ٤">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/5.png" alt="بيئة العمل ٥">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/6.png" alt="بيئة العمل ٦">
+            </div>
+          </div>
+          <div class="carousel-slide">
+            <div class="carousel-img">
+              <img src="./Track1Stage4/7.png" alt="بيئة العمل ٧" class="workspace-img-full">
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-nav">
+          <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+          <div class="carousel-dots">
+            <button class="carousel-dot active" aria-label="١"></button>
+            <button class="carousel-dot" aria-label="٢"></button>
+            <button class="carousel-dot" aria-label="٣"></button>
+            <button class="carousel-dot" aria-label="٤"></button>
+            <button class="carousel-dot" aria-label="٥"></button>
+            <button class="carousel-dot" aria-label="٦"></button>
+            <button class="carousel-dot" aria-label="٧"></button>
+          </div>
+          <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+        </div>
+      </div>
+
+      <div class="step-actions is-hidden" data-watch-carousel="workspace-carousel">
+        <button type="button" class="btn-main step-done-btn" data-finish="true">أنهيت الخطوة الرابعة</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="next-track-cta" class="hidden" style="display:flex;justify-content:center;padding-top:.5rem">
+    <a href="./track2.html" class="btn-main">المسار التالي: التحديات ←</a>
+  </div>
+
+</main>
+
+<script src="./js/main.js"></script>
+<script>
+(function () {
+  function setStepStatus(panel, text) {
+    var s = panel.querySelector('.step-status');
+    if (s) s.textContent = text;
+  }
+
+  function unlockStep(stepNumber) {
+    var panel = document.querySelector('.step-panel[data-step="' + stepNumber + '"]');
+    if (!panel) return;
+    panel.classList.remove('is-locked');
+    panel.classList.add('is-unlocked');
+    setStepStatus(panel, '● نشطة');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function toggleStepAction(carouselId, isLastSlide) {
+    var actions = document.querySelector('.step-actions[data-watch-carousel="' + carouselId + '"]');
+    if (!actions) return;
+    actions.classList.toggle('is-hidden', !isLastSlide);
+  }
+
+  document.querySelectorAll('[data-unlock]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var currentPanel = button.closest('.step-panel');
+      if (currentPanel) {
+        currentPanel.classList.add('is-completed');
+        currentPanel.classList.remove('is-unlocked', 'is-expanded');
+        setStepStatus(currentPanel, '✅ مكتملة');
+      }
+      unlockStep(button.getAttribute('data-unlock'));
+    });
+  });
+
+  document.querySelectorAll('[data-finish="true"]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var currentPanel = button.closest('.step-panel');
+      var nextTrack = document.getElementById('next-track-cta');
+      if (currentPanel) {
+        currentPanel.classList.add('is-completed');
+        currentPanel.classList.remove('is-unlocked', 'is-expanded');
+        setStepStatus(currentPanel, '✅ مكتملة');
+      }
+      if (nextTrack) {
+        nextTrack.classList.remove('hidden');
+        nextTrack.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  document.querySelectorAll('.step-toggle').forEach(function (button) {
+    button.addEventListener('click', function (event) {
+      event.stopPropagation();
+      var panel = button.closest('.step-panel');
+      if (!panel || !panel.classList.contains('is-completed')) return;
+      panel.classList.toggle('is-expanded');
+    });
+  });
+
+  document.querySelectorAll('.step-header').forEach(function (header) {
+    header.addEventListener('click', function () {
+      var panel = header.closest('.step-panel');
+      if (!panel || !panel.classList.contains('is-completed')) return;
+      panel.classList.toggle('is-expanded');
+    });
+  });
+
+  ['connect-carousel', 'workspace-carousel', 'account-carousel'].forEach(function (carouselId) {
+    var carousel = document.getElementById(carouselId);
+    if (!carousel) return;
+    carousel.addEventListener('carousel:change', function (event) {
+      toggleStepAction(carouselId, event.detail.current === event.detail.total - 1);
+    });
+  });
+})();
+</script>
+</body>
+</html>

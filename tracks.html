@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>المسارات — Circuit Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/main.css">
+<style>
+.tracks-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.tracks-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.hero-band {
+  height: 190px;
+}
+
+.hero-band-overlay {
+  padding: 1.5rem;
+  justify-content: flex-end;
+}
+
+.hero-band-title {
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  line-height: 1.2;
+}
+
+.hero-band-sub {
+  font-size: .9rem;
+  max-width: 360px;
+}
+
+.track-card {
+  position: relative;
+  min-height: 132px;
+  padding: 1.2rem 1.2rem 1.1rem;
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 14px;
+  align-items: center;
+  border-radius: 24px;
+  border: 1.5px solid rgba(221, 227, 234, .95);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.track-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, .08);
+  border-color: rgba(240, 78, 35, .22);
+}
+
+.track-card::after {
+  content: '';
+  position: absolute;
+  inset: auto auto -22px -22px;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: rgba(240, 78, 35, .06);
+}
+
+.track-num {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  background: var(--red);
+  color: #fff;
+  border-radius: 0 0 16px 0;
+  font-size: .82rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.track-thumb,
+.track-icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 22px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.track-thumb {
+  overflow: hidden;
+  border: 1.5px solid rgba(221, 227, 234, .95);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, .08);
+}
+
+.track-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.track-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.track-icon.green { background: linear-gradient(180deg, #effcf4 0%, #def6e7 100%); }
+.track-icon.orange { background: linear-gradient(180deg, #fff8ee 0%, #ffedd8 100%); }
+.track-icon.purple { background: linear-gradient(180deg, #faf5ff 0%, #efe6ff 100%); }
+
+.track-info {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .55rem;
+  padding-top: .3rem;
+}
+
+.track-title {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1.25;
+}
+
+.track-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--red);
+  font-size: .84rem;
+  font-weight: 800;
+}
+
+.track-line::before {
+  content: '←';
+  color: var(--gray);
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .tracks-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<header class="page-hdr">
+  <a href="./index.html" class="brand">
+    <div class="brand-logo">⚡</div>
+    <span class="brand-name">Circuit Quest</span>
+  </a>
+  <a href="./index.html" class="btn-back">← الرئيسية</a>
+</header>
+
+<main class="page-body">
+  <section class="tracks-wrap">
+    <div class="hero-band">
+      <img src="./img/1.png" alt="Circuit Quest">
+      <div class="hero-band-overlay">
+        <h1 class="hero-band-title">اختر مسارك<br>وابدأ رحلتك ⚡</h1>
+        <p class="hero-band-sub">4 مسارات مرتبة تبدأ بالتعرف على Tinkercad وتنتهي بالإنجازات.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:1rem">المسارات</div>
+      <div class="tracks-grid">
+
+        <a href="./track1.html" class="track-card">
+          <div class="track-num">١</div>
+          <div class="track-thumb">
+            <img src="./tracks/1.png" alt="تعرف على Tinkercad">
+          </div>
+          <div class="track-info">
+            <div class="track-title">تعرف على Tinkercad</div>
+            <div class="track-line">ادخل المسار</div>
+          </div>
+        </a>
+
+        <a href="./track2.html" class="track-card">
+          <div class="track-num">٢</div>
+          <div class="track-thumb">
+            <img src="./tracks/2.png" alt="التحديات">
+          </div>
+          <div class="track-info">
+            <div class="track-title">التحديات</div>
+            <div class="track-line">ابدأ التنفيذ</div>
+          </div>
+        </a>
+
+        <a href="./track3.html" class="track-card">
+          <div class="track-num">٣</div>
+          <div class="track-thumb">
+            <img src="./tracks/3.png" alt="أرسل عملك">
+          </div>
+          <div class="track-info">
+            <div class="track-title">أرسل عملك</div>
+            <div class="track-line">ارفع الآن</div>
+          </div>
+        </a>
+
+        <a href="./track4.html" class="track-card">
+          <div class="track-num">٤</div>
+          <div class="track-thumb">
+            <img src="./tracks/4.png" alt="الإنجازات">
+          </div>
+          <div class="track-info">
+            <div class="track-title">الإنجازات</div>
+            <div class="track-line">شاهد النتائج</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="./js/main.js"></script>
+</body>
+</html>

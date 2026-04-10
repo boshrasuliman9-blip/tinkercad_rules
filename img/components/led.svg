@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <radialGradient id="ledGlow" cx=".45" cy=".35" r=".7">
+      <stop offset="0" stop-color="#fff7b0"/>
+      <stop offset=".55" stop-color="#facc15"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="40" cy="30" rx="18" ry="20" fill="url(#ledGlow)"/>
+  <rect x="22" y="28" width="36" height="18" rx="9" fill="url(#ledGlow)"/>
+  <path d="M32 48v20" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M48 48v14" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M28 20c4-5 20-5 24 0" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="board" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1f88a7"/>
+      <stop offset="1" stop-color="#1b7795"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M13 18h56l5 5v34l-5 5H13a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4z" fill="url(#board)"/>
+
+  <rect x="3" y="31" width="16" height="13" rx="1.5" fill="#b8b8bb"/>
+  <rect x="3" y="31" width="3" height="13" fill="#9a9aa0"/>
+  <rect x="6" y="29.5" width="2" height="16" rx="1" fill="#8e8f94"/>
+
+  <rect x="14.5" y="19.5" width="8" height="8" rx="1" fill="#dadbdd"/>
+  <circle cx="18.5" cy="23.5" r="2.2" fill="#8f2925"/>
+
+  <g fill="#3a3a3d">
+    <rect x="26" y="19.5" width="24" height="4" rx="1"/>
+    <rect x="52" y="19.5" width="18" height="4" rx="1"/>
+    <rect x="35" y="57.5" width="20" height="4" rx="1"/>
+    <rect x="58" y="57.5" width="14" height="4" rx="1"/>
+  </g>
+
+  <g fill="#151515">
+    <rect x="27" y="20.3" width="1.2" height="2.4"/>
+    <rect x="29.6" y="20.3" width="1.2" height="2.4"/>
+    <rect x="32.2" y="20.3" width="1.2" height="2.4"/>
+    <rect x="34.8" y="20.3" width="1.2" height="2.4"/>
+    <rect x="37.4" y="20.3" width="1.2" height="2.4"/>
+    <rect x="40" y="20.3" width="1.2" height="2.4"/>
+    <rect x="42.6" y="20.3" width="1.2" height="2.4"/>
+    <rect x="45.2" y="20.3" width="1.2" height="2.4"/>
+    <rect x="47.8" y="20.3" width="1.2" height="2.4"/>
+
+    <rect x="53" y="20.3" width="1.2" height="2.4"/>
+    <rect x="55.6" y="20.3" width="1.2" height="2.4"/>
+    <rect x="58.2" y="20.3" width="1.2" height="2.4"/>
+    <rect x="60.8" y="20.3" width="1.2" height="2.4"/>
+    <rect x="63.4" y="20.3" width="1.2" height="2.4"/>
+    <rect x="66" y="20.3" width="1.2" height="2.4"/>
+
+    <rect x="36" y="58.3" width="1.2" height="2.4"/>
+    <rect x="38.6" y="58.3" width="1.2" height="2.4"/>
+    <rect x="41.2" y="58.3" width="1.2" height="2.4"/>
+    <rect x="43.8" y="58.3" width="1.2" height="2.4"/>
+    <rect x="46.4" y="58.3" width="1.2" height="2.4"/>
+    <rect x="49" y="58.3" width="1.2" height="2.4"/>
+    <rect x="51.6" y="58.3" width="1.2" height="2.4"/>
+
+    <rect x="59" y="58.3" width="1.2" height="2.4"/>
+    <rect x="61.6" y="58.3" width="1.2" height="2.4"/>
+    <rect x="64.2" y="58.3" width="1.2" height="2.4"/>
+    <rect x="66.8" y="58.3" width="1.2" height="2.4"/>
+    <rect x="69.4" y="58.3" width="1.2" height="2.4"/>
+  </g>
+
+  <rect x="20" y="47" width="7" height="12" rx="1" fill="#222326"/>
+  <rect x="42" y="49" width="28" height="6" rx="1" fill="#2d2d30"/>
+  <rect x="30" y="47.5" width="6" height="9" rx="1.2" fill="#d6d7da"/>
+  <rect x="37" y="47.5" width="6" height="9" rx="1.2" fill="#d6d7da"/>
+
+  <rect x="60.5" y="46.8" width="2.4" height="1.7" rx=".3" fill="#a7ec85"/>
+  <rect x="50.3" y="33.4" width="5.9" height="5.8" rx="2.2" fill="none" stroke="#ffffff" stroke-width="1.2" opacity=".9"/>
+  <circle cx="23.5" cy="22.3" r="1.6" fill="#101114"/>
+  <circle cx="74" cy="41" r="2.2" fill="#040404"/>
+  <circle cx="15" cy="58" r="2.2" fill="#040404"/>
+</svg>
