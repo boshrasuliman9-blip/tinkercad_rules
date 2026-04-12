@@ -17,6 +17,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (!form) return;
 
+  populateChallengeOptions();
+
+  function populateChallengeOptions() {
+    var select = document.getElementById('challenge-select') || form.querySelector('[name="challenge"]');
+    var challenges = Array.isArray(window.CQ_CHALLENGES) ? window.CQ_CHALLENGES : [];
+    if (!select || !challenges.length) return;
+
+    select.innerHTML = '<option value="" disabled selected>اختر التحدي</option>';
+    challenges
+      .filter(function (challenge) { return challenge && challenge.enabled !== false; })
+      .sort(function (a, b) { return (a.id || 0) - (b.id || 0); })
+      .forEach(function (challenge) {
+        var option = document.createElement('option');
+        option.value = challenge.value || challenge.title || '';
+        option.textContent = challenge.label || challenge.title || option.value;
+        select.appendChild(option);
+      });
+  }
+
   /* ── منطقة رفع الصورة ── */
   if (uploadArea) {
     uploadArea.addEventListener('click', function () { fileInput && fileInput.click(); });
