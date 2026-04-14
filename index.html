@@ -6,145 +6,605 @@
 <title>Circuit Quest — تحدي الدائرة الكهربائية</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./css/main.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="./img/arduino/arduino-glb.js"></script>
 <style>
-/* —— Start page specific —— */
-#s1 {
+
+/* ── Layout ─────────────────────────────────── */
+.hero-wrap {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 2.5rem 1.4rem;
-  background: var(--bg);
+  padding: 3rem 1.4rem 2rem;
 }
-.s1-inner {
+.hero-inner {
   width: 100%;
-  max-width: 540px;
+  max-width: 1040px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 0;
 }
-.s1-hero h1 {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 800;
+@media (min-width: 768px) {
+  .hero-inner {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
+}
+
+/* ── Text side ───────────────────────────────── */
+.hero-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  order: 2;
+}
+@media (min-width: 768px) {
+  .hero-text { order: 1; }
+}
+
+.hero-text h1 {
+  font-size: clamp(2rem, 5.5vw, 3.2rem);
+  font-weight: 900;
   color: var(--dark);
-  line-height: 1.15;
-  margin-bottom: .7rem;
+  line-height: 1.12;
 }
-.s1-hero p {
-  font-size: .95rem;
+.hero-text p {
+  font-size: .97rem;
   color: var(--gray);
-  line-height: 1.7;
+  line-height: 1.8;
   max-width: 420px;
 }
-.stats-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.stat-card {
-  flex: 1;
-  min-width: 100px;
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: .3rem;
+}
+.hero-note {
+  font-size: .78rem;
+  color: var(--gray);
+}
+
+/* ── 3D side ─────────────────────────────────── */
+.hero-3d {
+  order: 1;
+  width: 100%;
+  height: 300px;
+  flex-shrink: 0;
+  overflow: visible;
+  position: relative;
+}
+@media (min-width: 768px) {
+  .hero-3d { order: 2; width: 460px; height: 460px; }
+}
+.hero-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Loading state */
+#model-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+}
+.loader-ring {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-txt {
+  font-size: .8rem;
+  color: var(--gray);
+  font-weight: 600;
+}
+
+/* ── Bottom section ──────────────────────────── */
+.bottom-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 1.4rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.stat-item {
   background: var(--white);
   border: 1.5px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 18px 14px;
+  text-align: center;
 }
-.stat-card .sv {
-  font-size: 1.5rem;
-  font-weight: 800;
+.stat-val {
+  font-size: 1.55rem;
+  font-weight: 900;
   color: var(--red);
-  margin-bottom: 2px;
+  line-height: 1;
+  margin-bottom: 6px;
 }
-.stat-card .sl { font-size: .78rem; color: var(--gray); }
-.steps-card-title {
+.stat-lbl {
+  font-size: .76rem;
+  color: var(--gray);
+  line-height: 1.4;
+}
+
+/* Rules card */
+.rules-title {
   font-size: .72rem;
   font-weight: 700;
   color: var(--gray);
-  letter-spacing: 1.5px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
-.steps-card-title::before {
+.rules-title::before {
   content: '';
   width: 3px; height: 14px;
   background: var(--red);
   border-radius: 2px;
   display: inline-block;
 }
-.step-row {
+.rule-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 10px 0;
+  padding: 11px 0;
   border-bottom: 1px solid var(--border);
 }
-.step-row:last-child { border: none; padding-bottom: 0; }
-.step-n {
-  width: 26px; height: 26px;
+.rule-row:last-child { border: none; padding-bottom: 0; }
+.rule-num {
+  width: 28px; height: 28px;
   border-radius: 8px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: .78rem;
-  font-weight: 700;
-  background: var(--red);
-  color: #fff;
+  font-size: .8rem; font-weight: 700;
+  background: var(--red); color: #fff;
 }
-.step-t { font-size: .88rem; color: var(--mid); line-height: 1.6; padding-top: 2px; }
-.step-t b { color: var(--dark); }
-.cta-note { font-size: .78rem; color: var(--gray); }
-.s1-cta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rule-txt {
+  font-size: .88rem;
+  color: var(--mid);
+  line-height: 1.65;
+  padding-top: 3px;
+}
+.rule-txt b { color: var(--dark); }
 
-@media (min-width: 768px) {
-  .s1-inner { flex-direction: row; max-width: 1000px; gap: 3.5rem; align-items: center; }
-  .s1-left { flex: 1; }
-  .s1-right { width: 340px; flex-shrink: 0; }
-  .s1-hero h1 { font-size: clamp(2.4rem, 3.5vw, 3.4rem); }
-}
 </style>
 </head>
 <body>
 
-<section id="s1">
-  <div class="s1-inner">
-    <div class="s1-left">
-      <div style="margin-bottom:.8rem">
+<!-- ═══ HERO ═══════════════════════════════════ -->
+<div class="hero-wrap">
+  <div class="hero-inner">
+
+    <!-- Text -->
+    <div class="hero-text">
+      <div>
         <span class="badge badge-red">
           <span class="badge-dot"></span>
           تحدي مباشر
         </span>
       </div>
-      <div class="s1-hero">
-        <h1>ابنِ دائرتك<br>الكهربائية <span class="accent">الآن.</span></h1>
-        <p>تحدَّ.. صمّم.. واربح! رحلتك في بناء الدارات الإلكترونية تبدأ الآن مع جوائز بانتظار إبداعك</p>
-      </div>
-      <div class="s1-cta" style="margin-top:.4rem">
+      <h1>ابنِ دائرتك<br>الكهربائية <span class="accent">الآن.</span></h1>
+      <p>تحدَّ.. صمّم.. واربح! رحلتك في بناء الدارات الإلكترونية تبدأ الآن مع جوائز بانتظار إبداعك</p>
+      <div class="hero-actions">
         <a href="./tracks.html" class="btn-main">ابدأ التحدي ←</a>
-        <span class="cta-note">لا تغلق الصفحة بعد البدء</span>
+        <span class="hero-note">لا تغلق الصفحة بعد البدء</span>
       </div>
     </div>
-    <div class="s1-right" style="display:flex;flex-direction:column;gap:1rem">
-      <div class="stats-row">
-        <div class="stat-card"><div class="sv">15</div><div class="sl">دقيقة للإنجاز</div></div>
-        <div class="stat-card"><div class="sv">∞</div><div class="sl">التحديات</div></div>
-        <div class="stat-card"><div class="sv">🏆</div><div class="sl">الجوائز القيمة</div></div>
+
+    <!-- 3D — no container, floats on page bg -->
+    <div class="hero-3d" id="hero3d">
+      <div id="model-loader">
+        <div class="loader-ring"></div>
+        <span class="loader-txt">جار تحميل النموذج…</span>
       </div>
-      <div class="card">
-        <div class="steps-card-title">قواعد الرحلة</div>
-        <div class="step-row">
-          <div class="step-n">١</div>
-          <p class="step-t">اتبع الخطوات بالترتيب ولا تنتقل للمرحلة التالية قبل إكمال الحالية</p>
-        </div>
-        <div class="step-row">
-          <div class="step-n">٢</div>
-          <p class="step-t">تأكد من أن الدائرة تعمل في المحاكاة قبل التقاط الصورة أو إرسال العمل</p>
-        </div>
-        <div class="step-row">
-          <div class="step-n">٣</div>
-          <p class="step-t">أرسل صورة واضحة لعملك مع البيانات المطلوبة لإكمال <b>التحدي</b></p>
-        </div>
-      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ BOTTOM ══════════════════════════════════ -->
+<div class="bottom-wrap">
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-val">15</div>
+      <div class="stat-lbl">دقيقة للإنجاز</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">∞</div>
+      <div class="stat-lbl">التحديات</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">🏆</div>
+      <div class="stat-lbl">الجوائز القيمة</div>
     </div>
   </div>
-</section>
+
+  <div class="card">
+    <div class="rules-title">قواعد الرحلة</div>
+    <div class="rule-row">
+      <div class="rule-num">١</div>
+      <p class="rule-txt">اتبع الخطوات بالترتيب ولا تنتقل للمرحلة التالية قبل إكمال الحالية</p>
+    </div>
+    <div class="rule-row">
+      <div class="rule-num">٢</div>
+      <p class="rule-txt">تأكد من أن الدائرة تعمل في المحاكاة قبل التقاط الصورة أو إرسال العمل</p>
+    </div>
+    <div class="rule-row">
+      <div class="rule-num">٣</div>
+      <p class="rule-txt">أرسل صورة واضحة لعملك مع البيانات المطلوبة لإكمال <b>التحدي</b></p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ 3D SCRIPT ════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+  var wrap   = document.getElementById('hero3d');
+  var loaderEl = document.getElementById('model-loader');
+  if (!wrap || typeof THREE === 'undefined') return;
+
+  /* ── Canvas & Renderer (transparent bg) ─────── */
+  var cvs = document.createElement('canvas');
+  cvs.style.opacity = '0';
+  cvs.style.transition = 'opacity .8s ease';
+  wrap.appendChild(cvs);
+
+  var W = wrap.clientWidth || 460, H = wrap.clientHeight || 380;
+  var renderer = new THREE.WebGLRenderer({ canvas: cvs, antialias: true, alpha: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.shadowMap.enabled = false;
+
+  /* ── Scene & Camera ──────────────────────────── */
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(44, W / H, 0.1, 100);
+  camera.position.set(0, 5.8, 5.4);
+  camera.lookAt(0, 0, 0);
+
+  /* ── Lighting ────────────────────────────────── */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+  var key = new THREE.DirectionalLight(0xffffff, 1.4);
+  key.position.set(4, 9, 6);
+  scene.add(key);
+  var fill = new THREE.DirectionalLight(0xddeeff, 0.50);
+  fill.position.set(-5, 3, 3);
+  scene.add(fill);
+  var bounce = new THREE.DirectionalLight(0xf04e23, 0.16);
+  bounce.position.set(0, -5, -3);
+  scene.add(bounce);
+  var rim = new THREE.DirectionalLight(0xffffff, 0.30);
+  rim.position.set(0, -2, -8);
+  scene.add(rim);
+
+  /* ── Board group ─────────────────────────────── */
+  var grp = new THREE.Group();
+  scene.add(grp);
+
+  /* ── LED point lights (animated) ─────────────── */
+  var onLight = new THREE.PointLight(0x00ee44, 2.2, 1.4); onLight.position.set(-1.52, 0.20, 0.88); grp.add(onLight);
+  var txLight = new THREE.PointLight(0xffcc00, 0.0, 0.8); txLight.position.set(-1.32, 0.20, 0.88); grp.add(txLight);
+  var rxLight = new THREE.PointLight(0xffcc00, 0.0, 0.8); rxLight.position.set(-1.12, 0.20, 0.88); grp.add(rxLight);
+  var lLight  = new THREE.PointLight(0xff8800, 1.6, 1.2); lLight.position.set( 0.46, 0.20, 0.88); grp.add(lLight);
+
+  /* ── Shadow disc ─────────────────────────────── */
+  var disc = new THREE.Mesh(
+    new THREE.CircleGeometry(3.0, 48),
+    new THREE.MeshBasicMaterial({color:0x0f172a, transparent:true, opacity:0.07})
+  );
+  disc.rotation.x = -Math.PI/2; disc.position.y = -0.28; grp.add(disc);
+
+  /* ── Load GLB model ──────────────────────────── */
+  var modelReady = false;
+  var gltfLoader = new THREE.GLTFLoader();
+  /* Use embedded base64 data URI (works without a server) */
+  var glbSrc = (typeof window !== 'undefined' && window.ARDUINO_GLB)
+    ? window.ARDUINO_GLB
+    : './img/arduino/arduino.glb';
+  var boardArtworkSrc = './img/arduino/Arduino%20UNO%20Rev.3%20(CH340)%20(2).png';
+
+  var unoRev3Palette = {
+    pcb: 0x003f9f,
+    pcbEdge: 0x003478,
+    header: 0x17191a,
+    chip: 0x242424,
+    gold: 0xd7a51f,
+    metal: 0xe8ecef,
+    darkMetal: 0x4f5356,
+    white: 0xf7f7f2
+  };
+
+  function applyUnoRev3Colors(model) {
+    var pcbBlue = new THREE.Color(0.10, 0.23, 0.54);
+    var padGold = new THREE.Color(0.83, 0.73, 0.29);
+    var bodyBlack = new THREE.Color(0.12, 0.12, 0.12);
+    var chipBlack = new THREE.Color(0.10, 0.10, 0.10);
+    var metalGray = new THREE.Color(0.50, 0.50, 0.52);
+    var buttonMetal = new THREE.Color(0.59, 0.64, 0.85);
+
+    function closeTo(a, b, tolerance) {
+      return Math.abs(a.r - b.r) < tolerance &&
+             Math.abs(a.g - b.g) < tolerance &&
+             Math.abs(a.b - b.b) < tolerance;
+    }
+
+    function recolorMaterial(source) {
+      var mat = source.clone();
+      var name = (mat.name || '').toLowerCase();
+      var color = mat.color || new THREE.Color(0xffffff);
+      var meshMatch = name.match(/^mesh_(\d+)$/);
+      var meshIndex = meshMatch ? parseInt(meshMatch[1], 10) : -1;
+
+      if (meshIndex >= 77 && meshIndex <= 103) {
+        mat.color.setHex(unoRev3Palette.header);
+        mat.roughness = 0.56;
+        mat.metalness = 0.06;
+      } else if (meshIndex >= 104 && meshIndex <= 121) {
+        mat.color.setHex(unoRev3Palette.gold);
+        mat.roughness = 0.20;
+        mat.metalness = 0.88;
+      } else if ((meshIndex >= 6 && meshIndex <= 11) || meshIndex === 25 || (meshIndex >= 30 && meshIndex <= 32)) {
+        mat.color.setHex(unoRev3Palette.metal);
+        mat.roughness = 0.18;
+        mat.metalness = 0.92;
+      } else if (meshIndex === 3 || name.indexOf('pcb') > -1) {
+        mat.color.setHex(unoRev3Palette.pcb);
+        mat.roughness = 0.58;
+        mat.metalness = 0.04;
+      } else if (closeTo(color, padGold, 0.08)) {
+        mat.color.setHex(unoRev3Palette.gold);
+        mat.roughness = 0.20;
+        mat.metalness = 0.88;
+      } else if (closeTo(color, metalGray, 0.08) || closeTo(color, buttonMetal, 0.08)) {
+        mat.color.setHex(unoRev3Palette.metal);
+        mat.roughness = 0.18;
+        mat.metalness = 0.92;
+      } else if (closeTo(color, chipBlack, 0.04) || name.indexOf('micro chip') > -1 || name.indexOf('transistor') > -1) {
+        mat.color.setHex(unoRev3Palette.chip);
+        mat.roughness = 0.46;
+        mat.metalness = 0.10;
+      } else if (closeTo(color, bodyBlack, 0.04) || name.indexOf('lm1117') > -1) {
+        mat.color.setHex(unoRev3Palette.header);
+        mat.roughness = 0.56;
+        mat.metalness = 0.06;
+      } else if (closeTo(color, pcbBlue, 0.04)) {
+        mat.color.setHex(unoRev3Palette.pcbEdge);
+        mat.roughness = 0.54;
+        mat.metalness = 0.04;
+      } else {
+        mat.color.setHex(unoRev3Palette.darkMetal);
+        mat.roughness = 0.35;
+        mat.metalness = 0.45;
+      }
+
+      mat.needsUpdate = true;
+      return mat;
+    }
+
+    model.traverse(function (obj) {
+      if (!obj.isMesh || !obj.material) return;
+      obj.material = Array.isArray(obj.material)
+        ? obj.material.map(recolorMaterial)
+        : recolorMaterial(obj.material);
+    });
+  }
+
+  function addArduinoBoardDetails(model, center, size) {
+    var pcbBounds = {
+      width: 4.5687,
+      depth: 3.5531,
+      x: 0.2157,
+      y: -0.185,
+      z: 0
+    };
+
+    var img = new Image();
+    img.onload = function () {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = pixels.data;
+      for (var i = 0; i < data.length; i += 4) {
+        var r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+        var isOutside = a < 20 || (r < 8 && g < 8 && b < 8);
+        var isWhitePrint = r > 170 && g > 170 && b > 165;
+        var isGoldCopper = r > 115 && g > 78 && b < 80;
+        var isDarkTrace = r < 75 && g < 110 && b < 135;
+        var isBoardBlue = b > 105 && g > 55 && r < 70;
+
+        if (isOutside) {
+          data[i + 3] = 0;
+        } else if (isWhitePrint) {
+          data[i] = 248; data[i + 1] = 252; data[i + 2] = 255; data[i + 3] = 215;
+        } else if (isGoldCopper) {
+          data[i] = 222; data[i + 1] = 168; data[i + 2] = 25; data[i + 3] = 230;
+        } else if (isDarkTrace) {
+          data[i] = 0; data[i + 1] = 38; data[i + 2] = 80; data[i + 3] = 120;
+        } else if (isBoardBlue) {
+          data[i] = 0; data[i + 1] = 105; data[i + 2] = 218; data[i + 3] = 78;
+        } else {
+          data[i + 3] = 65;
+        }
+      }
+      ctx.putImageData(pixels, 0, 0);
+
+      var texture = new THREE.CanvasTexture(canvas);
+      texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      if (THREE.sRGBEncoding) texture.encoding = THREE.sRGBEncoding;
+
+      var details = new THREE.Mesh(
+        new THREE.PlaneGeometry(pcbBounds.width, pcbBounds.depth),
+        new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.95,
+          side: THREE.DoubleSide,
+          depthTest: true,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1
+        })
+      );
+
+      details.name = 'arduino-uno-photo-glass-layer';
+      details.rotation.x = -Math.PI / 2;
+      details.position.set(pcbBounds.x, pcbBounds.y, pcbBounds.z);
+      details.renderOrder = 5;
+      model.add(details);
+    };
+    img.src = boardArtworkSrc;
+  }
+
+  gltfLoader.load(
+    glbSrc,
+    function (gltf) {
+      var model = gltf.scene;
+
+      /* Compute bounding box to center the model */
+      var box = new THREE.Box3().setFromObject(model);
+      var center = box.getCenter(new THREE.Vector3());
+      var size   = box.getSize(new THREE.Vector3());
+
+      /* Center at origin */
+      model.position.sub(center);
+
+      /* Scale so longest dimension is ~5 units */
+      var maxDim = Math.max(size.x, size.y, size.z);
+      var scale  = 5.0 / maxDim;
+      model.scale.setScalar(scale);
+
+      /* Re-center after scale */
+      var box2 = new THREE.Box3().setFromObject(model);
+      var c2 = box2.getCenter(new THREE.Vector3());
+      model.position.sub(c2);
+      model.position.y += 0.10; /* slight lift */
+
+      applyUnoRev3Colors(model);
+      addArduinoBoardDetails(model, center, size);
+      grp.add(model);
+      modelReady = true;
+
+      /* Hide loader, show canvas */
+      if (loaderEl) loaderEl.style.display = 'none';
+      cvs.style.opacity = '1';
+    },
+    function (xhr) {
+      /* progress — keep spinner visible */
+    },
+    function (err) {
+      console.warn('GLB load failed, using fallback', err);
+      buildFallback();
+      if (loaderEl) loaderEl.style.display = 'none';
+      cvs.style.opacity = '1';
+    }
+  );
+
+  /* ── Fallback: simple colored board if GLB fails ─ */
+  function buildFallback() {
+    var pcbMat  = new THREE.MeshStandardMaterial({color:unoRev3Palette.pcb, roughness:0.48, metalness:0.08});
+    var chipMat = new THREE.MeshStandardMaterial({color:unoRev3Palette.chip, roughness:0.46, metalness:0.10});
+    var goldMat = new THREE.MeshStandardMaterial({color:unoRev3Palette.gold, roughness:0.20, metalness:0.88});
+    function B(w,h,d,mat,x,y,z){ var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.position.set(x,y,z); grp.add(m); }
+    function C(r,h,s,mat,x,y,z){ var m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,s),mat); m.position.set(x,y,z); grp.add(m); }
+    B(3.8,0.10,2.9,pcbMat,0,0,0);
+    B(1.82,0.085,0.66,chipMat,0.06,0.092,0.06);
+    B(0.48,0.082,0.34,chipMat,-1.38,0.091,0.50);
+    C(0.060,0.28,14,new THREE.MeshStandardMaterial({color:unoRev3Palette.metal,roughness:0.18,metalness:0.92}),-0.46,0.094,-0.54);
+    modelReady = true;
+  }
+
+  /* ── Pose ────────────────────────────────────── */
+  grp.rotation.x = 0.22;
+
+  /* ── Mouse interaction ───────────────────────── */
+  var mx=0, my=0, hovering=false, autoY=0, crx=0.22, cry=0;
+  wrap.addEventListener('mousemove', function(e){
+    var r = wrap.getBoundingClientRect();
+    mx = ((e.clientX-r.left)/r.width)*2-1;
+    my = ((e.clientY-r.top)/r.height)*2-1;
+    hovering = true;
+  });
+  wrap.addEventListener('mouseleave', function(){ hovering=false; });
+  wrap.addEventListener('touchmove', function(e){
+    if(e.touches.length!==1) return;
+    var r = wrap.getBoundingClientRect();
+    mx = ((e.touches[0].clientX-r.left)/r.width)*2-1;
+    my = ((e.touches[0].clientY-r.top)/r.height)*2-1;
+    hovering = true;
+  }, {passive:true});
+  wrap.addEventListener('touchend', function(){ hovering=false; });
+
+  /* ── Animate ─────────────────────────────────── */
+  var t = 0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t += 0.01;
+    if (!hovering) {
+      autoY += 0.005;
+      crx += (0.22 - crx) * 0.06;
+      cry += (autoY - cry) * 0.06;
+    } else {
+      crx += ((0.22 - my*0.22) - crx) * 0.08;
+      cry += ((autoY + mx*0.42) - cry) * 0.08;
+    }
+    grp.rotation.x = crx;
+    grp.rotation.y = cry;
+    grp.position.y = 0.10 + Math.sin(t*0.6)*0.08;
+
+    /* LED glow animations */
+    onLight.intensity = 1.8 + Math.sin(t*1.4)*0.6;
+    var txOn = Math.sin(t*14.0) > 0.5; txLight.intensity = txOn ? 1.4 : 0;
+    var rxOn = Math.sin(t*10.5+1.8) > 0.6; rxLight.intensity = rxOn ? 1.2 : 0;
+    lLight.intensity  = 0.8 + Math.sin(t*2.2)*1.0;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  /* ── Resize ──────────────────────────────────── */
+  new ResizeObserver(function(){
+    var nW = wrap.clientWidth, nH = wrap.clientHeight;
+    if (!nW || !nH) return;
+    camera.aspect = nW/nH;
+    camera.updateProjectionMatrix();
+    renderer.setSize(nW, nH);
+  }).observe(wrap);
+
+})();
+</script>
 
 </body>
 </html>
