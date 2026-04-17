@@ -32,6 +32,10 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* ── Dark mode global ── */
+[data-theme="dark"] body { background: #111318; color: #f1f5f9; }
+[data-theme="dark"] .page-body { background: #111318; }
+
 /* ── Utilities ── */
 .hidden { display: none !important; }
 .accent { color: var(--red); }
@@ -86,36 +90,110 @@ body {
 }
 .btn-back:hover { background: var(--bg); color: var(--dark); }
 
-/* ── Shared Header ── */
-.page-hdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: var(--white);
-  border-bottom: 1.5px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 50;
+/* ── Shared Nav ── */
+.site-nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: 60px; padding: 0 1.6rem;
+  display: flex; align-items: center;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid #f0f0f0;
 }
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+body:has(.site-nav) { padding-top: 60px; }
+.site-nav-inner {
+  width: 100%; max-width: 1040px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.site-logo {
+  text-decoration: none; font-size: 1.5rem; font-weight: 900; letter-spacing: 2px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f04e23 50%, #c73d1a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  position: relative; padding-bottom: 4px;
+}
+.site-logo::after {
+  content: ''; position: absolute; bottom: 0; right: 0;
+  width: 100%; height: 2.5px;
+  background: linear-gradient(90deg, transparent, #f04e23, transparent);
+  border-radius: 2px;
+}
+.site-nav-actions { display: flex; align-items: center; gap: 10px; }
+.site-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Tajawal', sans-serif; font-size: .82rem; font-weight: 700; color: #4d4d4d;
+  background: rgba(224,224,224,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-radius: 50px; border: 1.5px solid rgba(206,206,206,0.5);
+  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
+  padding: 8px 18px; text-decoration: none; transition: all 0.2s ease-in-out;
+}
+.site-back:hover {
+  box-shadow: inset 1px 1px 3px rgba(188,188,188,0.5), inset -1px -1px 3px rgba(255,255,255,0.7),
+              2px 2px 5px rgba(188,188,188,0.4), -2px -2px 5px rgba(255,255,255,0.6);
+}
+.site-theme-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid rgba(206,206,206,0.5);
+  background: rgba(224,224,224,0.45); backdrop-filter: blur(10px);
+  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.2s ease-in-out;
+}
+/* Dark mode nav */
+[data-theme="dark"] .site-nav { background: rgba(17,19,24,0.85); border-bottom-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .site-back {
+  color: #ffffff; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .site-back:hover {
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.35), inset -1px -1px 3px rgba(255,255,255,0.04),
+              2px 2px 5px rgba(0,0,0,0.3), -2px -2px 5px rgba(255,255,255,0.03);
+}
+[data-theme="dark"] .site-theme-btn {
+  background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
+}
+
+/* ── Auth nav widget ── */
+.auth-nav-user {
+  display: inline-flex; align-items: center; gap: 8px;
   text-decoration: none;
-}
-.brand-logo {
-  width: 32px; height: 32px;
-  background: var(--red);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-}
-.brand-name {
-  font-weight: 800;
-  font-size: .95rem;
+  font-family: 'Tajawal', sans-serif; font-size: .82rem; font-weight: 700;
   color: var(--dark);
+  background: rgba(224,224,224,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-radius: 50px; border: 1.5px solid rgba(206,206,206,0.5);
+  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
+  padding: 5px 14px 5px 6px;
+  transition: all 0.2s ease-in-out;
 }
+.auth-nav-user:hover {
+  box-shadow: inset 1px 1px 3px rgba(188,188,188,0.5), inset -1px -1px 3px rgba(255,255,255,0.7),
+              2px 2px 5px rgba(188,188,188,0.4), -2px -2px 5px rgba(255,255,255,0.6);
+}
+.auth-nav-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b35, #f04e23);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 900; color: #fff; flex-shrink: 0;
+}
+.auth-nav-name { max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-theme="dark"] .auth-nav-user {
+  color: #f1f5f9; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
+}
+.auth-nav-signin { /* inherits .site-back styles */ }
+
+/* ── Legacy Header (kept for compat) ── */
+.page-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: var(--white);
+  border-bottom: 1.5px solid var(--border); position: sticky; top: 0; z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.brand-logo {
+  width: 32px; height: 32px; background: var(--red); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.brand-name { font-weight: 800; font-size: .95rem; color: var(--dark); }
 
 /* ── Badge ── */
 .badge {

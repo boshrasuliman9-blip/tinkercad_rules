@@ -8,100 +8,16 @@
 <link rel="stylesheet" href="./css/main.css">
 <style>
 /* ── Dark mode ───────────────────────────────── */
-[data-theme="dark"] body { background: #111318; color: #f1f5f9; }
-[data-theme="dark"] .tr-nav { background: rgba(17,19,24,0.85); border-bottom-color: rgba(255,255,255,0.06); }
-[data-theme="dark"] .tr-logo-name { color: #f1f5f9; }
 [data-theme="dark"] .track-card {
-  background: linear-gradient(180deg, #1a1d25 0%, #161820 100%);
+  background: rgba(26, 29, 37, 0.65);
   border-color: rgba(255,255,255,0.07);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 [data-theme="dark"] .track-card:hover { border-color: rgba(240,78,35,.35); box-shadow: 0 14px 30px rgba(0,0,0,.3); }
 [data-theme="dark"] .track-title { color: #f1f5f9; }
 [data-theme="dark"] .track-thumb { border-color: rgba(255,255,255,0.08); }
 [data-theme="dark"] .section-label { color: #64748b; }
-
-/* ── Nav ─────────────────────────────────────── */
-.tr-nav {
-  position: sticky;
-  top: 0; z-index: 100;
-  height: 60px;
-  padding: 0 1.6rem;
-  display: flex; align-items: center;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid #f0f0f0;
-}
-.tr-nav-inner {
-  width: 100%; max-width: 1040px;
-  margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.tr-logo {
-  text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: 2px;
-  background: linear-gradient(135deg, #ff6b35 0%, #f04e23 50%, #c73d1a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  padding-bottom: 4px;
-}
-.tr-logo::after {
-  content: '';
-  position: absolute;
-  bottom: 0; right: 0;
-  width: 100%; height: 2.5px;
-  background: linear-gradient(90deg, transparent, #f04e23, transparent);
-  border-radius: 2px;
-}
-.tr-nav-actions { display: flex; align-items: center; gap: 10px; }
-.tr-back {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'Tajawal', sans-serif;
-  font-size: .82rem; font-weight: 700;
-  color: #4d4d4d;
-  background: rgba(224,224,224,0.45);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 50px;
-  border: 1.5px solid rgba(206,206,206,0.5);
-  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
-  padding: 8px 18px;
-  text-decoration: none;
-  transition: all 0.2s ease-in-out;
-}
-.tr-back:hover {
-  box-shadow: inset 1px 1px 3px rgba(188,188,188,0.5), inset -1px -1px 3px rgba(255,255,255,0.7), 2px 2px 5px rgba(188,188,188,0.4), -2px -2px 5px rgba(255,255,255,0.6);
-}
-[data-theme="dark"] .tr-back {
-  color: #ffffff;
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.1);
-  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
-}
-[data-theme="dark"] .tr-back:hover {
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.35), inset -1px -1px 3px rgba(255,255,255,0.04), 2px 2px 5px rgba(0,0,0,0.3), -2px -2px 5px rgba(255,255,255,0.03);
-}
-.tr-theme-btn {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(206,206,206,0.5);
-  background: rgba(224,224,224,0.45);
-  backdrop-filter: blur(10px);
-  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  transition: all 0.2s ease-in-out;
-}
-[data-theme="dark"] .tr-theme-btn {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.1);
-  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
-}
 
 /* ── Layout ──────────────────────────────────── */
 .tracks-wrap { display: flex; flex-direction: column; gap: 1.35rem; }
@@ -121,8 +37,10 @@
   gap: 14px;
   align-items: center;
   border-radius: 24px;
-  border: 1.5px solid rgba(221, 227, 234, .95);
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border: 1.5px solid rgba(221, 227, 234, .6);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   text-decoration: none;
   color: inherit;
   overflow: hidden;
@@ -181,12 +99,13 @@
 </head>
 <body>
 
-<nav class="tr-nav">
-  <div class="tr-nav-inner">
-    <a href="./index.html" class="tr-logo">إنجاز</a>
-    <div class="tr-nav-actions">
-      <a href="./index.html" class="tr-back">الرئيسية</a>
-      <button class="tr-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="./index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="./index.html" class="site-back">الرئيسية</a>
+      <div id="auth-nav-slot"></div>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
     </div>
   </div>
 </nav>
@@ -196,8 +115,8 @@
     <div class="hero-band">
       <img src="./img/1.png" alt="Circuit Quest">
       <div class="hero-band-overlay">
-        <h1 class="hero-band-title">اختر مسارك<br>وابدأ رحلتك ⚡</h1>
-        <p class="hero-band-sub">4 مسارات مرتبة تبدأ بالتعرف على Tinkercad وتنتهي بالإنجازات.</p>
+        <h1 class="hero-band-title">مسارك نحو الإنجاز ⚡</h1>
+        <p class="hero-band-sub">4 مسارات تأخذك من الصفر إلى المشروع الحقيقي</p>
       </div>
     </div>
 
@@ -274,5 +193,6 @@ themeBtn.addEventListener('click', () => {
   }
 });
 </script>
+<script src="./js/auth.js"></script>
 </body>
 </html>

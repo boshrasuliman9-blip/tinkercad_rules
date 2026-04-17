@@ -117,6 +117,15 @@
     </style>
 </head>
 <body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="./index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="./index.html" class="site-back">الرئيسية</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+    </div>
+  </div>
+</nav>
 
     <div class="map-wrapper">
         <!-- SVG لرسم خط يربط بين المراحل -->
@@ -159,5 +168,17 @@
             });
         });
     </script>
+<script>
+(function(){
+  var b=document.getElementById('themeToggle');
+  var s=localStorage.getItem('cq-theme');
+  if(s==='dark'){document.documentElement.setAttribute('data-theme','dark');b.textContent='☀️';}
+  b.addEventListener('click',function(){
+    var d=document.documentElement.getAttribute('data-theme')==='dark';
+    if(d){document.documentElement.removeAttribute('data-theme');b.textContent='🌙';localStorage.setItem('cq-theme','light');}
+    else{document.documentElement.setAttribute('data-theme','dark');b.textContent='☀️';localStorage.setItem('cq-theme','dark');}
+  });
+})();
+</script>
 </body>
 </html>
