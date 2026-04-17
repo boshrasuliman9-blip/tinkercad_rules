@@ -409,7 +409,8 @@ body {
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(.4,0,.2,1);
 }
-.ix-rule-card:hover .ix-rule-card-inner {
+.ix-rule-card:hover .ix-rule-card-inner,
+.ix-rule-card.flipped .ix-rule-card-inner {
   transform: rotateY(180deg);
 }
 .ix-rule-front,
@@ -1053,6 +1054,13 @@ if (saved === 'dark') {
   document.documentElement.setAttribute('data-theme', 'dark');
   themeBtn.textContent = '☀️';
 }
+// Flip cards — touch support
+document.querySelectorAll('.ix-rule-card').forEach(function(card) {
+  card.addEventListener('click', function() {
+    card.classList.toggle('flipped');
+  });
+});
+
 themeBtn.addEventListener('click', () => {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (isDark) {
