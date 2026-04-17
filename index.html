@@ -407,11 +407,14 @@ body {
   position: relative;
   width: 100%; height: 100%;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(.4,0,.2,1);
+  -webkit-transition: -webkit-transform 0.6s cubic-bezier(.4,0,.2,1);
 }
 .ix-rule-card:hover .ix-rule-card-inner,
 .ix-rule-card.flipped .ix-rule-card-inner {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 .ix-rule-front,
 .ix-rule-back {
@@ -431,10 +434,13 @@ body {
 .ix-rule-front {
   background: #fff;
   border: 1.5px solid #f0f0f0;
+  transform: rotateY(0deg) translateZ(1px);
+  -webkit-transform: rotateY(0deg) translateZ(1px);
 }
 .ix-rule-back {
   background: #f04e23;
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
+  -webkit-transform: rotateY(180deg) translateZ(1px);
 }
 .ix-rule-num {
   position: absolute;
