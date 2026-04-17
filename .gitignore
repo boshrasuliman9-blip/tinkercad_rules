@@ -6,3 +6,18 @@
 
 # Large media files
 hero-circuits.mp4
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# CAD/3D source files
+*.SLDPRT
+*.SLDASM
+*.STEP
+*.step
+
+# Debug/conversion scripts
+convert-step.mjs
+debug-step.mjs
+embed-glb.mjs

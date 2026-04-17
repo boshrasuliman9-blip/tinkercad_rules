@@ -7,37 +7,111 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./css/main.css">
 <style>
-.tracks-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 1.35rem;
+/* ── Dark mode ───────────────────────────────── */
+[data-theme="dark"] body { background: #111318; color: #f1f5f9; }
+[data-theme="dark"] .tr-nav { background: rgba(17,19,24,0.85); border-bottom-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .tr-logo-name { color: #f1f5f9; }
+[data-theme="dark"] .track-card {
+  background: linear-gradient(180deg, #1a1d25 0%, #161820 100%);
+  border-color: rgba(255,255,255,0.07);
+}
+[data-theme="dark"] .track-card:hover { border-color: rgba(240,78,35,.35); box-shadow: 0 14px 30px rgba(0,0,0,.3); }
+[data-theme="dark"] .track-title { color: #f1f5f9; }
+[data-theme="dark"] .track-thumb { border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .section-label { color: #64748b; }
+
+/* ── Nav ─────────────────────────────────────── */
+.tr-nav {
+  position: sticky;
+  top: 0; z-index: 100;
+  height: 60px;
+  padding: 0 1.6rem;
+  display: flex; align-items: center;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid #f0f0f0;
+}
+.tr-nav-inner {
+  width: 100%; max-width: 1040px;
+  margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tr-logo {
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f04e23 50%, #c73d1a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  padding-bottom: 4px;
+}
+.tr-logo::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 100%; height: 2.5px;
+  background: linear-gradient(90deg, transparent, #f04e23, transparent);
+  border-radius: 2px;
+}
+.tr-nav-actions { display: flex; align-items: center; gap: 10px; }
+.tr-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: .82rem; font-weight: 700;
+  color: #4d4d4d;
+  background: rgba(224,224,224,0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 50px;
+  border: 1.5px solid rgba(206,206,206,0.5);
+  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
+  padding: 8px 18px;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+.tr-back:hover {
+  box-shadow: inset 1px 1px 3px rgba(188,188,188,0.5), inset -1px -1px 3px rgba(255,255,255,0.7), 2px 2px 5px rgba(188,188,188,0.4), -2px -2px 5px rgba(255,255,255,0.6);
+}
+[data-theme="dark"] .tr-back {
+  color: #ffffff;
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .tr-back:hover {
+  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.35), inset -1px -1px 3px rgba(255,255,255,0.04), 2px 2px 5px rgba(0,0,0,0.3), -2px -2px 5px rgba(255,255,255,0.03);
+}
+.tr-theme-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(206,206,206,0.5);
+  background: rgba(224,224,224,0.45);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 2px 2px 5px rgba(188,188,188,0.5), inset -2px -2px 5px rgba(255,255,255,0.7);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease-in-out;
+}
+[data-theme="dark"] .tr-theme-btn {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.04);
 }
 
-.tracks-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
+/* ── Layout ──────────────────────────────────── */
+.tracks-wrap { display: flex; flex-direction: column; gap: 1.35rem; }
+.tracks-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.hero-band { height: 190px; }
+.hero-band-overlay { padding: 1.5rem; justify-content: flex-end; }
+.hero-band-title { font-size: clamp(1.35rem, 4vw, 2rem); line-height: 1.2; }
+.hero-band-sub { font-size: .9rem; max-width: 360px; }
 
-.hero-band {
-  height: 190px;
-}
-
-.hero-band-overlay {
-  padding: 1.5rem;
-  justify-content: flex-end;
-}
-
-.hero-band-title {
-  font-size: clamp(1.35rem, 4vw, 2rem);
-  line-height: 1.2;
-}
-
-.hero-band-sub {
-  font-size: .9rem;
-  max-width: 360px;
-}
-
+/* ── Track cards ─────────────────────────────── */
 .track-card {
   position: relative;
   min-height: 132px;
@@ -54,122 +128,68 @@
   overflow: hidden;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-
 .track-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 14px 30px rgba(15, 23, 42, .08);
   border-color: rgba(240, 78, 35, .22);
 }
-
 .track-card::after {
   content: '';
   position: absolute;
   inset: auto auto -22px -22px;
-  width: 78px;
-  height: 78px;
+  width: 78px; height: 78px;
   border-radius: 50%;
   background: rgba(240, 78, 35, .06);
 }
-
 .track-num {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 34px;
-  background: var(--red);
-  color: #fff;
+  position: absolute; top: 0; left: 0;
+  width: 34px; height: 34px;
+  background: var(--red); color: #fff;
   border-radius: 0 0 16px 0;
-  font-size: .82rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: .82rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
   z-index: 2;
 }
-
-.track-thumb,
-.track-icon {
-  width: 84px;
-  height: 84px;
+.track-thumb, .track-icon {
+  width: 84px; height: 84px;
   border-radius: 22px;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
+  flex-shrink: 0; position: relative; z-index: 1;
 }
-
 .track-thumb {
   overflow: hidden;
   border: 1.5px solid rgba(221, 227, 234, .95);
   box-shadow: 0 10px 20px rgba(15, 23, 42, .08);
 }
-
-.track-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.track-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-}
-
+.track-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.track-icon { display: flex; align-items: center; justify-content: center; font-size: 2rem; }
 .track-icon.green { background: linear-gradient(180deg, #effcf4 0%, #def6e7 100%); }
 .track-icon.orange { background: linear-gradient(180deg, #fff8ee 0%, #ffedd8 100%); }
 .track-icon.purple { background: linear-gradient(180deg, #faf5ff 0%, #efe6ff 100%); }
-
 .track-info {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: .55rem;
-  padding-top: .3rem;
+  position: relative; z-index: 1;
+  min-width: 0; display: flex; flex-direction: column;
+  gap: .55rem; padding-top: .3rem;
 }
-
-.track-title {
-  font-size: 1.2rem;
-  font-weight: 900;
-  color: var(--dark);
-  line-height: 1.25;
-}
-
+.track-title { font-size: 1.2rem; font-weight: 900; color: var(--dark); line-height: 1.25; }
 .track-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--red);
-  font-size: .84rem;
-  font-weight: 800;
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--red); font-size: .84rem; font-weight: 800;
 }
-
-.track-line::before {
-  content: '←';
-  color: var(--gray);
-  font-weight: 700;
-}
-
-@media (max-width: 700px) {
-  .tracks-grid {
-    grid-template-columns: 1fr;
-  }
-}
+.track-line::before { content: '←'; color: var(--gray); font-weight: 700; }
+@media (max-width: 700px) { .tracks-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
-<header class="page-hdr">
-  <a href="./index.html" class="brand">
-    <div class="brand-logo">⚡</div>
-    <span class="brand-name">Circuit Quest</span>
-  </a>
-  <a href="./index.html" class="btn-back">← الرئيسية</a>
-</header>
+<nav class="tr-nav">
+  <div class="tr-nav-inner">
+    <a href="./index.html" class="tr-logo">إنجاز</a>
+    <div class="tr-nav-actions">
+      <a href="./index.html" class="tr-back">الرئيسية</a>
+      <button class="tr-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+    </div>
+  </div>
+</nav>
 
 <main class="page-body">
   <section class="tracks-wrap">
@@ -234,6 +254,25 @@
   </section>
 </main>
 
-<script src="./js/main.js"></script>
+<script>
+const themeBtn = document.getElementById('themeToggle');
+const saved = localStorage.getItem('cq-theme');
+if (saved === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  themeBtn.textContent = '☀️';
+}
+themeBtn.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    themeBtn.textContent = '🌙';
+    localStorage.setItem('cq-theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeBtn.textContent = '☀️';
+    localStorage.setItem('cq-theme', 'dark');
+  }
+});
+</script>
 </body>
 </html>
