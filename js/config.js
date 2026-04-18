@@ -9,5 +9,9 @@
 
 var CQ = {
   imgbbKey:  'f23616775da067e60dec9b7dbafb3296',
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbw6U-_6FlFEhSpedtSXXGfaoSf1ipDMW9byoZt8aQ6HUS8NvyO4S1pc6PrNOqjoVHO6LA/exec'
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbwivbkdDH-gjXxiueh8qTdxBJCoBkOTnuOd8VeHrmjFk5ETsDW54QQm6CBnEiJpo_ofYA/exec',
+  auth: {
+    requireApproval: false
+  }
+  // secret محذوف من هنا — محطوط بـ admin.html بس لأنه للأدمن فقط
 };

@@ -579,9 +579,92 @@
   cursor: pointer;
 }
 
+/* Teacher preview mode */
+body.teacher-preview {
+  --red:#16a34a;
+  --red-dark:#15803d;
+}
+body.teacher-preview .site-logo {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 55%, #0f7a35 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+body.teacher-preview .site-logo::after {
+  background: linear-gradient(90deg, transparent, #16a34a, transparent);
+}
+body.teacher-preview .badge-red,
+body.teacher-preview .btn-main,
+body.teacher-preview .challenge-tip-next,
+body.teacher-preview .btn-finish {
+  background: #16a34a;
+}
+body.teacher-preview .step-timer-orb,
+body.teacher-preview .time-up-panel,
+body.teacher-preview .challenge-tip,
+body.teacher-preview .guide-overlay,
+body.teacher-preview .guide-spotlight,
+body.teacher-preview .submit-gate,
+body.teacher-preview .step-done-btn,
+body.teacher-preview .wiring-start-wrap,
+body.teacher-preview .substep-actions {
+  display: none !important;
+}
+body.teacher-preview .step-panel,
+body.teacher-preview .wiring-substep {
+  opacity: 1 !important;
+}
+body.teacher-preview .step-panel .step-content,
+body.teacher-preview .wiring-substep .wiring-substep-body,
+body.teacher-preview .components-grid {
+  display: block !important;
+}
+body.teacher-preview .components-grid {
+  display: grid !important;
+}
+body.teacher-preview .wiring-substep-header,
+body.teacher-preview .step-header {
+  border-color: #bbf7d0 !important;
+  background: #f0fdf4 !important;
+}
+body.teacher-preview .step-status,
+body.teacher-preview .wiring-substep-status {
+  background:#dcfce7 !important;
+  color:#166534 !important;
+}
+body.teacher-preview .step-num-badge,
+body.teacher-preview .wiring-substep-badge {
+  background:#16a34a !important;
+  color:#fff !important;
+}
+.teacher-preview-note {
+  display:none;
+  margin:0 0 1rem;
+  padding:1rem 1.2rem;
+  border:1.5px solid #bbf7d0;
+  border-radius:8px;
+  background:#f0fdf4;
+  color:#166534;
+  font-size:.9rem;
+  font-weight:800;
+  line-height:1.8;
+}
+body.teacher-preview .teacher-preview-note { display:block; }
+
 </style>
 </head>
 <body>
+<script>
+if (new URLSearchParams(window.location.search).get('teacher') === '1') {
+  document.body.classList.add('teacher-preview');
+  window.addEventListener('DOMContentLoaded', function () {
+    var logo = document.querySelector('.site-logo');
+    var home = document.querySelector('.site-back');
+    if (logo) logo.href = './teacher/dashboard.html';
+    if (home) { home.href = './teacher/dashboard.html'; home.textContent = 'لوحة المعلم'; }
+  });
+}
+</script>
 
 <nav class="site-nav">
   <div class="site-nav-inner">
@@ -594,10 +677,13 @@
 </nav>
 
 <main class="page-body">
+  <div class="teacher-preview-note">
+    معاينة المعلم: كل خطوات التحدي مفتوحة بدون مؤقت أو تسليم. هذه النسخة للشرح داخل الصف، أما الطالب فيدخل النسخة العادية باللون البرتقالي والوقت.
+  </div>
 
   <!-- ══ Hero ══ -->
   <div class="track-banner">
-    <img src="./challenges/1.png" alt="تحدي إضاءة LED">
+    <img src="./img/challenge-covers/led-challenge.png" alt="تحدي إضاءة LED">
     <div class="track-banner-overlay">
       <div class="track-banner-copy">
         <span class="badge badge-red">تحدي ١ — المسار الثاني</span>
@@ -720,8 +806,8 @@
               <div class="wiring-lesson-panel">
                 <div class="wiring-carousel-look carousel-wrap" id="guide-dummy-carousel">
                   <div class="carousel-track">
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/1.1.png" alt="معاينة الخطوة الأولى"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/1.2.png" alt="معاينة الخطوة الأولى - الصورة الثانية" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-01-board-a.png" alt="معاينة الخطوة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-01-board-b.png" alt="معاينة الخطوة الأولى - الصورة الثانية" class="media-crop-soft"></div></div>
                   </div>
                   <div class="carousel-nav" id="guide-dummy-nav">
                     <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
@@ -764,8 +850,8 @@
               <div class="wiring-lesson-panel">
                 <div class="wiring-carousel-look carousel-wrap" id="wiring-step-1-carousel">
                   <div class="carousel-track">
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/1.1.png" alt="ضع Arduino والـ Breadboard - الصورة الأولى"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/1.2.png" alt="ضع Arduino والـ Breadboard - الصورة الثانية" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-01-board-a.png" alt="ضع Arduino والـ Breadboard - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-01-board-b.png" alt="ضع Arduino والـ Breadboard - الصورة الثانية" class="media-crop-soft"></div></div>
                   </div>
                   <div class="carousel-nav">
                     <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
@@ -816,9 +902,9 @@
               <div class="wiring-lesson-panel">
                 <div class="wiring-carousel-look carousel-wrap" id="wiring-step-2-carousel">
                   <div class="carousel-track">
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/2.1.png" alt="ركّب LED - الصورة الأولى"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/2.2.png" alt="ركّب LED - الصورة الثانية"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/2.3.png" alt="ركّب LED - الصورة الثالثة" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-02-led-a.png" alt="ركّب LED - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-02-led-b.png" alt="ركّب LED - الصورة الثانية"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-02-led-c.png" alt="ركّب LED - الصورة الثالثة" class="media-crop-soft"></div></div>
                   </div>
                   <div class="carousel-nav">
                     <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
@@ -863,9 +949,9 @@
               <div class="wiring-lesson-panel">
                 <div class="wiring-carousel-look carousel-wrap" id="wiring-step-3-carousel">
                   <div class="carousel-track">
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/3.1.png" alt="أضف المقاومة - الصورة الأولى"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/3.2.png" alt="أضف المقاومة - الصورة الثانية"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/3.3.png" alt="أضف المقاومة - الصورة الثالثة" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-03-resistor-a.png" alt="أضف المقاومة - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-03-resistor-b.png" alt="أضف المقاومة - الصورة الثانية"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-03-resistor-c.png" alt="أضف المقاومة - الصورة الثالثة" class="media-crop-soft"></div></div>
                   </div>
                   <div class="carousel-nav">
                     <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
@@ -909,9 +995,9 @@
               <div class="wiring-lesson-panel">
                 <div class="wiring-carousel-look carousel-wrap" id="wiring-step-4-carousel">
                   <div class="carousel-track">
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/4.1.png" alt="وصّل الأسلاك - الصورة الأولى"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/4.2.png" alt="وصّل الأسلاك - الصورة الثانية" class="media-crop-soft"></div></div>
-                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./circute1/4.3.png" alt="وصّل الأسلاك - الصورة الثالثة" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-04-wires-a.png" alt="وصّل الأسلاك - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-04-wires-b.png" alt="وصّل الأسلاك - الصورة الثانية" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="./img/led-circuit/led-circuit-step-04-wires-c.png" alt="وصّل الأسلاك - الصورة الثالثة" class="media-crop-soft"></div></div>
                   </div>
                   <div class="carousel-nav">
                     <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
@@ -1044,7 +1130,7 @@
     <div class="finish-icon">📸</div>
     <div class="finish-title">أنجزت التحدي؟</div>
     <p class="finish-sub">اضغط Start Simulation، التقط صورة شاشة للدائرة وهي تعمل، ثم أرسلها</p>
-    <a href="./track3.html" class="btn-finish">📤 سلّم مشروعك ←</a>
+    <a href="./track-3.html" class="btn-finish">📤 سلّم مشروعك ←</a>
   </div>
 
 </main>
@@ -1068,7 +1154,10 @@
   انتهى وقت التحدي. راجع خطواتك بهدوء، ثم أعد المحاولة من البداية للحصول على وقت كامل.
 </div>
 
+<script src="./js/config.js"></script>
+<script src="./js/api.js"></script>
 <script src="./js/main.js"></script>
+<script src="./js/notif-bell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   var counter          = document.getElementById('steps-counter');
@@ -1137,6 +1226,41 @@ document.addEventListener('DOMContentLoaded', function () {
   stepTimerOrb.className = 'step-timer-orb';
   stepTimerOrb.innerHTML = '<span>وقت</span><b>10:00</b>';
   stepTimerOrb.addEventListener('click', function (event) { event.stopPropagation(); });
+
+  var isTeacherPreview = document.body.classList.contains('teacher-preview');
+
+  function applyTeacherPreview() {
+    document.querySelectorAll('.step-panel').forEach(function(panel) {
+      panel.classList.remove('is-locked', 'is-completed', 'is-hidden', 'is-collapsed', 'is-content-collapsed', 'is-header-hidden');
+      panel.classList.add('is-unlocked', 'is-expanded');
+      var status = panel.querySelector('.step-status');
+      if (status) status.textContent = 'مفتوحة للمعلم';
+    });
+    document.querySelectorAll('.wiring-substep').forEach(function(card) {
+      card.classList.remove('is-locked', 'is-completed', 'is-hidden', 'is-collapsed', 'is-awaiting-check');
+      card.classList.add('is-unlocked', 'is-expanded');
+      var status = card.querySelector('.wiring-substep-status');
+      if (status) status.textContent = 'مفتوحة للشرح';
+    });
+    if (wiringStepsStage) wiringStepsStage.classList.remove('is-hidden');
+    if (componentsStage) componentsStage.classList.add('is-started');
+    if (componentsStage) componentsStage.classList.remove('is-collapsed');
+    if (componentsGrid) componentsGrid.style.display = 'grid';
+    if (componentsToggle) componentsToggle.style.display = 'none';
+    if (startChallengeWrap) startChallengeWrap.style.display = 'none';
+    if (submitGate) submitGate.classList.add('hidden');
+    if (nextTrack) nextTrack.classList.add('hidden');
+    if (counter) counter.textContent = wiringStepCards.length + ' من ' + wiringStepCards.length;
+    if (programmingCounter) programmingCounter.textContent = programmingStepCards.length + ' من ' + programmingStepCards.length;
+    if (wiringStepDuration) wiringStepDuration.textContent = 'مفتوح للمعلم';
+    if (topWiringStepDuration) topWiringStepDuration.textContent = 'مفتوح للمعلم';
+    removeStepTimerOrb();
+  }
+
+  if (isTeacherPreview) {
+    applyTeacherPreview();
+    return;
+  }
 
   /* ── Helpers ── */
   function setStepStatus(panel, text) {

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Developer - Circuit Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/main.css">
+<style>
+:root {
+  --dev-red: #f04e23;
+  --dev-ink: #15171d;
+  --dev-muted: #667085;
+  --dev-line: #e7ebf0;
+  --dev-soft: #f6f8fb;
+}
+
+body {
+  min-height: 100vh;
+  background: #f6f8fb;
+  color: var(--dev-ink);
+}
+
+.dev-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.dev-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.dev-kicker {
+  color: var(--dev-red);
+  font-weight: 900;
+  font-size: .86rem;
+  margin-bottom: 8px;
+}
+
+.dev-title {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 3.1rem);
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.dev-sub {
+  margin: 12px 0 0;
+  color: var(--dev-muted);
+  max-width: 650px;
+  line-height: 1.8;
+}
+
+.dev-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--dev-line);
+  color: var(--dev-ink);
+  text-decoration: none;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dev-grid {
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.dev-panel {
+  background: #fff;
+  border: 1px solid var(--dev-line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.dev-panel h2 {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.dev-creds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dev-cred {
+  border: 1px solid var(--dev-line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--dev-soft);
+}
+
+.dev-cred span {
+  display: block;
+  color: var(--dev-muted);
+  font-size: .8rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.dev-cred strong {
+  display: block;
+  overflow-wrap: anywhere;
+  direction: ltr;
+  text-align: right;
+  font-size: .95rem;
+}
+
+.dev-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dev-btn {
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 900;
+  color: #fff;
+  background: var(--dev-red);
+}
+
+.dev-btn.secondary {
+  color: var(--dev-ink);
+  background: #eef2f6;
+}
+
+.dev-btn.dark {
+  background: #15171d;
+}
+
+.dev-note {
+  margin: 12px 0 0;
+  color: var(--dev-muted);
+  line-height: 1.7;
+  font-size: .9rem;
+}
+
+.dev-status {
+  display: none;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eefbf3;
+  color: #166534;
+  border: 1px solid #b9efca;
+  font-weight: 800;
+}
+
+.dev-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dev-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--dev-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--dev-ink);
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.dev-link:hover {
+  border-color: rgba(240, 78, 35, .35);
+}
+
+.dev-link small {
+  color: var(--dev-muted);
+  font-weight: 800;
+  direction: ltr;
+}
+
+@media (max-width: 880px) {
+  .dev-top,
+  .dev-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dev-grid,
+  .dev-creds,
+  .dev-actions,
+  .dev-links {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<main class="dev-shell">
+  <section class="dev-top">
+    <div>
+      <div class="dev-kicker">DEVELOPER MODE</div>
+      <h1 class="dev-title">لوحة اختبار تجربة المستخدم</h1>
+      <p class="dev-sub">جهز حسابات وهمية، ادخل كطالب أو معلم، وافتح صفحات المشروع بسرعة من مكان واحد.</p>
+    </div>
+    <a class="dev-home" href="./index.html">الرئيسية</a>
+  </section>
+
+  <section class="dev-grid">
+    <div class="dev-panel">
+      <h2>حسابات الاختبار</h2>
+      <div class="dev-creds">
+        <div class="dev-cred">
+          <span>الإيميل</span>
+          <strong>dev@circuitquest.test</strong>
+        </div>
+        <div class="dev-cred">
+          <span>كلمة المرور</span>
+          <strong>Test1234</strong>
+        </div>
+        <div class="dev-cred">
+          <span>الأدمن</span>
+          <strong>1234</strong>
+        </div>
+      </div>
+
+      <div class="dev-actions">
+        <button class="dev-btn" type="button" onclick="loginAs('student')">دخول كطالب</button>
+        <button class="dev-btn dark" type="button" onclick="loginAs('teacher')">دخول كمعلم</button>
+        <button class="dev-btn secondary" type="button" onclick="seedUsers()">تجهيز الحسابات فقط</button>
+      </div>
+
+      <p class="dev-note">المعلم الوهمي يكون مفعلا مباشرة حتى تقدر تختبر صفحة المعلم بدون انتظار موافقة الأدمن.</p>
+      <div class="dev-status" id="dev-status"></div>
+    </div>
+
+    <div class="dev-panel">
+      <h2>روابط سريعة</h2>
+      <div class="dev-links" id="dev-links"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const AUTH_USERS_KEY = 'cq_users';
+const AUTH_SESSION_KEY = 'cq_session';
+const DEV_EMAIL = 'dev@circuitquest.test';
+const DEV_PASSWORD = 'Test1234';
+
+const pages = [
+  ['الرئيسية', 'index.html'],
+  ['تسجيل الدخول', 'auth.html'],
+  ['صفحة الطالب', 'student.html'],
+  ['صفحة المعلم', 'teacher/dashboard.html'],
+  ['لوحة الأدمن', 'admin/index.html'],
+  ['المسارات', 'tracks.html'],
+  ['الخريطة', 'map.html'],
+  ['المسار 1', 'track-1.html'],
+  ['المسار 2', 'track-2.html'],
+  ['تحدي الدائرة', 'track-2-led-challenge.html'],
+  ['تحدي الزر', 'track-2-pushbutton-challenge.html'],
+  ['المسار 3', 'track-3.html'],
+  ['المسار 4', 'track-4.html'],
+  ['Circuit Quest', 'circuit-quest-legacy.html']
+];
+
+function hash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  return h.toString(16);
+}
+
+function readUsers() {
+  try {
+    const users = JSON.parse(localStorage.getItem(AUTH_USERS_KEY));
+    return Array.isArray(users) ? users : [];
+  } catch {
+    return [];
+  }
+}
+
+function upsertUser(users, user) {
+  const index = users.findIndex((item) => item.email === user.email && item.role === user.role);
+  if (index >= 0) {
+    users[index] = { ...users[index], ...user };
+  } else {
+    users.push(user);
+  }
+}
+
+function seedUsers() {
+  const users = readUsers();
+  const now = new Date().toISOString();
+  const password = hash(DEV_PASSWORD);
+
+  upsertUser(users, {
+    id: 'dev-student',
+    name: 'طالب تجريبي',
+    email: DEV_EMAIL,
+    password,
+    role: 'student',
+    status: 'active',
+    joinedAt: now,
+    progress: {
+      track1: { completed: true, updatedAt: now },
+      track2: { completed: false, updatedAt: now }
+    }
+  });
+
+  upsertUser(users, {
+    id: 'dev-teacher',
+    name: 'معلم تجريبي',
+    email: DEV_EMAIL,
+    password,
+    role: 'teacher',
+    status: 'active',
+    joinedAt: now,
+    reviewedAt: now,
+    progress: {}
+  });
+
+  localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+  showStatus('تم تجهيز حساب الطالب والمعلم.');
+}
+
+function loginAs(role) {
+  seedUsers();
+  const user = role === 'teacher'
+    ? { id: 'dev-teacher', name: 'معلم تجريبي', email: DEV_EMAIL, role: 'teacher', status: 'active' }
+    : { id: 'dev-student', name: 'طالب تجريبي', email: DEV_EMAIL, role: 'student', status: 'active' };
+
+  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user));
+  window.location.href = role === 'teacher' ? './teacher/dashboard.html' : './tracks.html';
+}
+
+function showStatus(message) {
+  const status = document.getElementById('dev-status');
+  status.textContent = message;
+  status.style.display = 'block';
+}
+
+function renderLinks() {
+  document.getElementById('dev-links').innerHTML = pages.map(([label, href]) => (
+    `<a class="dev-link" href="./${href}"><span>${label}</span><small>${href}</small></a>`
+  )).join('');
+}
+
+renderLinks();
+seedUsers();
+</script>
+</body>
+</html>

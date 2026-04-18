@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>المسارات — Circuit Quest</title>
+<title>المسارات — إنجاز</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./css/main.css">
 <style>
@@ -113,7 +113,7 @@
 <main class="page-body">
   <section class="tracks-wrap">
     <div class="hero-band">
-      <img src="./img/1.png" alt="Circuit Quest">
+      <img src="./img/tinkercad-account/tinkercad-intro.png" alt="إنجاز">
       <div class="hero-band-overlay">
         <h1 class="hero-band-title">مسارك نحو الإنجاز ⚡</h1>
         <p class="hero-band-sub">4 مسارات تأخذك من الصفر إلى المشروع الحقيقي</p>
@@ -124,10 +124,10 @@
       <div class="section-label" style="margin-bottom:1rem">المسارات</div>
       <div class="tracks-grid">
 
-        <a href="./track1.html" class="track-card">
+        <a href="./track-1.html" class="track-card">
           <div class="track-num">١</div>
           <div class="track-thumb">
-            <img src="./tracks/1.png" alt="تعرف على Tinkercad">
+            <img src="./img/track-covers/track-1-tinkercad.png" alt="تعرف على Tinkercad">
           </div>
           <div class="track-info">
             <div class="track-title">تعرف على Tinkercad</div>
@@ -135,10 +135,10 @@
           </div>
         </a>
 
-        <a href="./track2.html" class="track-card">
+        <a href="./track-2.html" class="track-card">
           <div class="track-num">٢</div>
           <div class="track-thumb">
-            <img src="./tracks/2.png" alt="التحديات">
+            <img src="./img/track-covers/track-2-challenges.png" alt="التحديات">
           </div>
           <div class="track-info">
             <div class="track-title">التحديات</div>
@@ -146,10 +146,10 @@
           </div>
         </a>
 
-        <a href="./track3.html" class="track-card">
+        <a href="./track-3.html" class="track-card">
           <div class="track-num">٣</div>
           <div class="track-thumb">
-            <img src="./tracks/3.png" alt="أرسل عملك">
+            <img src="./img/track-covers/track-3-submit-work.png" alt="أرسل عملك">
           </div>
           <div class="track-info">
             <div class="track-title">أرسل عملك</div>
@@ -157,10 +157,10 @@
           </div>
         </a>
 
-        <a href="./track4.html" class="track-card">
+        <a href="./track-4.html" class="track-card">
           <div class="track-num">٤</div>
           <div class="track-thumb">
-            <img src="./tracks/4.png" alt="الإنجازات">
+            <img src="./img/track-covers/track-4-achievements.png" alt="الإنجازات">
           </div>
           <div class="track-info">
             <div class="track-title">الإنجازات</div>
@@ -194,5 +194,21 @@ themeBtn.addEventListener('click', () => {
 });
 </script>
 <script src="./js/auth.js"></script>
+<script src="./js/config.js"></script>
+<script src="./js/api.js"></script>
+<script src="./js/notif-bell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var user = Auth.getCurrentUser();
+  if (!user) {
+    window.location.href = './auth.html?reason=login_required_for_tracks';
+    return;
+  }
+  if (user && user.role === Auth.roles.TEACHER) {
+    window.location.href = './teacher/dashboard.html';
+    return;
+  }
+});
+</script>
 </body>
 </html>

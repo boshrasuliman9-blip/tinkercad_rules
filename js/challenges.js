@@ -5,8 +5,8 @@ window.CQ_CHALLENGES = [
     title: 'إضاءة LED',
     label: '💡 إضاءة LED',
     value: 'إضاءة LED',
-    href: './track2-circuit.html',
-    image: './challenges/1.png',
+    href: './track-2-led-challenge.html',
+    image: './img/challenge-covers/led-challenge.png',
     enabled: true
   },
   {
@@ -15,8 +15,8 @@ window.CQ_CHALLENGES = [
     title: 'زر الضغط',
     label: '🔘 زر الضغط (Push Button)',
     value: 'Push Button — زر الضغط',
-    href: './track2-pushbutton.html',
-    image: './challenges/2.png',
+    href: './track-2-pushbutton-challenge.html',
+    image: './img/challenge-covers/pushbutton-challenge.png',
     enabled: true
   }
 ];

@@ -779,15 +779,28 @@
     <a href="./index.html" class="site-logo">إنجاز</a>
     <div class="site-nav-actions">
       <a href="./tracks.html" class="site-back">المسارات</a>
+      <div style="position:relative;display:inline-flex;" id="notif-bell-wrap" style="display:none">
+        <button class="site-theme-btn" id="notif-bell-btn" title="الإشعارات" onclick="toggleNotifPanel()">🔔</button>
+        <span id="notif-bell-count" style="position:absolute;top:-4px;right:-6px;background:#ef4444;color:#fff;font-size:.6rem;font-weight:900;min-width:16px;height:16px;border-radius:999px;display:none;align-items:center;justify-content:center;padding:0 3px;"></span>
+      </div>
       <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
     </div>
   </div>
 </nav>
 
+<!-- Notif panel -->
+<div id="notif-panel" style="display:none;position:fixed;top:60px;left:16px;z-index:200;background:#fff;border:1.5px solid #dde3ea;border-radius:16px;box-shadow:0 12px 40px rgba(15,23,42,.14);width:min(340px,calc(100vw - 32px));max-height:360px;overflow-y:auto;padding:.8rem;">
+  <div style="font-size:.78rem;font-weight:800;color:#64748b;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.7rem;display:flex;justify-content:space-between;align-items:center;">
+    <span>الإشعارات</span>
+    <button onclick="markAllNotifsRead()" style="border:none;background:none;font-size:.75rem;color:#64748b;cursor:pointer;font-family:inherit;">تحديد كمقروء</button>
+  </div>
+  <ul id="notif-panel-list" style="list-style:none;padding:0;margin:0;"></ul>
+</div>
+
 <main class="page-body">
 
   <div class="track-banner">
-    <img src="./tracks/2.png" alt="المسار الثاني">
+    <img src="./img/track-covers/track-2-challenges.png" alt="المسار الثاني">
     <div class="track-banner-overlay">
       <div class="track-banner-copy">
         <span class="badge badge-red">المسار الثاني</span>
@@ -882,7 +895,7 @@
         <button type="button" class="challenge-modal-close" id="modal-close">✕</button>
       </div>
       <div class="challenge-modal-media">
-        <img src="./challenges/1.png" alt="صورة التحدي" id="modal-image">
+        <img src="./img/challenge-covers/led-challenge.png" alt="صورة التحدي" id="modal-image">
       </div>
       <div class="challenge-modal-body">
         <div class="challenge-modal-text" id="modal-text"></div>
@@ -900,20 +913,282 @@
     </div>
   </div>
 
+  <!-- ══ Code entry modal ══ -->
+  <div id="code-modal" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:22px;padding:1.8rem;width:min(100%,430px);box-shadow:0 24px 60px rgba(15,23,42,.2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+        <div>
+          <div style="font-size:.75rem;font-weight:800;color:#64748b;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;">أدخل رمز التحدي</div>
+          <div style="font-size:1.1rem;font-weight:900;" id="code-modal-title">التحدي</div>
+        </div>
+        <button onclick="closeCodeModal()" style="background:none;border:none;font-size:1.4rem;color:#64748b;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <p style="font-size:.86rem;color:#64748b;margin-bottom:1rem;line-height:1.7;">المعلم أعطاك رمزاً خاصاً لهذا التحدي. أدخله هنا لبدء الوقت وفتح رابط التحدي.</p>
+      <input id="code-input" type="text" placeholder="مثال: CQ-2026-ABCD"
+        style="font-family:'Tajawal',sans-serif;font-size:1rem;width:100%;padding:12px 14px;border:1.5px solid #dde3ea;border-radius:10px;text-align:center;letter-spacing:3px;outline:none;margin-bottom:.8rem;background:#f8fafc;"
+        onkeydown="if(event.key==='Enter')submitCode()">
+      <div id="code-msg" style="display:none;font-size:.82rem;padding:9px 12px;border-radius:8px;margin-bottom:.8rem;"></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="submitCode()" style="font-family:'Tajawal',sans-serif;flex:1;padding:12px;background:#f04e23;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:800;cursor:pointer;">بدء التحدي</button>
+        <button onclick="closeCodeModal()" style="font-family:'Tajawal',sans-serif;padding:12px 16px;background:transparent;color:#64748b;border:1.5px solid #dde3ea;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Submit modal ══ -->
+  <div id="submit-modal" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:22px;padding:1.8rem;width:min(100%,430px);box-shadow:0 24px 60px rgba(15,23,42,.2);">
+      <div style="font-size:1.1rem;font-weight:900;margin-bottom:.8rem;" id="submit-modal-title">تسليم التحدي</div>
+      <p style="font-size:.86rem;color:#64748b;margin-bottom:1.4rem;line-height:1.7;">بعد إنجازك للتحدي في Tinkercad، اضغط تسليم ليراجعه معلمك ويمنحك النقاط.</p>
+      <div id="submit-msg" style="display:none;font-size:.82rem;padding:9px 12px;border-radius:8px;margin-bottom:.8rem;"></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="doSubmitChallenge()" style="font-family:'Tajawal',sans-serif;flex:1;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:800;cursor:pointer;">تسليم للمراجعة</button>
+        <button onclick="closeSubmitModal()" style="font-family:'Tajawal',sans-serif;padding:12px 16px;background:transparent;color:#64748b;border:1.5px solid #dde3ea;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <div class="guide-overlay" id="guide-overlay" aria-hidden="true">
   <div class="guide-spotlight" id="guide-spotlight"></div>
 </div>
 
+<script src="./js/config.js"></script>
+<script src="./js/api.js"></script>
 <script src="./js/main.js"></script>
 <script>
+/* ════════════════════════════════════════
+   Circuit Quest — Track 2 Dynamic Map
+   ════════════════════════════════════════ */
+
+/* ── Session ── */
+var _session = null;
+try { _session = JSON.parse(localStorage.getItem('cq_session') || 'null'); } catch(e){}
+
+/* ── Load notifications if logged in ── */
+var _notifs = [];
+if (_session && _session.id) {
+  CQ_API.getStudentNotifs(_session.id).then(function(res) {
+    _notifs = res.notifs || res.data || [];
+    var unread = _notifs.filter(function(n){ return !n.readAt; }).length;
+    var wrap = document.getElementById('notif-bell-wrap');
+    var cnt  = document.getElementById('notif-bell-count');
+    if (wrap) { wrap.style.display = 'inline-flex'; }
+    if (cnt && unread > 0) { cnt.textContent = unread; cnt.style.display = 'flex'; }
+    renderNotifPanel();
+  });
+}
+
+function toggleNotifPanel() {
+  var p = document.getElementById('notif-panel');
+  if (!p) return;
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderNotifPanel() {
+  var ul = document.getElementById('notif-panel-list');
+  if (!ul) return;
+  if (!_notifs.length) { ul.innerHTML = '<li style="font-size:.85rem;color:#64748b;padding:.5rem;">لا توجد إشعارات</li>'; return; }
+  ul.innerHTML = _notifs.slice(0,10).map(function(n) {
+    var bg = n.readAt ? '#fff' : '#f0fdf4';
+    var icon = n.type === 'approval' ? '✅' : n.type === 'rejection' ? '❌' : '🔔';
+    var text = n.message || n.title || n.body || '';
+    return '<li onclick="readNotif(\''+n.id+'\',this)" style="display:flex;gap:8px;padding:.6rem;border-radius:10px;cursor:pointer;background:'+bg+';margin-bottom:4px;">'
+      + '<span style="font-size:1rem;flex-shrink:0;">'+icon+'</span>'
+      + '<div style="font-size:.82rem;"><div>'+text+'</div><div style="font-size:.72rem;color:#64748b;margin-top:2px;">'+fmtDate(n.createdAt)+'</div></div>'
+      + '</li>';
+  }).join('');
+}
+
+function readNotif(id, el) {
+  el.style.background = '#fff';
+  CQ_API.markNotifRead(id).then(function() {
+    var cnt = document.getElementById('notif-bell-count');
+    var unread = _notifs.filter(function(n){ return !n.readAt && n.id !== id; }).length;
+    if (cnt) { cnt.textContent = unread; cnt.style.display = unread ? 'flex' : 'none'; }
+    var n = _notifs.find(function(x){ return x.id === id; });
+    if (n) n.readAt = new Date().toISOString();
+  });
+}
+
+function markAllNotifsRead() {
+  if (!_session) return;
+  CQ_API.markAllNotifsRead(_session.id).then(function() {
+    _notifs.forEach(function(n){ n.readAt = new Date().toISOString(); });
+    renderNotifPanel();
+    var cnt = document.getElementById('notif-bell-count');
+    if (cnt) cnt.style.display = 'none';
+  });
+}
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('ar-SA');
+}
+
+/* ── localStorage challenge state ── */
+var STORE_KEY = _session ? ('cq_t2_state_' + _session.id) : 'cq_t2_state_guest';
+
+function getChallengeState() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch(e) { return []; }
+}
+
+function saveChallengeState(arr) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(arr));
+}
+
+/* State item: { step, codeId, name, href, status: 'started'|'submitted'|'approved'|'rejected' } */
+
+/* ── Code entry modal ── */
+var _activeStep = null;
+var _pendingCodeData = null;
+
+function openCodeModal(step, title) {
+  _activeStep = step;
+  var el = document.getElementById('code-modal');
+  var ti = document.getElementById('code-modal-title');
+  var inp = document.getElementById('code-input');
+  var msg = document.getElementById('code-msg');
+  if (ti) ti.textContent = title || ('التحدي ' + step);
+  if (inp) inp.value = '';
+  if (msg) msg.style.display = 'none';
+  if (el) el.style.display = 'flex';
+  setTimeout(function(){ if (inp) inp.focus(); }, 100);
+}
+
+function closeCodeModal() {
+  var el = document.getElementById('code-modal');
+  if (el) el.style.display = 'none';
+}
+
+function showCodeMsg(txt, type) {
+  var el = document.getElementById('code-msg');
+  if (!el) return;
+  el.textContent = txt;
+  el.style.cssText = 'display:block;font-size:.82rem;padding:9px 12px;border-radius:8px;margin-bottom:.8rem;'
+    + (type === 'ok'
+      ? 'background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;'
+      : 'background:#fff0ed;color:#c93a12;border:1px solid #fdd;');
+}
+
+function submitCode() {
+  if (!_session) {
+    showCodeMsg('يجب تسجيل الدخول أولاً', 'err');
+    return;
+  }
+  var code = (document.getElementById('code-input').value || '').trim();
+  if (!code) { showCodeMsg('أدخل الرمز أولاً', 'err'); return; }
+
+  var btn = document.querySelector('#code-modal button');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+  CQ_API.validateCode(code, _session.id).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'بدء التحدي'; }
+    if (!res.ok) { showCodeMsg(res.msg || 'الرمز غير صحيح أو منتهي الصلاحية', 'err'); return; }
+
+    var codeId = res.codeId;
+    var challengeName = res.challengeName || 'التحدي';
+    var challengeHref = res.href || res.tinkercadUrl || '#';
+
+    CQ_API.startChallenge(codeId, _session.id).then(function(startRes) {
+      var state = getChallengeState();
+      var existing = state.find(function(s){ return s.step === _activeStep; });
+      if (existing) {
+        existing.codeId = codeId; existing.name = challengeName; existing.href = challengeHref; existing.status = 'started';
+      } else {
+        state.push({ step: _activeStep, codeId: codeId, name: challengeName, href: challengeHref, status: 'started' });
+      }
+      saveChallengeState(state);
+      closeCodeModal();
+      if (challengeHref && challengeHref !== '#') {
+        window.open(challengeHref, '_blank');
+      }
+      refreshMap();
+    });
+  });
+}
+
+/* ── Submit modal ── */
+var _submitStep = null;
+
+function openSubmitModal(step) {
+  _submitStep = step;
+  var state = getChallengeState();
+  var item = state.find(function(s){ return s.step === step; });
+  var el = document.getElementById('submit-modal');
+  var ti = document.getElementById('submit-modal-title');
+  var msg = document.getElementById('submit-msg');
+  if (ti) ti.textContent = 'تسليم: ' + (item ? item.name : 'التحدي ' + step);
+  if (msg) msg.style.display = 'none';
+  if (el) el.style.display = 'flex';
+}
+
+function closeSubmitModal() {
+  var el = document.getElementById('submit-modal');
+  if (el) el.style.display = 'none';
+}
+
+function doSubmitChallenge() {
+  if (!_session) return;
+  var state = getChallengeState();
+  var item = state.find(function(s){ return s.step === _submitStep; });
+  if (!item || !item.codeId) { return; }
+
+  var btn = document.querySelector('#submit-modal button');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+  CQ_API.submitChallengeCode(item.codeId, _session.id).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'تسليم للمراجعة'; }
+    var msgEl = document.getElementById('submit-msg');
+    if (res.ok) {
+      item.status = 'submitted';
+      saveChallengeState(state);
+      if (msgEl) {
+        msgEl.textContent = 'تم التسليم بنجاح ✓ سيراجعه معلمك قريباً';
+        msgEl.style.cssText = 'display:block;font-size:.82rem;padding:9px 12px;border-radius:8px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;margin-bottom:.8rem;';
+      }
+      setTimeout(function(){ closeSubmitModal(); refreshMap(); }, 1800);
+    } else {
+      if (msgEl) {
+        msgEl.textContent = res.msg || 'حدث خطأ';
+        msgEl.style.cssText = 'display:block;font-size:.82rem;padding:9px 12px;border-radius:8px;background:#fff0ed;color:#c93a12;border:1px solid #fdd;margin-bottom:.8rem;';
+      }
+    }
+  });
+}
+
+/* ── Close modals on outside click ── */
+document.getElementById('code-modal').addEventListener('click', function(e){ if(e.target===this) closeCodeModal(); });
+document.getElementById('submit-modal').addEventListener('click', function(e){ if(e.target===this) closeSubmitModal(); });
+
+/* ── Main page logic ── */
 document.addEventListener('DOMContentLoaded', function () {
+
+  /* ── Sync approval status from notifications ── */
+  function syncStatusFromNotifs() {
+    if (!_notifs.length) return;
+    var state = getChallengeState();
+    var changed = false;
+    _notifs.forEach(function(n) {
+      if (n.type === 'approval' && n.codeId) {
+        var item = state.find(function(s){ return s.codeId === n.codeId; });
+        if (item && item.status !== 'approved') { item.status = 'approved'; changed = true; }
+      }
+      if (n.type === 'rejection' && n.codeId) {
+        var item = state.find(function(s){ return s.codeId === n.codeId; });
+        if (item && item.status !== 'rejected') { item.status = 'rejected'; changed = true; }
+      }
+    });
+    if (changed) saveChallengeState(state);
+  }
+  syncStatusFromNotifs();
+
   var challengeData = {
     1: {
       title: 'إضاءة LED',
-      href: './track2-circuit.html',
-      image: './challenges/1.png',
+      href: './track-2-led-challenge.html',
+      image: './img/challenge-covers/led-challenge.png',
       desc: 'ابنِ دائرتك الأولى وشغّل LED يومض تلقائيًا حتى تتأكد من فهم التوصيل الأساسي.',
       time: '⏱ 10 دقائق',
       parts: '🔧 5 مكونات',
@@ -926,8 +1201,8 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     2: {
       title: 'زر الضغط',
-      href: './track2-pushbutton.html',
-      image: './challenges/2.png',
+      href: './track-2-pushbutton-challenge.html',
+      image: './img/challenge-covers/pushbutton-challenge.png',
       fallbackImage: './img/challenges/pushbutton-challenge.svg',
       desc: 'وصّل زر الضغط مع الـ LED وتحقق أن المصباح يضيء عند الضغط على الزر فقط.',
       time: '⏱ 15 دقيقة',
@@ -941,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     3: {
       title: 'المرحلة 3',
-      image: './tracks/2.png',
+      image: './img/track-covers/track-2-challenges.png',
       desc: 'هذه المرحلة قيد التجهيز حاليًا وستُضاف لاحقًا بنفس أسلوب المراحل السابقة.',
       time: 'قريبًا',
       parts: 'مفاجآت جديدة',
@@ -954,7 +1229,7 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     4: {
       title: 'المرحلة 4',
-      image: './tracks/2.png',
+      image: './img/track-covers/track-2-challenges.png',
       desc: 'المسار مجهّز من الآن ليستقبل المرحلة الرابعة عندما تصبح جاهزة.',
       time: 'قريبًا',
       parts: 'مزيد من الأدوات',
@@ -984,25 +1259,100 @@ document.addEventListener('DOMContentLoaded', function () {
   var guideSpotlight = document.getElementById('guide-spotlight');
   var guideTip = document.getElementById('challenge-tip');
   var guideDismiss = document.getElementById('challenge-tip-dismiss');
-  var progress = {
-    1: false,
-    2: false
-  };
   var guideSeenKey = 'cq_track2_guide_seen';
   var currentGuideTarget = null;
 
-  var totalChallenges = 2;
-  var doneCount = Object.values(progress).filter(Boolean).length;
-  var progressCount = document.getElementById('progress-count');
-  var progressFill = document.getElementById('progress-fill');
-  var progressNote = document.getElementById('progress-note');
+  /* ── Dynamic progress from localStorage ── */
+  function buildProgress() {
+    var state = getChallengeState();
+    var p = {};
+    state.forEach(function(s) {
+      p[s.step] = (s.status === 'approved' || s.status === 'submitted');
+    });
+    return p;
+  }
 
-  if (progressCount) progressCount.textContent = String(doneCount);
-  if (progressFill) progressFill.style.width = ((doneCount / totalChallenges) * 100) + '%';
-  if (progressNote) {
-    if (doneCount === 0) progressNote.textContent = 'ابدأ بالتحدي الأول ليتم فتح البقية بالتسلسل.';
-    if (doneCount === 1) progressNote.textContent = 'أحسنت! التحدي الثاني أصبح جاهزًا الآن.';
-    if (doneCount === 2) progressNote.textContent = 'ممتاز، أنجزت جميع تحديات هذا المسار! 🎉';
+  function isFirstChallengeDone() {
+    var first = getChallengeState().find(function(s){ return s.step === 1; });
+    return !!(first && (first.status === 'approved' || first.status === 'submitted'));
+  }
+
+  function refreshMap() {
+    var state = getChallengeState();
+    var statusMap = {};
+    state.forEach(function(s){ statusMap[s.step] = s; });
+
+    var progress = buildProgress();
+    var doneCount = Object.values(progress).filter(Boolean).length;
+    var totalChallenges = Object.keys(challengeData).filter(function(k){ return !challengeData[k].comingSoon; }).length;
+
+    if (isFirstChallengeDone()) hideGuide(true);
+
+    var progressCount = document.getElementById('progress-count');
+    var progressFill = document.getElementById('progress-fill');
+    var progressNote = document.getElementById('progress-note');
+
+    if (progressCount) progressCount.textContent = String(doneCount) + '/' + totalChallenges;
+    if (progressFill) progressFill.style.width = (totalChallenges > 0 ? (doneCount / totalChallenges * 100) : 0) + '%';
+    if (progressNote) {
+      if (doneCount === 0) progressNote.textContent = 'ابدأ بالتحدي الأول ليتم فتح البقية بالتسلسل.';
+      else if (doneCount < totalChallenges) progressNote.textContent = 'رائع! أنجزت ' + doneCount + ' من ' + totalChallenges + ' تحديات.';
+      else progressNote.textContent = 'ممتاز، أنجزت جميع التحديات المتاحة! 🎉';
+    }
+
+    document.querySelectorAll('.roadmap-stage[data-challenge]').forEach(function(stage) {
+      var step = Number(stage.getAttribute('data-challenge'));
+      var data = challengeData[step];
+      if (!data) return;
+      var badge = stage.querySelector('[data-stage-badge]');
+      var mark  = stage.querySelector('[data-stage-mark]');
+      var stateItem = statusMap[step];
+
+      stage.classList.remove('is-done','is-current','is-locked','is-coming');
+      stage.onclick = null;
+
+      if (data.comingSoon) {
+        stage.classList.add('is-coming');
+        if (badge) badge.textContent = 'Coming Soon';
+        if (mark)  mark.textContent  = '🔒';
+        stage.onclick = function(){ openModal(step, 'coming'); };
+        return;
+      }
+
+      var prevDone = step === 1 || progress[step - 1];
+      var approved = stateItem && stateItem.status === 'approved';
+      var submitted = stateItem && stateItem.status === 'submitted';
+      var started   = stateItem && stateItem.status === 'started';
+      var rejected  = stateItem && stateItem.status === 'rejected';
+      var done = approved || submitted;
+
+      if (done) {
+        stage.classList.add('is-done');
+        if (badge) badge.textContent = approved ? '✓ مكتمل' : '⏳ بانتظار المراجعة';
+        if (mark)  mark.textContent  = approved ? '✓' : '⏳';
+        stage.onclick = function(){ openModal(step, 'done', stateItem); };
+      } else if (rejected) {
+        stage.classList.add('is-locked');
+        if (badge) badge.textContent = 'مرفوض — أعد المحاولة';
+        if (mark)  mark.textContent  = '↩';
+        stage.onclick = function(){ openCodeModal(step, data.title); };
+      } else if (started) {
+        stage.classList.add('is-current');
+        if (badge) badge.textContent = 'جارٍ...';
+        if (mark)  mark.textContent  = String(step);
+        stage.onclick = function(){ openModal(step, 'started', stateItem); };
+      } else if (prevDone) {
+        stage.classList.add('is-current');
+        if (badge) badge.textContent = step === 1 ? 'ابدأ الآن' : 'جاهز';
+        if (mark)  mark.textContent  = String(step);
+        stage.onclick = function(){ openCodeModal(step, data.title); };
+      } else {
+        stage.classList.add('is-locked');
+        if (badge) badge.textContent = 'مقفل';
+        if (mark)  mark.textContent  = '🔒';
+        stage.onclick = function(){ openModal(step, 'locked'); };
+      }
+    });
   }
 
   function closeModal() {
@@ -1051,12 +1401,13 @@ document.addEventListener('DOMContentLoaded', function () {
     guideOverlay.setAttribute('aria-hidden', 'false');
   }
 
-  function openModal(step, state) {
+  function openModal(step, state, stateItem) {
     var data = challengeData[step];
     if (!modal || !data) return;
-    var isUnlocked = state === 'unlocked';
+    var isUnlocked = state === 'unlocked' || state === 'started' || state === 'done';
     var isComingSoon = state === 'coming';
-    var isDone = step <= 2 && !!progress[step];
+    var isDone = state === 'done';
+    var isStarted = state === 'started';
 
     if (isComingSoon) {
       modalKicker.textContent = 'قريبًا';
@@ -1110,12 +1461,36 @@ document.addEventListener('DOMContentLoaded', function () {
       modalRules.appendChild(li);
     });
 
-    if (isUnlocked) {
+    if (isStarted && stateItem) {
       modalStart.style.display = 'inline-flex';
-      modalStart.href = data.href;
+      modalStart.textContent = '↩ العودة للتحدي';
+      modalStart.href = stateItem.href || data.href || '#';
+      var submitBtn = document.getElementById('modal-submit-btn');
+      if (!submitBtn) {
+        submitBtn = document.createElement('button');
+        submitBtn.id = 'modal-submit-btn';
+        submitBtn.className = 'btn-main';
+        submitBtn.style.background = '#16a34a';
+        submitBtn.style.marginRight = '8px';
+        submitBtn.textContent = '✓ تسليم للمراجعة';
+        modalStart.parentNode.insertBefore(submitBtn, modalStart);
+      }
+      submitBtn.style.display = 'inline-flex';
+      submitBtn.onclick = function(){ closeModal(); openSubmitModal(step); };
+    } else if (isDone && stateItem && (stateItem.status === 'submitted' || stateItem.status === 'approved')) {
+      modalStart.style.display = 'none';
+      var submitBtn = document.getElementById('modal-submit-btn');
+      if (submitBtn) submitBtn.style.display = 'none';
+    } else if (isUnlocked && !isDone && !isStarted) {
+      modalStart.style.display = 'inline-flex';
+      modalStart.textContent = 'ابدأ التحدي الآن';
+      modalStart.href = data.href || '#';
+      var submitBtn = document.getElementById('modal-submit-btn');
+      if (submitBtn) submitBtn.style.display = 'none';
     } else {
       modalStart.style.display = 'none';
-      modalStart.removeAttribute('href');
+      var submitBtn = document.getElementById('modal-submit-btn');
+      if (submitBtn) submitBtn.style.display = 'none';
     }
 
     modal.classList.add('is-open');
@@ -1153,47 +1528,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.key === 'Escape') hideGuide(true);
   });
 
-  document.querySelectorAll('.roadmap-stage[data-challenge]').forEach(function (stage) {
-    var step = Number(stage.getAttribute('data-challenge'));
-    var isComingSoon = step > 2;
-    var isUnlocked = !isComingSoon && (step === 1 || progress[step - 1]);
-    var isDone = !isComingSoon && !!progress[step];
-    var badge = stage.querySelector('[data-stage-badge]');
-    var mark = stage.querySelector('[data-stage-mark]');
-
-    if (isComingSoon) {
-      stage.classList.add('is-coming');
-      stage.addEventListener('click', function () {
-        openModal(step, 'coming');
-      });
-      return;
-    }
-
-    if (isDone) {
-      stage.classList.add('is-done');
-      stage.classList.remove('is-current', 'is-locked');
-      if (badge) badge.textContent = 'مكتمل';
-      if (mark) mark.textContent = '✓';
-    } else if (isUnlocked) {
-      stage.classList.add('is-current');
-      stage.classList.remove('is-done', 'is-locked');
-      if (badge) badge.textContent = step === 1 ? 'غير مكتمل' : 'جاهز الآن';
-      if (mark) mark.textContent = String(step);
-    } else {
-      stage.classList.add('is-locked');
-      stage.classList.remove('is-current', 'is-done');
-      if (badge) badge.textContent = 'مقفل';
-      if (mark) mark.textContent = '🔒';
-    }
-
-    stage.addEventListener('click', function () {
-      hideGuide(true);
-      openModal(step, isUnlocked ? 'unlocked' : 'locked');
-    });
-  });
+  /* ── Init map ── */
+  refreshMap();
 
   var guideTarget = document.querySelector('.roadmap-stage[data-challenge="1"]');
-  if (guideTarget) showGuide(guideTarget);
+  var ch1State = getChallengeState().find(function(s){ return s.step === 1; });
+  if (guideTarget && !localStorage.getItem(guideSeenKey) && !ch1State) showGuide(guideTarget);
 });
 </script>
 <script>

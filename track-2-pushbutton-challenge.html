@@ -98,7 +98,7 @@
 <main class="page-body">
 
   <div class="track-banner">
-    <img src="./challenges/2.png" alt="تحدي زر الضغط" onerror="this.onerror=null;this.src='./img/challenges/pushbutton-challenge.svg';">
+    <img src="./img/challenge-covers/pushbutton-challenge.png" alt="تحدي زر الضغط" onerror="this.onerror=null;this.src='./img/challenges/pushbutton-challenge.svg';">
     <div class="track-banner-overlay">
       <div class="track-banner-copy">
         <span class="badge badge-red">تحدي ٢ — المسار الثاني</span>
@@ -157,7 +157,7 @@
 
         <div class="carousel-slide">
           <div class="carousel-img">
-            <img src="./img/3.png" alt="ضع المكونات">
+            <img src="./img/tinkercad-account/email-verify.png" alt="ضع المكونات">
           </div>
           <div class="carousel-body">
             <div class="carousel-step">الخطوة ١ من ٤</div>
@@ -171,7 +171,7 @@
 
         <div class="carousel-slide">
           <div class="carousel-img">
-            <img src="./img/4.png" alt="توصيل زر الضغط">
+            <img src="./img/tinkercad-account/account-login.png" alt="توصيل زر الضغط">
           </div>
           <div class="carousel-body">
             <div class="carousel-step">الخطوة ٢ من ٤</div>
@@ -188,7 +188,7 @@
 
         <div class="carousel-slide">
           <div class="carousel-img">
-            <img src="./img/5.png" alt="توصيل LED">
+            <img src="./img/tinkercad-account/ready-to-build.png" alt="توصيل LED">
           </div>
           <div class="carousel-body">
             <div class="carousel-step">الخطوة ٣ من ٤</div>
@@ -202,7 +202,7 @@
 
         <div class="carousel-slide">
           <div class="carousel-img">
-            <img src="./img/2.png" alt="مرجع الأسلاك">
+            <img src="./img/tinkercad-account/account-create.png" alt="مرجع الأسلاك">
           </div>
           <div class="carousel-body">
             <div class="carousel-step">الخطوة ٤ من ٤ — مرجع الأسلاك</div>
@@ -307,12 +307,15 @@
     <p style="font-size:.86rem;color:var(--gray);margin-bottom:1rem">
       أنجزت التحدي؟ التقط صورة للدائرة وأرسلها
     </p>
-    <a href="./track3.html" class="btn-main">📤 أرسل عملك ←</a>
+    <a href="./track-3.html" class="btn-main">📤 أرسل عملك ←</a>
   </div>
 
 </main>
 
+<script src="./js/config.js"></script>
+<script src="./js/api.js"></script>
 <script src="./js/main.js"></script>
+<script src="./js/notif-bell.js"></script>
 <script>
 function switchSub(idx) {
   document.querySelectorAll('.sub-tab').forEach(function (t, i) {
@@ -322,7 +325,7 @@ function switchSub(idx) {
     p.classList.toggle('active', i === idx);
   });
 }
-var completeChallenge2 = document.querySelector('.btn-main[href="./track3.html"]');
+var completeChallenge2 = document.querySelector('.btn-main[href="./track-3.html"]');
 if (completeChallenge2) {
   completeChallenge2.addEventListener('click', function () {
     localStorage.setItem('cq_challenge_2_complete', 'true');

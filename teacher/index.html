@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>إنجاز — تحدي الدائرة الكهربائية</title>
+<title>دخول المعلم - إنجاز</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/main.css">
+<link rel="stylesheet" href="../css/main.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="./img/arduino-board/arduino-uno-glb-data.js"></script>
+<script src="../img/arduino-board/arduino-uno-glb-data.js"></script>
 <style>
 
 /* ── Page base ───────────────────────────────── */
@@ -36,8 +36,8 @@ body {
 [data-theme="dark"] .ix-hero-text h1 { color: #f1f5f9; }
 [data-theme="dark"] .ix-hero-text p  { color: #94a3b8; }
 [data-theme="dark"] .ix-tag {
-  background: rgba(240,78,35,0.12);
-  border-color: rgba(240,78,35,0.25);
+  background: rgba(22,163,74,0.14);
+  border-color: rgba(22,163,74,0.28);
 }
 [data-theme="dark"] .ix-note { color: #475569; }
 [data-theme="dark"] .ix-stats {
@@ -53,12 +53,12 @@ body {
   border-color: rgba(255,255,255,0.07);
 }
 [data-theme="dark"] .ix-rule-card:hover {
-  border-color: rgba(240,78,35,0.3);
-  box-shadow: 0 8px 24px -6px rgba(240,78,35,0.15);
+  border-color: rgba(22,163,74,0.32);
+  box-shadow: 0 8px 24px -6px rgba(22,163,74,0.18);
 }
 [data-theme="dark"] .ix-rule-num {
-  background: rgba(240,78,35,0.12);
-  border-color: rgba(240,78,35,0.2);
+  background: rgba(22,163,74,0.14);
+  border-color: rgba(22,163,74,0.22);
 }
 [data-theme="dark"] .ix-rule-txt { color: #94a3b8; }
 [data-theme="dark"] .ix-rule-txt b { color: #f1f5f9; }
@@ -127,7 +127,7 @@ body {
   font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: 2px;
-  background: linear-gradient(135deg, #ff6b35 0%, #f04e23 50%, #c73d1a 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #0f7a35 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -139,11 +139,11 @@ body {
   position: absolute;
   bottom: 0; right: 0;
   width: 100%; height: 2.5px;
-  background: linear-gradient(90deg, transparent, #f04e23, transparent);
+  background: linear-gradient(90deg, transparent, #16a34a, transparent);
   border-radius: 2px;
 }
 [data-theme="dark"] .ix-logo-wordmark {
-  background: linear-gradient(135deg, #ff8c5a 0%, #f04e23 50%, #ff6b35 100%);
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -207,16 +207,16 @@ body {
   gap: 6px;
   font-size: .76rem;
   font-weight: 700;
-  color: #f04e23;
-  background: #fff3f0;
-  border: 1.5px solid #fdd0c5;
+  color: #15803d;
+  background: #ecfdf3;
+  border: 1.5px solid #bbf7d0;
   border-radius: 50px;
   padding: 5px 14px;
 }
 .ix-tag-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #f04e23;
+  background: #16a34a;
   animation: blink 1.2s infinite;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
@@ -228,7 +228,7 @@ body {
   line-height: 1.08;
   margin: 0;
 }
-.ix-hero-text h1 .ix-orange { color: #f04e23; }
+.ix-hero-text h1 .ix-green { color: #16a34a; }
 
 .ix-hero-text p {
   font-size: 1rem;
@@ -248,14 +248,14 @@ body {
   align-items: flex-start;
   gap: .75rem;
 }
-/* From Uiverse.io by adamgiebl — orange */
+/* From Uiverse.io by adamgiebl */
 .ix-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #f04e23;
+  background-color: #16a34a;
   border-radius: 50px;
-  box-shadow: inset 4px 4px 10px #c73d1a, inset -4px -4px 10px #ff7550;
+  box-shadow: inset 4px 4px 10px #0f7a35, inset -4px -4px 10px #38d978;
   color: #ffffff;
   cursor: pointer;
   font-family: 'Tajawal', sans-serif;
@@ -263,7 +263,7 @@ body {
   font-weight: 700;
   padding: 15px 40px;
   transition: all 0.2s ease-in-out;
-  border: 2px solid #e04420;
+  border: 2px solid #12843d;
   text-decoration: none;
 }
 .ix-btn.secondary {
@@ -272,7 +272,7 @@ body {
   box-shadow: inset 4px 4px 10px #0a0b0e, inset -4px -4px 10px #30343d;
 }
 .ix-btn:hover {
-  box-shadow: inset 2px 2px 5px #c73d1a, inset -2px -2px 5px #ff7550, 2px 2px 5px #c73d1a, -2px -2px 5px #ff7550;
+  box-shadow: inset 2px 2px 5px #0f7a35, inset -2px -2px 5px #38d978, 2px 2px 5px #0f7a35, -2px -2px 5px #38d978;
 }
 .ix-btn.secondary:hover,
 .ix-btn.secondary:focus {
@@ -280,7 +280,7 @@ body {
 }
 .ix-btn:focus {
   outline: none;
-  box-shadow: inset 2px 2px 5px #c73d1a, inset -2px -2px 5px #ff7550, 2px 2px 5px #c73d1a, -2px -2px 5px #ff7550;
+  box-shadow: inset 2px 2px 5px #0f7a35, inset -2px -2px 5px #38d978, 2px 2px 5px #0f7a35, -2px -2px 5px #38d978;
 }
 .ix-btn .arrow {
   display: inline-block;
@@ -321,7 +321,7 @@ body {
 .loader-ring {
   width: 38px; height: 38px;
   border: 3px solid #f0f0f0;
-  border-top-color: #f04e23;
+  border-top-color: #16a34a;
   border-radius: 50%;
   animation: spin .8s linear infinite;
 }
@@ -355,14 +355,14 @@ body {
 .ix-stat-val {
   font-size: 1.7rem;
   font-weight: 900;
-  color: #f04e23;
+  color: #16a34a;
   line-height: 1;
-  filter: drop-shadow(0 0 6px rgba(240,78,35,0.3));
+  filter: drop-shadow(0 0 6px rgba(22,163,74,0.32));
 }
 .ix-stat-icon {
   width: 22px; height: 22px;
-  color: #f04e23;
-  filter: drop-shadow(0 0 6px rgba(240,78,35,0.3));
+  color: #16a34a;
+  filter: drop-shadow(0 0 6px rgba(22,163,74,0.32));
 }
 .ix-stat-lbl {
   font-size: .75rem;
@@ -453,7 +453,7 @@ body {
   -webkit-transform: rotateY(0deg) translateZ(1px);
 }
 .ix-rule-back {
-  background: #f04e23;
+  background: #16a34a;
   transform: rotateY(180deg) translateZ(1px);
   -webkit-transform: rotateY(180deg) translateZ(1px);
 }
@@ -464,7 +464,7 @@ body {
   transform: translate(-50%, -50%);
   font-size: 5rem;
   font-weight: 900;
-  color: rgba(240, 78, 35, 0.08);
+  color: rgba(22, 163, 74, 0.10);
   line-height: 1;
   pointer-events: none;
   z-index: 0;
@@ -496,8 +496,8 @@ body {
   color: rgba(255, 255, 255, 0.06);
 }
 [data-theme="dark"] .ix-rule-back {
-  background: #f04e23;
-  box-shadow: 0 0 30px rgba(240,78,35,0.3);
+  background: #16a34a;
+  box-shadow: 0 0 30px rgba(22,163,74,0.32);
 }
 [data-theme="dark"] .ix-rule-back .ix-rule-txt {
   color: #ffffff;
@@ -515,7 +515,7 @@ body {
   <div class="ix-nav-inner">
     <a href="./index.html" class="ix-logo-wordmark">إنجاز</a>
     <div style="display:flex;align-items:center;gap:10px;">
-      <a href="./auth.html?role=student&tab=signup" class="ix-nav-pill">أنشئ حسابك الآن</a>
+      <a href="../auth.html?role=teacher&tab=signup&force=1" class="ix-nav-pill">أنشئ حساب معلم</a>
       <button class="ix-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
     </div>
   </div>
@@ -526,12 +526,12 @@ body {
   <div class="ix-hero-inner">
 
     <div class="ix-hero-text">
-      <span class="ix-tag"><span class="ix-tag-dot"></span> جوائز قيمة بانتظارك</span>
-      <h1>ابنِ دائرتك<br>الكهربائية <span class="ix-orange">الآن.</span></h1>
-      <p>تحدَّ.. صمّم.. واربح! رحلتك في بناء الدارات الإلكترونية تبدأ الآن مع جوائز بانتظار إبداعك</p>
+      <span class="ix-tag"><span class="ix-tag-dot"></span> مساحة المعلم</span>
+      <h1>تابع طلابك<br>وإنجازاتهم <span class="ix-green">الآن.</span></h1>
+      <p>ادخل كمعلم لمتابعة تقدم الطلاب، مراجعة الأعمال، وتنظيم تجربة التحدي داخل الصف.</p>
       <div class="ix-actions">
-        <a href="./auth.html?role=student" class="ix-btn">تسجيل الدخول</a>
-        <span class="ix-note">لا تغلق الصفحة بعد البدء</span>
+        <a href="../auth.html?role=teacher&force=1" class="ix-btn">تسجيل دخول المعلم</a>
+        <span class="ix-note">حساب المعلم يحتاج موافقة الأدمن قبل الدخول</span>
       </div>
     </div>
 
@@ -646,7 +646,7 @@ body {
   var fill = new THREE.DirectionalLight(0xddeeff, 0.50);
   fill.position.set(-5, 3, 3);
   scene.add(fill);
-  var bounce = new THREE.DirectionalLight(0xf04e23, 0.16);
+  var bounce = new THREE.DirectionalLight(0x16a34a, 0.16);
   bounce.position.set(0, -5, -3);
   scene.add(bounce);
   var rim = new THREE.DirectionalLight(0xffffff, 0.30);
@@ -696,8 +696,8 @@ body {
   /* Use embedded base64 data URI (works without a server) */
   var glbSrc = (typeof window !== 'undefined' && window.ARDUINO_GLB)
     ? window.ARDUINO_GLB
-    : './img/arduino-board/arduino-uno-r3.glb';
-  var boardArtworkSrc = './img/arduino-board/arduino-uno-board-artwork.png';
+    : '../img/arduino-board/arduino-uno-r3.glb';
+  var boardArtworkSrc = '../img/arduino-board/arduino-uno-board-artwork.png';
 
   var unoRev3Palette = {
     pcb: 0x003f9f,
@@ -709,7 +709,7 @@ body {
     darkMetal: 0x4f5356,
     portDark: 0x222426,
     white: 0xf7f7f2,
-    red: 0xf04e23
+    red: 0x16a34a
   };
 
   function applyUnoRev3Colors(model) {
