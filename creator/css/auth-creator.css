@@ -1,0 +1,57 @@
+@import "../../design/auth.css";
+
+/* ── overrides: Creator → purple ── */
+:root {
+  --auth-accent:        #7c3aed;
+  --auth-accent-rgb:    124, 58, 237;
+  --auth-accent-dark:   #5b21b6;
+  --auth-accent-light:  #f5f3ff;
+
+  --auth-logo-grad-start: #8b5cf6;
+  --auth-logo-grad-mid:   #7c3aed;
+  --auth-logo-grad-end:   #5b21b6;
+
+  --auth-submit-bg:       linear-gradient(135deg, #9b6bff 0%, #7c3aed 58%, #5b21b6 100%);
+  --auth-submit-bg-hover: linear-gradient(135deg, #a882ff 0%, #7c3aed 60%, #4c1d95 100%);
+  --auth-submit-border:       rgba(124, 58, 237, .28);
+  --auth-submit-shadow:       rgba(124, 58, 237, .22);
+  --auth-submit-border-hover: rgba(124, 58, 237, .36);
+  --auth-submit-shadow-hover: rgba(124, 58, 237, .28);
+
+  --auth-focus-color: #7c3aed;
+  --auth-focus-rgb:   124, 58, 237;
+
+  --auth-divider-btn: #7c3aed;
+  --auth-site-logo-line: #7c3aed;
+
+  --auth-badge-bg:          #f5f3ff;
+  --auth-badge-color:       #5b21b6;
+  --auth-badge-border:      rgba(124, 58, 237, .2);
+  --auth-badge-bg-dark:     rgba(124, 58, 237, .14);
+  --auth-badge-color-dark:  #c4b5fd;
+  --auth-badge-border-dark: rgba(124, 58, 237, .3);
+
+  --auth-success-bg:           #f5f3ff;
+  --auth-success-color:        #5b21b6;
+  --auth-success-border:       #ddd6fe;
+  --auth-success-bg-dark:      rgba(124, 58, 237, .12);
+  --auth-success-color-dark:   #c4b5fd;
+  --auth-success-border-dark:  rgba(124, 58, 237, .3);
+}
+
+/* ── Creator chip (unique to creator auth) ── */
+.creator-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Tajawal', sans-serif;
+  font-size: .82rem;
+  font-weight: 800;
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.10);
+  border: 1.5px solid rgba(124, 58, 237, 0.22);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 1rem;
+}
+[data-theme="dark"] .creator-chip { color: #c4b5fd; background: rgba(124, 58, 237, 0.12); border-color: rgba(124, 58, 237, 0.22); }

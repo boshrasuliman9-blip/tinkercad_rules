@@ -1,0 +1,46 @@
+@import "../../design/dashboard.css";
+
+/* ── overrides: Teacher → green ── */
+:root {
+  --dash-accent:          #16a34a;
+  --dash-accent-rgb:      22, 163, 74;
+  --dash-accent-dark:     #0f7a35;
+  --dash-accent-light:    #ecfdf3;
+
+  --dash-logo-grad-start: #4ade80;
+  --dash-logo-grad-end:   #16a34a;
+
+  --dash-hero-grad:         linear-gradient(135deg, #064e3b 0%, #16a34a 100%);
+  --dash-hero-grad-refresh: linear-gradient(135deg, #0f766e 0%, #14b8a6 55%, #22c55e 100%);
+
+  --dash-nav-active-grad:   linear-gradient(135deg, #0ea5a4, #16a34a);
+  --dash-nav-active-shadow: rgba(14, 165, 164, .22);
+
+  --dash-quick-action-hover-border: rgba(22, 163, 74, .45);
+
+  --dash-badge-bg:           rgba(22, 163, 74, .15);
+  --dash-badge-border:       rgba(22, 163, 74, .3);
+  --dash-badge-name-color:   #4ade80;
+
+  --dash-f-focus-color:      #16a34a;
+  --dash-f-msg-ok-bg:        #f0fdf4;
+  --dash-f-msg-ok-color:     #166534;
+  --dash-f-msg-ok-border:    #bbf7d0;
+
+  --dash-spinner-color:      #16a34a;
+  --dash-guide-dot:          #16a34a;
+  --dash-notif-unread-bg:    #f0fdf4;
+  --dash-notif-unread-border: rgba(22, 163, 74, .3);
+  --dash-notif-dot:          #16a34a;
+  --dash-mobile-active-bg:   #f0fdf4;
+}
+
+/* ── Teacher-specific badge ── */
+.teacher-badge { margin-top: .8rem; background: var(--dash-badge-bg); border: 1px solid var(--dash-badge-border); border-radius: 8px; padding: .6rem .8rem; }
+.teacher-badge-name { font-size: .88rem; font-weight: 800; color: var(--dash-badge-name-color); }
+.teacher-badge-code { font-size: .72rem; color: #64748b; margin-top: 2px; font-family: monospace; letter-spacing: .05em; }
+
+/* Visual refresh: teacher badge */
+.teacher-badge { background: #ecfdf5; border-color: #bbf7d0; box-shadow: none; }
+.teacher-badge-name { color: #047857; }
+.teacher-badge-code { color: #6b7280; }

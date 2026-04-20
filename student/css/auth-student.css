@@ -1,0 +1,33 @@
+@import "../../design/auth.css";
+
+/* ── overrides: Student → orange ── */
+:root {
+  --auth-accent:        #ea580c;
+  --auth-accent-rgb:    234, 88, 12;
+  --auth-accent-dark:   #c2410c;
+  --auth-accent-light:  #fff7ed;
+
+  --auth-logo-grad-start: #fb923c;
+  --auth-logo-grad-mid:   #ea580c;
+  --auth-logo-grad-end:   #c2410c;
+
+  --auth-submit-bg:       linear-gradient(135deg, #fb923c 0%, #ea580c 58%, #c2410c 100%);
+  --auth-submit-bg-hover: linear-gradient(135deg, #fdba74 0%, #ea580c 60%, #9a3412 100%);
+  --auth-submit-border:       rgba(234, 88, 12, .28);
+  --auth-submit-shadow:       rgba(234, 88, 12, .22);
+  --auth-submit-border-hover: rgba(234, 88, 12, .36);
+  --auth-submit-shadow-hover: rgba(234, 88, 12, .28);
+
+  --auth-focus-color: #ea580c;
+  --auth-focus-rgb:   234, 88, 12;
+
+  --auth-divider-btn: #ea580c;
+  --auth-site-logo-line: #ea580c;
+
+  --auth-badge-bg:          #fff7ed;
+  --auth-badge-color:       #c2410c;
+  --auth-badge-border:      rgba(234, 88, 12, .2);
+  --auth-badge-bg-dark:     rgba(234, 88, 12, .14);
+  --auth-badge-color-dark:  #fdba74;
+  --auth-badge-border-dark: rgba(234, 88, 12, .3);
+}

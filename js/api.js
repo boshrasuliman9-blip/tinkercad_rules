@@ -90,13 +90,13 @@ var CQ_API = (function () {
         {id:'stu-rami', name:'رامي فارس', email:'rami@example.com', studentCode:'ST-2026-2004', schoolId:'sch-stem', class:'الصف التاسع ب', section:'ب', status:'active', hasAccount:true, leftSchool:false}
       ],
       challenges: [
-        {id:'chal-led', key:'led', name:'إضاءة LED', description:'شغّل LED يومض كل ثانية باستخدام Arduino.', coverImage:'./img/challenge-covers/led-challenge.png', href:'./track-2-led-challenge.html', steps:'[]', status:'published', createdAt:now, publishedAt:now},
-        {id:'chal-push', key:'push-button', name:'Push Button', description:'تحكم بإضاءة LED باستخدام زر ضغط.', coverImage:'./img/challenge-covers/pushbutton-challenge.png', href:'./track-2-pushbutton-challenge.html', steps:'[]', status:'published', createdAt:now, publishedAt:now}
+        {id:'chal-led', key:'led', name:'إضاءة LED', description:'شغّل LED يومض كل ثانية باستخدام Arduino.', coverImage:'./img/challenge-covers/led-challenge.png', href:'./student/tracks/challenges/track-2-led-challenge.html', steps:'[]', status:'published', createdAt:now, publishedAt:now},
+        {id:'chal-push', key:'push-button', name:'Push Button', description:'تحكم بإضاءة LED باستخدام زر ضغط.', coverImage:'./img/challenge-covers/pushbutton-challenge.png', href:'./student/tracks/challenges/track-2-pushbutton-challenge.html', steps:'[]', status:'published', createdAt:now, publishedAt:now}
       ],
       assignments: [
-        {id:'asg-led-8a', teacherId:'dev-teacher-dashboard', classId:'cls-8a', className:'الصف الثامن أ', challengeKey:'led', challengeName:'إضاءة LED', challengeHref:'./track-2-led-challenge.html', expiresAt:_daysFromNow(3), createdAt:_daysFromNow(-2)},
-        {id:'asg-push-8a', teacherId:'dev-teacher-dashboard', classId:'cls-8a', className:'الصف الثامن أ', challengeKey:'push-button', challengeName:'Push Button', challengeHref:'./track-2-pushbutton-challenge.html', expiresAt:_daysFromNow(7), createdAt:_daysFromNow(-1)},
-        {id:'asg-led-9b', teacherId:'dev-teacher-dashboard', classId:'cls-9b', className:'الصف التاسع ب', challengeKey:'led', challengeName:'إضاءة LED', challengeHref:'./track-2-led-challenge.html', expiresAt:_daysFromNow(1), createdAt:_daysFromNow(-1)}
+        {id:'asg-led-8a', teacherId:'dev-teacher-dashboard', classId:'cls-8a', className:'الصف الثامن أ', challengeKey:'led', challengeName:'إضاءة LED', challengeHref:'./student/tracks/challenges/track-2-led-challenge.html', expiresAt:_daysFromNow(3), createdAt:_daysFromNow(-2)},
+        {id:'asg-push-8a', teacherId:'dev-teacher-dashboard', classId:'cls-8a', className:'الصف الثامن أ', challengeKey:'push-button', challengeName:'Push Button', challengeHref:'./student/tracks/challenges/track-2-pushbutton-challenge.html', expiresAt:_daysFromNow(7), createdAt:_daysFromNow(-1)},
+        {id:'asg-led-9b', teacherId:'dev-teacher-dashboard', classId:'cls-9b', className:'الصف التاسع ب', challengeKey:'led', challengeName:'إضاءة LED', challengeHref:'./student/tracks/challenges/track-2-led-challenge.html', expiresAt:_daysFromNow(1), createdAt:_daysFromNow(-1)}
       ],
       codes: [
         {id:'code-aya-led', assignmentId:'asg-led-8a', studentId:'stu-aya', studentEmail:'aya@example.com', studentName:'آية خليل', code:'LEDAYA01', startedAt:_daysFromNow(-2), submittedAt:_daysFromNow(-2), status:'submitted', teacherNote:'', createdAt:_daysFromNow(-2)},
@@ -245,6 +245,10 @@ var CQ_API = (function () {
       _mockSave(db);
       return {ok:true};
     }
+    if (action === 'adminGetAllAssignments') {
+      var allAssign = _mockDecorateAssignments(db, null);
+      return {ok:true, data:allAssign};
+    }
     if (action === 'getAssignments') {
       var assignments = _mockDecorateAssignments(db, params.teacherId);
       return {ok:true, data:assignments, assignments:assignments};
@@ -296,8 +300,8 @@ var CQ_API = (function () {
     }
     if (action === 'changePassword') return {ok:true};
     if (action === 'adminCreateUser') {
-      var role = params.role === 'teacher' ? 'teacher' : 'student';
-      var prefix = role === 'teacher' ? 'TE' : 'ST';
+      var role = params.role === 'teacher' ? 'teacher' : (params.role === 'creator' ? 'creator' : 'student');
+      var prefix = role === 'teacher' ? 'TE' : (role === 'creator' ? 'CR' : 'ST');
       var year = new Date().getFullYear();
       var code = prefix + '-' + year + '-' + String(Math.floor(1000 + Math.random() * 9000));
       var newUser = {
@@ -378,6 +382,9 @@ var CQ_API = (function () {
     deleteSchool: function (schoolId, token) {
       return _call({action: 'deleteSchool', schoolId: schoolId, token: token});
     },
+    updateSchool: function (schoolId, data, token) {
+      return _call(Object.assign({action: 'updateSchool', schoolId: schoolId, token: token}, data));
+    },
 
     // ── الأدمن — علاقة معلم←مدارس ───────────
     assignTeacherSchool: function (teacherId, schoolId, token) {
@@ -403,13 +410,33 @@ var CQ_API = (function () {
     publishChallenge: function (challengeId, token) {
       return _call({action: 'publishChallenge', challengeId: challengeId, token: token});
     },
+    unpublishChallenge: function (challengeId, token) {
+      return _call({action: 'unpublishChallenge', challengeId: challengeId, token: token});
+    },
     deleteChallenge: function (challengeId, token) {
       return _call({action: 'deleteChallenge', challengeId: challengeId, token: token});
+    },
+
+    // ── الأدمن — طلبات التحديات ──────────────
+    listSubmissions: function (token) {
+      return _call({action: 'list', token: token});
+    },
+    approveSubmission: function (id, token) {
+      return _call({action: 'approve', id: id, token: token, ajax: 'true'});
+    },
+    rejectSubmission: function (id, token) {
+      return _call({action: 'reject', id: id, token: token, ajax: 'true'});
     },
 
     // ── الأدمن — إضافة مستخدم يدوياً ────────
     adminCreateUser: function (data, token) {
       return _call(Object.assign({action: 'adminCreateUser', token: token}, data));
+    },
+    adminUpdateUser: function (userId, data, token) {
+      return _call(Object.assign({action: 'adminUpdateUser', userId: userId, token: token}, data));
+    },
+    adminSetUserStatus: function (userId, data, token) {
+      return _call(Object.assign({action: 'adminSetUserStatus', userId: userId, token: token}, data));
     },
 
     // ── الأدمن — استيراد Excel ───────────────
@@ -423,6 +450,9 @@ var CQ_API = (function () {
     },
     createClass: function (teacherId, teacherEmail, name, schoolId, section) {
       return _call({action: 'createClass', teacherId: teacherId, teacherEmail: teacherEmail, name: name, schoolId: schoolId, section: section || ''});
+    },
+    updateClass: function (classId, teacherId, data, token) {
+      return _call(Object.assign({action: 'updateClass', classId: classId, teacherId: teacherId, token: token || ''}, data));
     },
     deleteClass: function (classId, teacherId) {
       return _call({action: 'deleteClass', classId: classId, teacherId: teacherId});
@@ -439,6 +469,9 @@ var CQ_API = (function () {
     // ── المعلم — التحديات ────────────────────
     assignChallenge: function (data) {
       return _call(Object.assign({action: 'assignChallenge'}, data));
+    },
+    adminGetAllAssignments: function (secret) {
+      return _call({action: 'adminGetAllAssignments', secret: secret});
     },
     getAssignments: function (teacherId) {
       return _call({action: 'getAssignments', teacherId: teacherId});

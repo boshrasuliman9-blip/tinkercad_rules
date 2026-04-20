@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول - إنجاز</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    padding: 1rem;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.1);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .logo { font-size: 1.8rem; font-weight: 900; color: #111; margin-bottom: .3rem; }
+  .sub  { font-size: .88rem; color: #888; margin-bottom: 2rem; }
+  h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.4rem; color: #333; }
+  .role-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border-radius: 14px;
+    border: 2px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: .85rem;
+    transition: border-color .2s, box-shadow .2s, transform .15s;
+    text-decoration: none;
+  }
+  .role-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+  .role-btn.student { border-color: #ea580c; }
+  .role-btn.student:hover { background: #fff7ed; }
+  .role-btn.teacher { border-color: #16a34a; }
+  .role-btn.teacher:hover { background: #ecfdf3; }
+  .role-icon { font-size: 2rem; flex-shrink: 0; }
+  .role-text { text-align: right; }
+  .role-title { font-size: 1rem; font-weight: 800; }
+  .role-desc  { font-size: .8rem; color: #888; font-weight: 400; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">إنجاز</div>
+  <div class="sub">تحدي الإلكترونيات</div>
+  <h2>من أنت؟</h2>
+
+  <a id="btn-student" href="../student/auth-student.html" class="role-btn student">
+    <span class="role-icon">🎓</span>
+    <span class="role-text">
+      <div class="role-title">طالب</div>
+      <div class="role-desc">ادخل أو أنشئ حسابك كطالب</div>
+    </span>
+  </a>
+
+  <a id="btn-teacher" href="../teacher/auth-teacher.html" class="role-btn teacher">
+    <span class="role-icon">👨‍🏫</span>
+    <span class="role-text">
+      <div class="role-title">معلم</div>
+      <div class="role-desc">ادخل أو أنشئ حسابك كمعلم</div>
+    </span>
+  </a>
+</div>
+
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var role   = params.get('role');
+  var tab    = params.get('tab')    ? '&tab='    + params.get('tab')    : '';
+  var reason = params.get('reason') ? '&reason=' + params.get('reason') : '';
+  var reset  = params.get('reset')  ? '&reset='  + params.get('reset')  : '';
+  var extra  = tab + reason + reset;
+
+  if (role === 'student') {
+    window.location.replace('../student/auth-student.html?' + extra.replace(/^&/, ''));
+  } else if (role === 'teacher') {
+    window.location.replace('../teacher/auth-teacher.html?' + extra.replace(/^&/, ''));
+  }
+
+  // بدون role → نحدّث روابط الأزرار بالـ extra params
+  if (extra) {
+    var s = document.getElementById('btn-student');
+    var t = document.getElementById('btn-teacher');
+    if (s) s.href = '../student/auth-student.html?' + extra.replace(/^&/, '');
+    if (t) t.href = '../teacher/auth-teacher.html?' + extra.replace(/^&/, '');
+  }
+})();
+</script>
+</body>
+</html>

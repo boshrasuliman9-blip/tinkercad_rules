@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>مساحة المبتكر — إنجاز</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="../img/arduino-board/arduino-uno-glb-data.js"></script>
+<link rel="stylesheet" href="./css/index.css">
+</head>
+<body>
+
+<nav class="ix-nav">
+  <div class="ix-nav-inner">
+    <a href="../index.html" class="ix-logo-wordmark">إنجاز</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="./auth-creator.html" class="ix-nav-pill">دخول المبتكر</a>
+      <button class="ix-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<section class="ix-hero">
+  <div class="ix-hero-inner">
+
+    <div class="ix-hero-text">
+      <span class="ix-tag"><span class="ix-tag-dot"></span> مساحة المبتكر</span>
+      <h1>صمّم التحديات<br>وألهم <span class="ix-purple">المتعلمين.</span></h1>
+      <p>ادخل كمبتكر لرفع التحديات التعليمية، ومتابعة تقدمها عبر الصفوف والمدارس.</p>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <a href="./auth-creator.html" class="ix-btn">تسجيل دخول المبتكر <span style="display:inline-block;transition:transform .2s;">←</span></a>
+        <span class="ix-note">الدخول مخصص للمبتكرين المعتمدين فقط</span>
+      </div>
+    </div>
+
+    <div class="hero-3d" id="hero3d">
+      <div id="model-loader">
+        <div class="loader-ring"></div>
+        <span class="loader-txt">جار تحميل النموذج…</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="ix-stats">
+  <div class="ix-stats-inner">
+    <div class="ix-stat">
+      <svg class="ix-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      <span class="ix-stat-lbl">تحديات مصممة</span>
+    </div>
+    <div class="ix-stat">
+      <svg class="ix-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 9.5L12 4l9.5 5.5L12 15 2.5 9.5Z"/>
+        <path d="M6.5 12v5c0 1.5 3 3 5.5 3s5.5-1.5 5.5-3v-5"/>
+      </svg>
+      <span class="ix-stat-lbl">مدارس مستفيدة</span>
+    </div>
+    <div class="ix-stat">
+      <svg class="ix-stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span class="ix-stat-lbl">طلاب يستفيدون</span>
+    </div>
+  </div>
+</div>
+
+<section class="ix-rules">
+  <div class="ix-rules-header">
+    <h2>دور المبتكر</h2>
+    <div class="ix-rules-header-line"></div>
+  </div>
+  <div class="ix-rules-grid">
+    <div class="ix-rule-card">
+      <div class="ix-rule-card-inner">
+        <div class="ix-rule-front">
+          <span class="ix-rule-num">١</span>
+          <span class="ix-rule-front-title">صمّم التحدي</span>
+        </div>
+        <div class="ix-rule-back">
+          <p class="ix-rule-txt">أنشئ تحديات إلكترونيات <b>واضحة ومحكمة</b> تناسب مستوى الطلاب</p>
+        </div>
+      </div>
+    </div>
+    <div class="ix-rule-card">
+      <div class="ix-rule-card-inner">
+        <div class="ix-rule-front">
+          <span class="ix-rule-num">٢</span>
+          <span class="ix-rule-front-title">ارفعه للمعلمين</span>
+        </div>
+        <div class="ix-rule-back">
+          <p class="ix-rule-txt">بعد موافقة الأدمن يُرسَل التحدي <b>للمعلمين المعتمدين</b> تلقائياً</p>
+        </div>
+      </div>
+    </div>
+    <div class="ix-rule-card">
+      <div class="ix-rule-card-inner">
+        <div class="ix-rule-front">
+          <span class="ix-rule-num">٣</span>
+          <span class="ix-rule-front-title">تابع النتائج</span>
+        </div>
+        <div class="ix-rule-back">
+          <p class="ix-rule-txt">راقب تقدم الطلاب وإنجازاتهم في <b>لوحة التحكم</b> الخاصة بك</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  window.IX_LANDING = {
+    bounceHex: '#7c3aed',
+    fallbackGlbSrc: '../img/arduino-board/arduino-uno-r3.glb',
+    boardArtworkSrc: '../img/arduino-board/arduino-uno-board-artwork.png',
+    themeStorageKeys: ['cq-theme', 'cq_theme']
+  };
+</script>
+<script src="../design/landing.js"></script>
+</body>
+</html>

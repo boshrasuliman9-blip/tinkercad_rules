@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>إنجاز — تحدي الدائرة الكهربائية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+:root{
+  --red:#f04e23;--red-dark:#c93a12;--red-light:#fff3f0;
+  --bg:#e8eff5;--white:#ffffff;--dark:#0f172a;--mid:#334155;--gray:#64748b;
+  --border:#dde3ea;--card:#ffffff;
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;direction:rtl;padding-bottom:env(safe-area-inset-bottom)}
+.screen{display:none;min-height:100vh;width:100%}
+.screen.active{display:flex}
+
+/* ======= S1 ======= */
+#s1{flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1.4rem;background:var(--bg)}
+.s1-inner{width:100%;max-width:540px;display:flex;flex-direction:column;gap:1.6rem}
+.s1-badge{display:inline-flex;align-items:center;gap:7px;background:var(--red);color:#fff;font-size:.78rem;font-weight:700;padding:5px 14px;border-radius:50px;width:fit-content;letter-spacing:.5px}
+.s1-badge-dot{width:6px;height:6px;background:#fff;border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.s1-hero h1{font-family:'Tajawal',sans-serif;font-size:clamp(2rem,6vw,3rem);font-weight:800;color:var(--dark);line-height:1.15;margin-bottom:.7rem}
+.s1-hero h1 .accent{color:var(--red)}
+.s1-hero p{font-size:.95rem;color:var(--gray);line-height:1.7;max-width:420px}
+.stats-row{display:flex;gap:10px;flex-wrap:wrap}
+.stat-card{flex:1;min-width:100px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px}
+.stat-card .sv{font-family:'Tajawal',sans-serif;font-size:1.5rem;font-weight:800;color:var(--red);margin-bottom:2px}
+.stat-card .sl{font-size:.78rem;color:var(--gray)}
+.steps-card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:1.4rem}
+.steps-card-title{font-size:.72rem;font-weight:700;color:var(--gray);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:6px}
+.steps-card-title::before{content:'';width:3px;height:14px;background:var(--red);border-radius:2px;display:inline-block}
+.step-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.step-row:last-child{border:none;padding-bottom:0}
+.step-n{width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;background:var(--red);color:#fff}
+.step-t{font-size:.88rem;color:var(--mid);line-height:1.6;padding-top:2px}
+.step-t b{color:var(--dark)}
+.s1-left{display:flex;flex-direction:column;gap:1.6rem}
+.s1-right{display:flex;flex-direction:column;gap:1rem}
+.s1-cta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn-main{background:var(--red);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.95rem;padding:14px 32px;border-radius:10px;border:none;cursor:pointer;transition:all .15s;flex-shrink:0;min-height:48px;touch-action:manipulation}
+.btn-main:hover{background:var(--red-dark);transform:translateY(-1px)}
+.btn-main:active{transform:translateY(1px)}
+.cta-note{font-size:.78rem;color:var(--gray)}
+
+/* ======= S2 ======= */
+#s2{flex-direction:column;background:var(--bg);height:100vh;overflow:hidden}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--white);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.hdr-brand{display:flex;align-items:center;gap:8px}
+.hdr-logo-box{width:30px;height:30px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.hdr-brand-name{font-family:'Tajawal',sans-serif;font-weight:800;font-size:.95rem;color:var(--dark)}
+.timer-chip{display:flex;align-items:center;gap:7px;background:var(--dark);color:#fff;padding:6px 16px;border-radius:50px;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.9rem}
+.tdot{width:7px;height:7px;border-radius:50%;background:#555}
+.tdot.on{background:#4ade80;animation:blink .9s infinite}
+.tdot.warn{background:#fb923c;animation:blink .6s infinite}
+.tdot.red{background:var(--red);animation:blink .4s infinite}
+#tt{font-size:.9rem}
+#tt.warn{color:#fb923c}
+#tt.red{color:#fca5a5}
+.gbody{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.tc-bar{background:var(--white);border-bottom:1.5px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;flex-wrap:wrap}
+.tc-bar-left{display:flex;align-items:center;gap:10px}
+.tc-ico{width:36px;height:36px;background:var(--red-light);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tc-bar-left h3{font-size:.88rem;font-weight:700;color:var(--dark)}
+.tc-bar-left p{font-size:.74rem;color:var(--gray)}
+.btn-tc{display:flex;align-items:center;gap:6px;background:var(--red);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.8rem;padding:10px 18px;border-radius:8px;border:none;text-decoration:none;cursor:pointer;transition:all .15s;white-space:nowrap;min-height:44px;touch-action:manipulation}
+.btn-tc:hover{background:var(--red-dark)}
+.challenge-meta{background:var(--white);border-bottom:1.5px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.challenge-meta p{font-size:.8rem;color:var(--gray);line-height:1.7}
+.inst-sec{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.inst-inner{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;display:flex;flex-direction:column;gap:10px}
+.inst-inner::-webkit-scrollbar{width:4px}
+.inst-inner::-webkit-scrollbar-thumb{background:#fca5a5;border-radius:2px}
+.scard{background:var(--white);border:1.5px solid var(--border);border-radius:22px;overflow:hidden;transition:all .3s}
+.scard.locked{opacity:.38;pointer-events:none}
+.scard.active{border-color:var(--red);border-width:2px;margin:6px 2px 20px;padding-bottom:18px}
+.scard.done{border-color:#86efac;opacity:.7}
+.scard-hd{display:flex;align-items:center;gap:10px;padding:16px 20px;background:var(--bg)}
+.scard.active .scard-hd{background:var(--red-light)}
+.sbadge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0}
+.scard.locked .sbadge{background:#e2e8f0;color:#94a3b8}
+.scard.active .sbadge{background:var(--red);color:#fff}
+.scard.done .sbadge{background:#22c55e;color:#fff}
+.scard-title{font-weight:700;font-size:.88rem;color:var(--dark)}
+.scard.locked .scard-title{color:#94a3b8}
+.scard-body{max-height:0;overflow:hidden;transition:max-height .4s,padding .3s;padding:0 20px}
+.scard.active .scard-body{max-height:2200px;padding:0 20px 28px}
+.sr{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.sr:last-of-type{border:none}
+.si{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:7px}
+.st{font-size:.83rem;color:var(--mid);line-height:1.65}
+.st strong{color:var(--dark)}
+.tip-y{background:#fffbeb;border-right:3px solid #fbbf24;border-radius:0 8px 8px 0;padding:8px 12px;margin:7px 0;font-size:.79rem;color:#78350f}
+.tip-r{background:var(--red-light);border-right:3px solid var(--red);border-radius:0 8px 8px 0;padding:8px 12px;margin:7px 0;font-size:.79rem;color:var(--red-dark)}
+.wire-ref{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:8px 0}
+.wire-ref-title{font-size:.76rem;font-weight:700;color:var(--gray);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.wire-ref-title::before{content:'';width:3px;height:12px;background:var(--red);border-radius:2px}
+.wire-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--dark);padding:3px 0}
+.wdot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid rgba(0,0,0,.15)}
+/* ======= VIDEO ======= */
+.vid-sec{flex-shrink:0;width:100%;height:220px;overflow:hidden;position:relative;transition:height .28s ease}
+.vid-sec video{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.vid-sec .tc-bar{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(255,255,255,.10);backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0 24px;text-align:center;transition:all .28s ease}
+.vid-sec .tc-bar h3{font-size:1.2rem;font-weight:800;color:var(--dark);transition:font-size .28s ease}
+.vid-sec .tc-bar p{font-size:.88rem;color:var(--mid);transition:font-size .28s ease, opacity .28s ease}
+.vid-sec .tc-bar .btn-tc{margin-top:4px;font-size:.9rem;padding:12px 28px;min-height:46px;transition:all .28s ease}
+#s2.compact-banner .vid-sec{height:92px}
+#s2.compact-banner .vid-sec .tc-bar{gap:4px;padding:0 18px;background:rgba(255,255,255,.18)}
+#s2.compact-banner .vid-sec .tc-bar h3{font-size:.96rem}
+#s2.compact-banner .vid-sec .tc-bar p{font-size:.74rem;opacity:.9}
+#s2.compact-banner .vid-sec .tc-bar .btn-tc{margin-top:2px;font-size:.78rem;padding:8px 16px;min-height:34px}
+
+/* ======= CAROUSEL ======= */
+.crs-sec{flex-shrink:0;background:#dfeaf5;border:1.5px solid #d3dde8;border-radius:18px;overflow:hidden;margin:8px 0 8px;padding:12px}
+.crs-wrap{position:relative;overflow:hidden}
+.crs-track{display:flex;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.crs-slide{min-width:100%;display:flex;align-items:stretch;gap:0}
+.crs-img{flex:1;min-height:220px;background:#edf4fb;border:1.5px solid #d3dde8;border-right:none;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border-radius:0 18px 18px 0;padding:12px}
+.crs-img img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+.crs-ph{font-size:2.2rem;color:#cbd5e1}
+.crs-ph-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px}
+.crs-ph-ico{width:64px;height:64px;border-radius:18px;background:var(--white);border:1.5px solid #d3dde8;display:flex;align-items:center;justify-content:center;font-size:1.8rem;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.crs-ph-label{font-size:.88rem;font-weight:700;color:var(--mid)}
+.crs-ph-sub{font-size:.75rem;color:var(--gray);direction:ltr;background:var(--white);padding:4px 10px;border-radius:6px;border:1px solid var(--border)}
+.crs-info{width:32%;min-width:240px;flex-shrink:0;padding:18px 20px 16px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:var(--white);border:1.5px solid #d3dde8;border-left:none;border-radius:18px 0 0 18px}
+.crs-num{font-size:.72rem;font-weight:700;color:var(--red);letter-spacing:1px}
+.crs-title{font-size:1.05rem;font-weight:800;color:var(--dark);line-height:1.5}
+.crs-desc{font-size:.86rem;color:var(--gray);line-height:1.8}
+.crs-btn{position:absolute;top:50%;transform:translateY(-50%);background:#fff4ef;border:1.5px solid #f7cfc1;border-radius:50%;width:42px;height:42px;font-size:1.35rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dark);transition:all .15s;z-index:2;line-height:1}
+.crs-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.crs-prev{right:16px}
+.crs-next{left:16px}
+.crs-dots{display:flex;justify-content:center;gap:6px;padding:12px 0 2px}
+.crs-dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;cursor:pointer;transition:all .2s;border:none;padding:0}
+.crs-dot.on{background:var(--red);width:20px;border-radius:4px}
+.timer-notice{background:var(--red-light);border:1.5px solid #fca5a5;border-radius:8px;padding:8px 12px;margin-top:6px;font-size:.8rem;color:var(--red-dark);text-align:center;display:none;font-weight:700}
+.timer-notice.show{display:block}
+.btn-cont{display:block;width:fit-content;margin:10px auto 0;background:var(--dark);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.88rem;padding:13px 36px;border-radius:50px;border:none;cursor:pointer;transition:all .15s;min-height:48px;touch-action:manipulation}
+.btn-cont:hover{background:#1e293b;transform:translateY(-1px)}
+.btn-cont.gone{display:none}
+.fzone{display:none;margin-top:12px}
+.fzone.show{display:block}
+.btn-finish{width:100%;background:var(--red);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:1rem;padding:15px;border-radius:10px;border:none;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;touch-action:manipulation}
+.btn-finish:hover{background:var(--red-dark);transform:translateY(-1px)}
+.prog-wrap{padding:10px 16px 12px;border-top:1.5px solid var(--border);background:var(--white)}
+.prog-row{display:flex;justify-content:space-between;font-size:.73rem;color:var(--gray);margin-bottom:5px;font-weight:700}
+.prog-track{height:5px;background:var(--border);border-radius:50px;overflow:hidden}
+.prog-fill{height:100%;background:var(--red);border-radius:50px;transition:width .5s;width:50%}
+
+/* ======= UPLOAD ======= */
+#s-up{flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2rem 1.4rem;background:var(--bg)}
+.up-card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:26px 22px;width:100%;max-width:440px;text-align:right}
+.up-card h2{font-family:'Tajawal',sans-serif;font-size:1.3rem;font-weight:800;color:var(--dark);margin-bottom:.3rem}
+.up-sub{font-size:.84rem;color:var(--gray);margin-bottom:1.3rem;line-height:1.6}
+#pimg{width:100%;border-radius:10px;max-height:160px;object-fit:contain;border:1.5px solid var(--border);display:none;margin-bottom:10px;background:var(--bg)}
+#pimg.show{display:block}
+.up-label{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:2px dashed var(--border);border-radius:12px;padding:20px;cursor:pointer;background:var(--bg);transition:all .2s;margin-bottom:10px}
+.up-label:hover{border-color:var(--red);background:var(--red-light)}
+.up-label.has{border-color:#22c55e;border-style:solid;background:#f0fdf4}
+.up-label span{font-size:.83rem;color:var(--gray)}
+.up-label span b{color:var(--red)}
+.up-label .ufn{font-size:.75rem;color:#16a34a;font-weight:700;min-height:.9rem}
+#freal{display:none}
+.ni{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:12px 13px;color:var(--dark);font-family:'Tajawal',sans-serif;font-size:1rem;outline:none;margin-bottom:12px;direction:rtl;transition:border .2s;min-height:48px}
+.ni:focus{border-color:var(--red)}
+.ni::placeholder{color:#94a3b8}
+.btn-sub{width:100%;background:var(--red);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.95rem;padding:14px;border-radius:10px;border:none;cursor:pointer;transition:all .15s;min-height:52px;touch-action:manipulation}
+.btn-sub:hover:not(:disabled){background:var(--red-dark);transform:translateY(-1px)}
+.btn-sub:disabled{background:#e2e8f0;color:#94a3b8;cursor:not-allowed}
+.btn-bk{display:block;text-align:center;margin-top:8px;color:var(--gray);font-size:.8rem;cursor:pointer;background:none;border:none;font-family:'Tajawal',sans-serif;width:100%;padding:10px;min-height:44px;touch-action:manipulation}
+.btn-bk:hover{color:var(--red)}
+
+/* ======= SUCCESS ======= */
+#s3{flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.4rem;background:var(--bg);overflow-y:auto}
+.s3-card{background:var(--white);border:1.5px solid var(--border);border-radius:24px;padding:2.2rem 2rem 2rem;max-width:420px;width:100%;display:flex;flex-direction:column;align-items:center;gap:0;box-shadow:0 4px 24px rgba(15,23,42,.07);animation:riseUp .5s cubic-bezier(.22,.68,0,1.2) both}
+@keyframes riseUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.s3-ico-wrap{width:80px;height:80px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;animation:pop .5s .15s cubic-bezier(.175,.885,.32,1.275) both}
+.s3-ico{font-size:2.6rem;line-height:1}
+.s3-divider{width:40px;height:3px;background:var(--red);border-radius:2px;margin:0 auto 1rem}
+.s3-name{font-family:'Tajawal',sans-serif;font-size:1.6rem;font-weight:800;color:var(--red);margin-bottom:.4rem;text-align:center}
+.s3-msg{font-size:.88rem;color:var(--gray);margin-bottom:1.4rem;line-height:1.75;text-align:center;max-width:300px}
+.s3-img-wrap{width:100%;border-radius:14px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:1.4rem;background:var(--bg);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.s3-img{width:100%;height:100%;object-fit:cover;display:block}
+.s3-badge{background:var(--red);color:#fff;font-weight:700;font-size:.85rem;padding:10px 28px;border-radius:50px;display:inline-flex;align-items:center;gap:6px;letter-spacing:.3px}
+.s3-footer-note{font-size:.75rem;color:var(--gray);margin-top:.9rem;opacity:.75}
+@media(min-width:768px){
+  .s3-card{padding:2.8rem 2.6rem 2.4rem;max-width:480px}
+  .s3-ico-wrap{width:96px;height:96px;margin-bottom:1.4rem}
+  .s3-ico{font-size:3.2rem}
+  .s3-name{font-size:1.9rem}
+  .s3-msg{font-size:.93rem}
+}
+
+/* ======= SMALL PHONES ======= */
+@media(max-width:380px){
+  .stats-row{gap:8px}
+  .stat-card{min-width:80px;padding:10px 10px}
+  .stat-card .sv{font-size:1.2rem}
+  .hdr{padding:10px 14px}
+  .tc-bar{padding:10px 14px}
+  .s1-inner{gap:1.2rem}
+}
+
+/* ======= DESKTOP / LAPTOP ======= */
+@media(min-width:768px){
+  /* S1: two-column hero */
+  #s1{padding:3rem 2.5rem;justify-content:center}
+  .s1-inner{flex-direction:row;max-width:1000px;gap:3.5rem;align-items:center}
+  .s1-left{flex:1;display:flex;flex-direction:column;gap:1.8rem}
+  .s1-right{width:340px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem}
+  .s1-hero h1{font-size:clamp(2.4rem,3.5vw,3.4rem)}
+  .s1-hero p{font-size:1rem;max-width:100%}
+  .stats-row{flex-wrap:nowrap}
+  .stat-card{padding:16px 18px}
+  .stat-card .sv{font-size:1.8rem}
+  .btn-main{font-size:1rem;padding:15px 36px}
+  .steps-card{padding:1.6rem}
+  .step-t{font-size:.93rem}
+
+  /* S2: desktop layout */
+  .hdr{padding:12px 32px}
+  .hdr-brand-name{font-size:1rem}
+  .hdr-logo-box{width:34px;height:34px;font-size:16px}
+  .timer-chip{font-size:1rem;padding:8px 20px}
+  .gbody{flex-direction:column;overflow:hidden;height:calc(100vh - 57px)}
+  .tc-bar{padding:14px 32px;gap:16px}
+  .tc-ico{width:44px;height:44px;font-size:22px}
+  .tc-bar-left h3{font-size:1rem}
+  .tc-bar-left p{font-size:.82rem}
+  .btn-tc{font-size:.88rem;padding:11px 22px}
+  .challenge-meta{padding:12px 32px}
+  .vid-sec{height:240px}
+  .vid-sec .tc-bar h3{font-size:1.3rem}
+  .vid-sec .tc-bar p{font-size:.9rem}
+  #s2.compact-banner .vid-sec{height:104px}
+  #s2.compact-banner .vid-sec .tc-bar h3{font-size:1rem}
+  #s2.compact-banner .vid-sec .tc-bar p{font-size:.76rem}
+  .crs-img{min-height:260px}
+  .crs-info{width:32%;min-width:260px;padding:20px 22px}
+  .crs-title{font-size:1.05rem}
+  .crs-desc{font-size:.86rem}
+  .inst-sec{flex:1;overflow:hidden}
+  .inst-inner{padding:16px 20px;gap:12px}
+  .scard.active{margin:8px 0 24px}
+  .scard-hd{padding:18px 24px}
+  .scard-body{padding:0 24px}
+  .scard.active .scard-body{padding:0 24px 32px}
+  .scard-title{font-size:.93rem}
+  .st{font-size:.88rem}
+  .sr{padding:10px 0}
+  .prog-wrap{padding:12px 32px 14px}
+  .prog-row{font-size:.78rem}
+
+  /* Upload: wider card */
+  #s-up{justify-content:center}
+  .up-card{max-width:520px;padding:36px 32px}
+  .up-card h2{font-size:1.5rem}
+  .up-sub{font-size:.9rem}
+  .up-label{padding:28px 20px}
+
+  /* Success: handled in component styles above */
+}
+
+@media(min-width:1100px){
+  .s1-inner{max-width:1100px}
+  .s1-right{width:380px}
+  .inst-inner{padding:24px 20px}
+  .crs-info{width:34%}
+}
+
+@media(max-width:767px){
+  .crs-sec{padding:14px}
+  .crs-slide{flex-direction:column}
+  .crs-info{width:100%;min-width:0;border-left:1.5px solid #d3dde8;border-top:none;border-radius:0 0 18px 18px;padding:18px}
+  .crs-img{min-height:260px;border-right:1.5px solid #d3dde8;border-bottom:none;border-radius:18px 18px 0 0}
+  .crs-btn{width:38px;height:38px}
+  .scard.active{min-height:0;margin:6px 0 18px;padding-bottom:14px}
+}
+
+@media(hover:none){
+  .btn-main:hover,.btn-tc:hover,.btn-cont:hover,.btn-finish:hover,.btn-sub:hover,.btn-bk:hover{transform:none}
+}
+
+/* ======= PHASE SYSTEM ======= */
+#s2{flex-direction:column;background:var(--bg);height:100vh;overflow:hidden}
+.phase-bar{display:flex;align-items:center;gap:4px;padding:10px 16px;background:var(--white);border-bottom:1.5px solid var(--border);overflow-x:auto;flex-shrink:0}
+.phase-bar::-webkit-scrollbar{display:none}
+.phase-pill{display:inline-flex;align-items:center;padding:7px 14px;border-radius:8px;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.76rem;white-space:nowrap;background:var(--bg);color:var(--gray);border:1.5px solid var(--border);transition:all .25s;flex-shrink:0;cursor:default}
+.phase-pill.active{background:var(--red);color:#fff;border-color:var(--red)}
+.phase-pill.done{background:var(--red-light);color:var(--red-dark);border-color:#fca5a5}
+.phase-sep{color:#d1d5db;font-size:.8rem;flex-shrink:0;padding:0 2px;user-select:none}
+
+.phase-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.phase-panel{display:none;flex-direction:column;flex:1;overflow:hidden}
+.phase-panel.active{display:flex}
+
+.pcrs-outer{position:relative;flex:1;overflow:hidden}
+.pcrs-track{display:flex;height:100%;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.pcrs-slide{min-width:100%;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pcrs-slide::-webkit-scrollbar{width:3px}
+.pcrs-slide::-webkit-scrollbar-thumb{background:#fca5a5;border-radius:2px}
+
+.pslide-img{flex-shrink:0;height:240px;background:#edf4fb;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pslide-img img{width:100%;height:100%;object-fit:contain;display:block;padding:10px}
+/* Row layout (image left, text right) */
+.phase-panel--row .pcrs-slide{flex-direction:row;align-items:stretch;height:100%}
+.phase-panel--row .pslide-img{width:48%;height:100%;border-bottom:none;border-left:1.5px solid var(--border);flex-shrink:0}
+.phase-panel--row .pslide-body{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.phase-panel--row .pnav-btn{top:50%}
+@media(max-width:767px){
+  .phase-panel--row .pcrs-slide{flex-direction:column;height:auto}
+  .phase-panel--row .pslide-img{width:100%;height:200px;border-bottom:1.5px solid var(--border);border-left:none}
+  .phase-panel--row .pnav-btn{top:100px}
+}
+.pslide-img-vid{position:relative;padding:0}
+.pslide-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.pslide-vid-overlay{position:absolute;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center}
+.pslide-ph-box{display:flex;flex-direction:column;align-items:center;gap:8px}
+.pslide-ph{width:72px;height:72px;border-radius:20px;background:var(--white);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 2px 12px rgba(15,23,42,.08)}
+.pslide-ph-lbl{font-size:.75rem;font-weight:700;color:var(--gray)}
+
+.pslide-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:8px}
+.pslide-num{font-size:.7rem;font-weight:700;color:var(--red);letter-spacing:1.2px}
+.pslide-title{font-size:1rem;font-weight:800;color:var(--dark);line-height:1.4;font-family:'Tajawal',sans-serif}
+.pslide-desc{font-size:.85rem;color:var(--gray);line-height:1.8}
+.pslide-link{display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:var(--red);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.8rem;padding:9px 18px;border-radius:8px;text-decoration:none;width:fit-content;transition:background .15s}
+.pslide-link:hover{background:var(--red-dark)}
+.pslide-warn{background:#fffbeb;border-right:3px solid #fbbf24;border-radius:0 8px 8px 0;padding:8px 12px;font-size:.79rem;color:#78350f;margin-top:4px}
+
+.pnav-btn{position:absolute;top:95px;transform:translateY(-50%);background:var(--white);border:1.5px solid var(--border);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;color:var(--dark);z-index:2;box-shadow:0 2px 8px rgba(15,23,42,.1);transition:all .15s;line-height:1}
+.pnav-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.pnav-prev{right:10px}
+.pnav-next{left:10px}
+
+.phase-dots-bar{display:flex;justify-content:center;align-items:center;gap:6px;padding:8px 0;background:var(--white);flex-shrink:0;border-top:1.5px solid var(--border)}
+.pdot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;border:none;cursor:pointer;padding:0;transition:all .2s}
+.pdot.on{background:var(--red);width:20px;border-radius:4px}
+
+.phase-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border-top:1.5px solid var(--border);flex-shrink:0}
+.phase-foot-info{font-size:.78rem;color:var(--gray);font-family:'Tajawal',sans-serif;line-height:1.5}
+.phase-foot-info b{color:var(--dark)}
+.btn-pnext{background:var(--red);color:#fff;font-family:'Tajawal',sans-serif;font-weight:700;font-size:.88rem;padding:11px 26px;border-radius:50px;border:none;cursor:pointer;transition:opacity .25s,visibility .25s,background .15s;min-height:44px;touch-action:manipulation;visibility:hidden;opacity:0}
+.btn-pnext:hover{background:var(--red-dark)}
+
+@media(min-width:768px){
+  .pslide-img{height:320px}
+  .pnav-btn{top:160px;width:40px;height:40px;font-size:1.3rem}
+  .pslide-title{font-size:1.1rem}
+  .pslide-desc{font-size:.9rem}
+  .phase-pill{font-size:.8rem;padding:8px 18px}
+  .phase-bar{padding:12px 24px;gap:6px}
+  .phase-foot{padding:14px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- S1: Start -->
+<div id="s1" class="screen active">
+  <div class="s1-inner">
+    <div class="s1-left">
+      <div>
+        <div class="s1-badge"><span class="s1-badge-dot"></span> تحدي مباشر</div>
+      </div>
+      <div class="s1-hero">
+        <h1>ابنِ دائرتك<br>الكهربائية <span class="accent">الآن.</span></h1>
+        <p>ستتعلم كيف تبني دائرة Arduino مع زر الضغط في Tinkercad — خطوة بخطوة — وتسلّم شغلك في 15 دقيقة.</p>
+      </div>
+      <div class="s1-cta">
+        <button class="btn-main" onclick="go('s2')">ابدأ التحدي ←</button>
+        <span class="cta-note">لا تغلق الصفحة بعد البدء</span>
+      </div>
+    </div>
+    <div class="s1-right">
+      <div class="stats-row">
+        <div class="stat-card"><div class="sv">15</div><div class="sl">دقيقة للإنجاز</div></div>
+        <div class="stat-card"><div class="sv">2</div><div class="sl">خطوة فقط</div></div>
+        <div class="stat-card"><div class="sv">🔘</div><div class="sl">زر الضغط</div></div>
+      </div>
+      <div class="steps-card">
+        <div class="steps-card-title">خطوات اللعبة</div>
+        <div class="step-row">
+          <div class="step-n">١</div>
+          <p class="step-t">افتح Tinkercad وأضف <b>Arduino UNO والبريدبورد</b></p>
+        </div>
+        <div class="step-row">
+          <div class="step-n">٢</div>
+          <p class="step-t">وصّل <b>زر الضغط</b> — المؤقت يبدأ هنا تلقائياً</p>
+        </div>
+        <div class="step-row">
+          <div class="step-n">٣</div>
+          <p class="step-t">التقط صورة لدائرتك وسلّمها مع <b>اسمك</b></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: Game -->
+<div id="s2" class="screen">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-logo-box">⚡</div>
+      <div class="hdr-brand-name">إنجاز</div>
+    </div>
+    <div class="timer-chip" id="timer-chip" style="visibility:hidden;opacity:0;transition:opacity .3s">
+      <span class="tdot" id="tdot"></span>
+      <span id="tt">15:00</span>
+    </div>
+  </div>
+
+  <!-- Phase bar -->
+  <div class="phase-bar">
+    <div class="phase-pill active" id="ph0">١ الدخول</div>
+    <span class="phase-sep">›</span>
+    <div class="phase-pill" id="ph1">٢ إنشاء حساب</div>
+    <span class="phase-sep">›</span>
+    <div class="phase-pill" id="ph2">٣ بناء الدائرة</div>
+    <span class="phase-sep">›</span>
+    <div class="phase-pill" id="ph3">٤ البرمجة</div>
+    <span class="phase-sep">›</span>
+    <div class="phase-pill" id="ph4">٥ إرسال الصورة</div>
+  </div>
+
+  <!-- Phase area -->
+  <div class="phase-area">
+
+    <!-- ── Phase 0: الدخول إلى Tinkercad ── -->
+    <div class="phase-panel active" id="pp0">
+      <div class="pcrs-outer">
+        <div class="pcrs-track" id="pt0">
+
+          <div class="pcrs-slide">
+            <div class="pslide-img pslide-img-vid">
+              <video autoplay muted loop playsinline src="../../media/hero-circuits.mp4" class="pslide-vid"></video>
+              <div class="pslide-vid-overlay">
+                <a href="https://www.tinkercad.com" target="_blank" class="pslide-link">افتح Tinkercad ←</a>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">١ / ٢</div>
+              <h4 class="pslide-title">اذهب إلى Tinkercad</h4>
+              <p class="pslide-desc">افتح المتصفح واذهب إلى <b>tinkercad.com</b> — موقع مجاني لمحاكاة الدوائر الإلكترونية من Autodesk.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">🔑</div>
+                <span class="pslide-ph-lbl">Sign In</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٢ / ٢</div>
+              <h4 class="pslide-title">سجّل دخولك</h4>
+              <p class="pslide-desc">إذا عندك حساب اضغط <b>Sign In</b> وادخل بياناتك — إذا ما عندك حساب انتقل للمرحلة التالية لإنشاء واحد.</p>
+            </div>
+          </div>
+
+        </div>
+        <button class="pnav-btn pnav-prev" onclick="pMove(0,1)">‹</button>
+        <button class="pnav-btn pnav-next" onclick="pMove(0,-1)">›</button>
+      </div>
+      <div class="phase-dots-bar" id="pd0"></div>
+    </div>
+
+    <!-- ── Phase 1: إنشاء حساب ── -->
+    <div class="phase-panel phase-panel--row" id="pp1">
+      <div class="pcrs-outer">
+        <div class="pcrs-track" id="pt1">
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <img src="img/tinkercad-account/email-verify.png" alt="إنشاء حساب">
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">١ / ٣</div>
+              <h4 class="pslide-title">أنشئ حساباً جديداً</h4>
+              <p class="pslide-desc">اضغط <b>Join Now</b> أو <b>Sign Up</b> وأكمل بيانات التسجيل باستخدام بريدك الإلكتروني أو حساب Google.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <img src="img/tinkercad-account/account-login.png" alt="إنشاء حساب">
+                <span class="pslide-ph-lbl">Verify Email</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٢ / ٣</div>
+              <h4 class="pslide-title">تحقق من بريدك الإلكتروني</h4>
+              <p class="pslide-desc">ستصلك رسالة تفعيل — افتح بريدك وافتح الرسالة واضغط رابط التفعيل لتأكيد حسابك.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">✅</div>
+                <span class="pslide-ph-lbl">جاهز!</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٣ / ٣</div>
+              <h4 class="pslide-title">ادخل وتأكد من حسابك</h4>
+              <p class="pslide-desc">بعد التفعيل ادخل بياناتك وستظهر لوحة تحكم Tinkercad — أنت جاهز للمرحلة التالية!</p>
+            </div>
+          </div>
+
+        </div>
+        <button class="pnav-btn pnav-prev" onclick="pMove(1,1)">‹</button>
+        <button class="pnav-btn pnav-next" onclick="pMove(1,-1)">›</button>
+      </div>
+      <div class="phase-dots-bar" id="pd1"></div>
+    </div>
+
+    <!-- ── Phase 2: بناء الدائرة ── -->
+    <div class="phase-panel phase-panel--row" id="pp2">
+      <div class="pcrs-outer">
+        <div class="pcrs-track" id="pt2">
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">⚡</div>
+                <span class="pslide-ph-lbl">Circuits → New</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">١ / ٤</div>
+              <h4 class="pslide-title">افتح Circuits وابدأ مشروعاً جديداً</h4>
+              <p class="pslide-desc">من لوحة التحكم اضغط <b>Circuits</b> ثم اضغط <b>Create new Circuit</b> لفتح مساحة العمل.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">🔲</div>
+                <span class="pslide-ph-lbl">Arduino + Breadboard</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٢ / ٤</div>
+              <h4 class="pslide-title">أضف Arduino UNO والبريدبورد</h4>
+              <p class="pslide-desc">ابحث في شريط المكونات عن <b>Arduino UNO</b> و<b>Breadboard Small</b> وضعهما في مساحة العمل.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">🔘</div>
+                <span class="pslide-ph-lbl">Push Button</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٣ / ٤</div>
+              <h4 class="pslide-title">أضف زر الضغط على البريدبورد</h4>
+              <p class="pslide-desc">اسحب <b>Push Button</b> على البريدبورد بحيث <b>يجتاز الفتحة الوسطية</b> — هذا شرط أساسي لعمل الزر!</p>
+              <div class="pslide-warn">⚠️ إذا لم يجتز الفتحة الوسطية، الزر لن يعمل</div>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">🔌</div>
+                <span class="pslide-ph-lbl">توصيل الأسلاك</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٤ / ٤</div>
+              <h4 class="pslide-title">وصّل الأسلاك</h4>
+              <p class="pslide-desc">
+                🟡 <b>أصفر:</b> Pin 2 ← طرف الزر العلوي الأيمن<br>
+                🔴 <b>أحمر:</b> 5V ← القضيب (+) الأحمر<br>
+                ⚫ <b>أسود:</b> GND ← القضيب (–) الأزرق ← طرف الزر السفلي الأيسر
+              </p>
+            </div>
+          </div>
+
+        </div>
+        <button class="pnav-btn pnav-prev" onclick="pMove(2,1)">‹</button>
+        <button class="pnav-btn pnav-next" onclick="pMove(2,-1)">›</button>
+      </div>
+      <div class="phase-dots-bar" id="pd2"></div>
+    </div>
+
+    <!-- ── Phase 3: البرمجة ── -->
+    <div class="phase-panel phase-panel--row" id="pp3">
+      <div class="pcrs-outer">
+        <div class="pcrs-track" id="pt3">
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">💻</div>
+                <span class="pslide-ph-lbl">Code Editor</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">١ / ٣</div>
+              <h4 class="pslide-title">افتح محرر الكود</h4>
+              <p class="pslide-desc">في شريط Tinkercad اضغط <b>Code</b> — يمكنك اختيار <b>Blocks</b> للمبتدئين أو <b>Text</b> للكود المباشر.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">📋</div>
+                <span class="pslide-ph-lbl">Arduino Code</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٢ / ٣</div>
+              <h4 class="pslide-title">اكتب كود قراءة الزر</h4>
+              <p class="pslide-desc">اكتب كوداً يقرأ حالة الزر من <b>Pin 2</b> ويستجيب له — مثلاً يطبع في Serial Monitor أو يشغّل LED.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">▶️</div>
+                <span class="pslide-ph-lbl">Start Simulation</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٣ / ٣</div>
+              <h4 class="pslide-title">شغّل المحاكاة واختبر الزر</h4>
+              <p class="pslide-desc">اضغط <b>Start Simulation</b> ثم اضغط الزر في المشروع وتحقق أن الكود يستجيب بشكل صحيح ✅</p>
+            </div>
+          </div>
+
+        </div>
+        <button class="pnav-btn pnav-prev" onclick="pMove(3,1)">‹</button>
+        <button class="pnav-btn pnav-next" onclick="pMove(3,-1)">›</button>
+      </div>
+      <div class="phase-dots-bar" id="pd3"></div>
+    </div>
+
+    <!-- ── Phase 4: إرسال الصورة ── -->
+    <div class="phase-panel phase-panel--row" id="pp4">
+      <div class="pcrs-outer">
+        <div class="pcrs-track" id="pt4">
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">📸</div>
+                <span class="pslide-ph-lbl">Screenshot</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">١ / ٢</div>
+              <h4 class="pslide-title">التقط لقطة شاشة للدائرة</h4>
+              <p class="pslide-desc">بعد نجاح المحاكاة، التقط <b>screenshot</b> واضح يظهر الدائرة كاملة ويُثبت أنها تعمل.</p>
+            </div>
+          </div>
+
+          <div class="pcrs-slide">
+            <div class="pslide-img">
+              <div class="pslide-ph-box">
+                <div class="pslide-ph">📤</div>
+                <span class="pslide-ph-lbl">تسليم</span>
+              </div>
+            </div>
+            <div class="pslide-body">
+              <div class="pslide-num">٢ / ٢</div>
+              <h4 class="pslide-title">ارفع الصورة مع اسمك</h4>
+              <p class="pslide-desc">اضغط <b>إرسال</b> أدناه، أدخل اسمك الكامل وارفع صورة الدائرة لإتمام التسليم والحصول على شارتك! 🏆</p>
+            </div>
+          </div>
+
+        </div>
+        <button class="pnav-btn pnav-prev" onclick="pMove(4,1)">‹</button>
+        <button class="pnav-btn pnav-next" onclick="pMove(4,-1)">›</button>
+      </div>
+      <div class="phase-dots-bar" id="pd4"></div>
+    </div>
+
+  </div><!-- /phase-area -->
+
+  <!-- Footer -->
+  <div class="phase-foot">
+    <span class="phase-foot-info" id="pfoot-info"><b>المرحلة ١</b> — الدخول إلى Tinkercad</span>
+    <button class="btn-pnext" id="btn-pnext" onclick="nextPhase()">التالي ←</button>
+  </div>
+
+</div>
+
+<!-- Upload -->
+<div id="s-up" class="screen">
+  <div class="up-card">
+    <h2>سلّم شغلك 📸</h2>
+    <p class="up-sub">ارفع صورة دائرتك واكتب اسمك الكامل.</p>
+    <img id="pimg" alt="معاينة" src=""/>
+    <label class="up-label" id="ulb" for="freal">
+      <span style="font-size:1.8rem">📁</span>
+      <span>اضغط لاختيار صورة</span>
+      <span class="ufn" id="ufn"></span>
+    </label>
+    <input type="file" id="freal" accept="image/*"/>
+    <input type="text" class="ni" id="nm" placeholder="اسمك الكامل..." maxlength="60"/>
+    <button class="btn-sub" id="bsub" onclick="submit()" disabled>تسليم ✓</button>
+    <button class="btn-bk" onclick="go('s2')">← رجوع</button>
+  </div>
+</div>
+
+<!-- Success -->
+<div id="s3" class="screen">
+  <div class="s3-card">
+    <div class="s3-ico-wrap">
+      <span class="s3-ico">🎉</span>
+    </div>
+    <div class="s3-name" id="s3n">أحسنت!</div>
+    <div class="s3-divider"></div>
+    <p class="s3-msg">تم تسليم دائرتك بنجاح — عمل ممتاز، استمر!</p>
+    <div class="s3-img-wrap">
+      <img id="s3img" class="s3-img" src="" alt=""/>
+    </div>
+    <div class="s3-badge">🏆 أنجزت التحدي!</div>
+    <p class="s3-footer-note">يمكنك إغلاق الصفحة الآن</p>
+  </div>
+</div>
+
+<script>
+// ===== PHASE CAROUSEL =====
+var pIdx=[0,0,0,0,0];
+var pTotals=[2,3,4,3,2];
+var pLabels=[
+  '<b>المرحلة ١</b> — الدخول إلى Tinkercad',
+  '<b>المرحلة ٢</b> — إنشاء حساب',
+  '<b>المرحلة ٣</b> — بناء الدائرة',
+  '<b>المرحلة ٤</b> — البرمجة',
+  '<b>المرحلة ٥</b> — إرسال الصورة'
+];
+var curPhase=0;
+
+function pBuild(ph){
+  var dc=document.getElementById('pd'+ph);
+  if(!dc)return;
+  for(var i=0;i<pTotals[ph];i++){
+    var d=document.createElement('button');
+    d.className='pdot'+(i===0?' on':'');
+    (function(p,n){d.onclick=function(){pGo(p,n)};})(ph,i);
+    dc.appendChild(d);
+  }
+}
+function updateNextBtn(){
+  var btn=document.getElementById('btn-pnext');
+  if(!btn)return;
+  var isLast=pIdx[curPhase]===pTotals[curPhase]-1;
+  btn.style.visibility=isLast?'visible':'hidden';
+  btn.style.opacity=isLast?'1':'0';
+  btn.style.pointerEvents=isLast?'':'none';
+}
+function pGo(ph,n){
+  pIdx[ph]=n;
+  var t=document.getElementById('pt'+ph);
+  if(t)t.style.transform='translateX('+(n*100)+'%)';
+  document.querySelectorAll('#pd'+ph+' .pdot').forEach(function(d,i){
+    d.classList.toggle('on',i===n);
+  });
+  if(ph===curPhase)updateNextBtn();
+}
+function pMove(ph,dir){
+  pGo(ph,(pIdx[ph]-dir+pTotals[ph])%pTotals[ph]);
+}
+function nextPhase(){
+  if(curPhase>=4){go('s-up');return;}
+  document.getElementById('ph'+curPhase).classList.remove('active');
+  document.getElementById('ph'+curPhase).classList.add('done');
+  document.getElementById('pp'+curPhase).classList.remove('active');
+  curPhase++;
+  document.getElementById('ph'+curPhase).classList.add('active');
+  document.getElementById('pp'+curPhase).classList.add('active');
+  var fi=document.getElementById('pfoot-info');
+  if(fi)fi.innerHTML=pLabels[curPhase];
+  var btn=document.getElementById('btn-pnext');
+  if(btn)btn.textContent=curPhase===4?'إرسال ←':'التالي ←';
+  updateNextBtn();
+  if(curPhase===2){
+    var chip=document.getElementById('timer-chip');
+    if(chip){chip.style.visibility='visible';chip.style.opacity='1';}
+    tick();
+  }
+}
+for(var ph=0;ph<5;ph++)pBuild(ph);
+updateNextBtn();
+
+var secs=900,ton=false,iv=null,imgS=null;
+function go(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+}
+function tick(){
+  if(ton)return;ton=true;
+  var d=document.getElementById('tdot'),t=document.getElementById('tt');
+  if(!d||!t)return;
+  d.classList.add('on');
+  iv=setInterval(function(){
+    secs--;
+    if(secs<=0){clearInterval(iv);t.textContent='00:00';d.className='tdot red';t.className='red';go('s-up');return;}
+    var m=Math.floor(secs/60),s=secs%60;
+    t.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    if(secs<=60){d.className='tdot red';t.className='red';}
+    else if(secs<=180){d.className='tdot warn';t.className='warn';}
+  },1000);
+}
+document.getElementById('freal').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;
+  document.getElementById('ulb').classList.add('has');
+  document.getElementById('ufn').textContent='✓ '+f.name;
+  var r=new FileReader();
+  r.onload=function(ev){
+    imgS=ev.target.result;
+    var p=document.getElementById('pimg');p.src=imgS;p.classList.add('show');
+    chk();
+  };
+  r.readAsDataURL(f);
+});
+document.getElementById('nm').addEventListener('input',chk);
+function chk(){
+  document.getElementById('bsub').disabled=!(imgS&&document.getElementById('nm').value.trim().length>=2);
+}
+function submit(){
+  var n=document.getElementById('nm').value.trim();
+  if(!n||!imgS)return;
+  document.getElementById('s3n').textContent='🎉 '+n;
+  document.getElementById('s3img').src=imgS;
+  go('s3');
+  conf();
+}
+function conf(){
+  var cols=['#f04e23','#ffd93d','#0f172a','#22c55e','#3d5af1'];
+  var w=document.createElement('div');
+  w.style.cssText='position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:999';
+  document.body.appendChild(w);
+  for(var i=0;i<70;i++){
+    var el=document.createElement('div');
+    var sz=Math.random()*10+4;
+    el.style.cssText='position:absolute;width:'+sz+'px;height:'+sz+'px;background:'+cols[Math.floor(Math.random()*cols.length)]+';left:'+(Math.random()*100)+'%;top:-15px;border-radius:'+(Math.random()>.5?'50%':'2px')+';animation:cf '+(2+Math.random()*2)+'s linear '+(Math.random()*1.2)+'s forwards';
+    w.appendChild(el);
+  }
+  var st=document.createElement('style');
+  st.textContent='@keyframes cf{0%{transform:translateY(-15px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(540deg);opacity:0}}';
+  document.head.appendChild(st);
+}
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>

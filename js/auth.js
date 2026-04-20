@@ -48,8 +48,9 @@ function _devAuthEnabled() {
 }
 
 function _rootPath(path) {
-  const inNestedPage = /\/(teacher|admin)\//.test(window.location.pathname);
-  return (inNestedPage ? '../' : './') + path;
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const depth = Math.max(0, parts.length - 1);
+  return '../'.repeat(depth) + path;
 }
 
 const Auth = {
@@ -142,13 +143,13 @@ const Auth = {
   isLoggedIn() { return !!this.getCurrentUser(); },
 
   getRedirectPage(user = this.getCurrentUser()) {
-    if (!user) return _rootPath('auth.html');
-    return user.role === AUTH_ROLES.TEACHER ? _rootPath('teacher/dashboard.html') : _rootPath('tracks.html');
+    if (!user) return _rootPath('auth/index.html');
+    return user.role === AUTH_ROLES.TEACHER ? _rootPath('teacher/dashboard.html') : _rootPath('student/tracks/tracks.html');
   },
 
   requireAuth(opts = {}) {
     const user     = this.getCurrentUser();
-    const redirect = opts.redirectTo || './auth.html';
+    const redirect = opts.redirectTo || _rootPath('auth/index.html');
     const role     = opts.role || null;
     if (!user) { window.location.href = redirect; return null; }
     if (role && user.role !== role) { window.location.href = this.getRedirectPage(user); return null; }
@@ -197,14 +198,14 @@ function initAuthNav() {
   if (!placeholder) return;
   const user = Auth.getCurrentUser();
   if (user) {
-    const profilePage = user.role === AUTH_ROLES.TEACHER ? _rootPath('teacher/dashboard.html') : _rootPath('student.html');
+    const profilePage = user.role === AUTH_ROLES.TEACHER ? _rootPath('teacher/dashboard.html') : _rootPath('student/index.html');
     placeholder.innerHTML =
       `<a href="${profilePage}" class="auth-nav-user" title="صفحتي">
          <span class="auth-nav-avatar">${user.name.charAt(0)}</span>
          <span class="auth-nav-name">${user.name.split(' ')[0]}</span>
        </a>`;
   } else {
-    placeholder.innerHTML = `<a href="${_rootPath('auth.html')}" class="site-back auth-nav-signin">تسجيل الدخول</a>`;
+    placeholder.innerHTML = `<a href="${_rootPath('auth/index.html')}" class="site-back auth-nav-signin">تسجيل الدخول</a>`;
   }
 }
 

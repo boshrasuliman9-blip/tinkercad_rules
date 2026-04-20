@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>تسجيل الدخول - إنجاز</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/auth/auth.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="../index.html" class="site-logo" id="authLogoLink">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="../index.html" class="site-back" id="authHomeLink">الرئيسية</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="../index.html" class="auth-logo-mark" id="authCardLogoLink">إنجاز</a>
+      <p>إنجاز - تحدي الإلكترونيات</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('signin')">تسجيل الدخول</button>
+      <button class="auth-tab" onclick="switchTab('signup')">إنشاء حساب</button>
+    </div>
+
+    <div class="auth-panel active" id="panel-signin">
+      <form id="form-signin" onsubmit="handleSignIn(event)" novalidate>
+        <div class="auth-field">
+          <label for="si-email">البريد الإلكتروني</label>
+          <input id="si-email" type="email" placeholder="example@mail.com" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="si-password">كلمة المرور</label>
+          <input id="si-password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <div class="auth-field">
+          <label>تسجيل الدخول كـ</label>
+          <div class="role-picker">
+            <label class="role-option">
+              <input type="radio" name="si-role" value="student" checked>
+              طالب
+            </label>
+            <label class="role-option">
+              <input type="radio" name="si-role" value="teacher">
+              معلم
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="auth-submit" id="btn-signin">دخول</button>
+        <div class="auth-msg" id="msg-signin"></div>
+      </form>
+      <div class="auth-divider">
+        ليس لديك حساب؟
+        <button onclick="switchTab('signup')" style="background:none;border:none;color:var(--red);font-weight:700;cursor:pointer;font-family:inherit;font-size:inherit;">أنشئ حسابًا</button>
+      </div>
+      <div style="text-align:center;margin-top:.6rem;">
+        <button onclick="switchTab('forgot')" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:underline;">نسيت كلمة المرور؟</button>
+      </div>
+    </div>
+
+    <!-- ─── لوحة نسيت كلمة المرور ─── -->
+    <div class="auth-panel" id="panel-forgot">
+      <form id="form-forgot" onsubmit="handleForgot(event)" novalidate>
+        <p style="font-size:.88rem;color:var(--gray);margin-bottom:1.2rem;line-height:1.6;">
+          أدخل بريدك الإلكتروني وسيصل طلبك لمعلمك الذي سيرسل لك رابط إعادة التعيين.
+        </p>
+        <div class="auth-field">
+          <label for="fg-email">البريد الإلكتروني</label>
+          <input id="fg-email" type="email" placeholder="example@mail.com" required>
+        </div>
+        <button type="submit" class="auth-submit" id="btn-forgot">إرسال الطلب</button>
+        <div class="auth-msg" id="msg-forgot"></div>
+      </form>
+      <div class="auth-divider" style="border-top:1.5px dashed var(--border);margin-top:1rem;padding-top:1rem;">
+        أو استرجاع برقم الهاتف
+      </div>
+      <form id="form-phone-otp" onsubmit="handlePhoneOtp(event)" novalidate>
+        <p style="font-size:.82rem;color:var(--gray);margin-bottom:.8rem;line-height:1.6;">
+          أدخل رقم الهاتف المرتبط بحساب الطالب، ثم اكتب كود OTP الذي يصلك برسالة.
+        </p>
+        <div class="auth-field">
+          <label for="fg-phone">رقم الهاتف</label>
+          <input id="fg-phone" type="tel" placeholder="+9627XXXXXXXX" autocomplete="tel">
+        </div>
+        <button type="submit" class="auth-submit" id="btn-phone-otp">إرسال OTP</button>
+      </form>
+      <form id="form-phone-verify" onsubmit="handlePhoneVerify(event)" novalidate style="display:none;margin-top:.9rem;">
+        <div class="auth-field">
+          <label for="fg-otp">كود OTP</label>
+          <input id="fg-otp" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
+        </div>
+        <button type="submit" class="auth-submit" id="btn-phone-verify">تحقق وأرسل رابط reset</button>
+      </form>
+      <div class="auth-msg" id="msg-phone-reset"></div>
+      <div class="auth-divider">
+        <button onclick="switchTab('signin')" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;">← العودة لتسجيل الدخول</button>
+      </div>
+    </div>
+
+    <!-- ─── لوحة إعادة تعيين كلمة المرور ─── -->
+    <div class="auth-panel" id="panel-reset">
+      <form id="form-reset" onsubmit="handleReset(event)" novalidate>
+        <p style="font-size:.88rem;color:var(--gray);margin-bottom:1.2rem;">أدخل كلمة مرور جديدة لحسابك.</p>
+        <div class="auth-field">
+          <label for="rs-password">كلمة المرور الجديدة</label>
+          <input id="rs-password" type="password" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+        <div class="auth-field">
+          <label for="rs-confirm">تأكيد كلمة المرور</label>
+          <input id="rs-confirm" type="password" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="auth-submit" id="btn-reset">تغيير كلمة المرور</button>
+        <div class="auth-msg" id="msg-reset"></div>
+      </form>
+    </div>
+
+    <div class="auth-panel" id="panel-signup">
+
+      <!-- الخطوة 1: الرمز التعريفي -->
+      <div id="step-code">
+        <p style="font-size:.88rem;color:var(--gray);margin-bottom:1.2rem;line-height:1.6;">
+          أدخل رمزك التعريفي الذي أعطاك إياه معلمك أو الأدمن.
+        </p>
+        <div class="auth-field">
+          <label for="su-code">الرمز التعريفي</label>
+          <input id="su-code" type="text" placeholder="ST-2026-XXXX أو TE-2026-XXXX" autocomplete="off" style="text-transform:uppercase;letter-spacing:1px;">
+        </div>
+        <button type="button" class="auth-submit" id="btn-lookup" onclick="handleLookupCode()">تحقق من الرمز</button>
+        <div class="auth-msg" id="msg-lookup"></div>
+      </div>
+
+      <!-- الخطوة 2: بيانات الحساب (تظهر بعد التحقق) -->
+      <form id="form-signup" onsubmit="handleSignUp(event)" novalidate style="display:none;">
+        <div id="su-found-banner" style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1.2rem;font-size:.9rem;">
+          <div style="font-weight:800;margin-bottom:3px;" id="su-found-name"></div>
+          <div style="color:var(--gray);font-size:.82rem;" id="su-found-meta"></div>
+        </div>
+        <div class="auth-field">
+          <label for="su-name">الاسم الكامل <span style="font-weight:400;color:var(--gray)">(يمكن التعديل)</span></label>
+          <input id="su-name" type="text" placeholder="أحمد محمد" autocomplete="name" required>
+        </div>
+        <div class="auth-field">
+          <label for="su-email">البريد الإلكتروني</label>
+          <input id="su-email" type="email" placeholder="example@mail.com" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="su-phone">رقم الهاتف</label>
+          <input id="su-phone" type="tel" placeholder="+9627XXXXXXXX" autocomplete="tel">
+        </div>
+        <div class="auth-field">
+          <label for="su-password">كلمة المرور <span style="font-weight:400;color:var(--gray)">(6 أحرف على الأقل)</span></label>
+          <input id="su-password" type="password" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+        <input type="hidden" id="su-usercode">
+        <input type="hidden" id="su-role-hidden">
+        <button type="submit" class="auth-submit" id="btn-signup">إنشاء الحساب</button>
+        <div class="auth-msg" id="msg-signup"></div>
+        <div style="text-align:center;margin-top:.8rem;">
+          <button type="button" onclick="resetCodeStep()" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:underline;">← تغيير الرمز التعريفي</button>
+        </div>
+      </form>
+
+      <div class="auth-divider">
+        لديك حساب؟
+        <button onclick="switchTab('signin')" style="background:none;border:none;color:var(--red);font-weight:700;cursor:pointer;font-family:inherit;font-size:inherit;">سجّل دخولك</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/auth/auth.js"></script>
+</body>
+</html>

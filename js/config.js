@@ -8,10 +8,10 @@
    ============================================ */
 
 var CQ = {
-  imgbbKey:  'f23616775da067e60dec9b7dbafb3296',
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbwivbkdDH-gjXxiueh8qTdxBJCoBkOTnuOd8VeHrmjFk5ETsDW54QQm6CBnEiJpo_ofYA/exec',
+  imgbbKey: 'f23616775da067e60dec9b7dbafb3296',
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbzaWHdDmEPtjVCTjLKGCuJPnvjj6fulC6uRnRpCZpdu6Y5bHY9myyiqEi2ifHEZakFXMg/exec',
   auth: {
-    requireApproval: false
-  }
+    requireApproval: true
+  },
   // secret محذوف من هنا — محطوط بـ admin.html بس لأنه للأدمن فقط
 };

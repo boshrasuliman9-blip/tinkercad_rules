@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>دخول المبتكر — إنجاز</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="./css/auth-creator.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="./index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="./index.html" class="site-back">الرئيسية</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<main class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="./index.html" class="auth-logo-mark">إنجاز</a>
+      <p>مساحة المبتكر</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('signin')">تسجيل الدخول</button>
+      <button class="auth-tab" onclick="switchTab('signup')">إنشاء حساب</button>
+    </div>
+
+    <!-- تسجيل الدخول -->
+    <div class="auth-panel active" id="panel-signin">
+      <form id="form-signin" onsubmit="handleSignIn(event)" novalidate>
+        <div class="auth-field">
+          <label for="si-email">البريد الإلكتروني</label>
+          <input id="si-email" type="email" placeholder="example@mail.com" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="si-password">كلمة المرور</label>
+          <input id="si-password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="auth-submit" id="btn-signin">دخول</button>
+        <div class="auth-msg" id="msg-signin"></div>
+      </form>
+      <div class="auth-divider">
+        ليس لديك حساب؟
+        <button onclick="switchTab('signup')" style="background:none;border:none;color:#7c3aed;font-weight:700;cursor:pointer;font-family:inherit;font-size:inherit;">أنشئ حسابًا</button>
+      </div>
+      <div style="text-align:center;margin-top:.6rem;">
+        <button onclick="switchTab('forgot')" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:underline;">نسيت كلمة المرور؟</button>
+      </div>
+    </div>
+
+    <!-- نسيت كلمة المرور -->
+    <div class="auth-panel" id="panel-forgot">
+      <form id="form-forgot" onsubmit="handleForgot(event)" novalidate>
+        <p style="font-size:.88rem;color:var(--gray);margin-bottom:1.2rem;line-height:1.6;">
+          أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور.
+        </p>
+        <div class="auth-field">
+          <label for="fg-email">البريد الإلكتروني</label>
+          <input id="fg-email" type="email" placeholder="example@mail.com" required>
+        </div>
+        <button type="submit" class="auth-submit" id="btn-forgot">إرسال الطلب</button>
+        <div class="auth-msg" id="msg-forgot"></div>
+      </form>
+      <div class="auth-divider">
+        <button onclick="switchTab('signin')" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;">← العودة لتسجيل الدخول</button>
+      </div>
+    </div>
+
+    <!-- إنشاء حساب -->
+    <div class="auth-panel" id="panel-signup">
+      <div id="step-code">
+        <p style="font-size:.88rem;color:var(--gray);margin-bottom:1.2rem;line-height:1.6;">
+          أدخل رمزك التعريفي <strong>CR-2026-XXXX</strong> الذي أعطاك إياه الأدمن.
+        </p>
+        <div class="auth-field">
+          <label for="su-code">الرمز التعريفي</label>
+          <input id="su-code" type="text" placeholder="CR-2026-XXXX" autocomplete="off" style="text-transform:uppercase;letter-spacing:1px;">
+        </div>
+        <button type="button" class="auth-submit" id="btn-lookup" onclick="handleLookupCode()">تحقق من الرمز</button>
+        <div class="auth-msg" id="msg-lookup"></div>
+      </div>
+
+      <form id="form-signup" onsubmit="handleSignUp(event)" novalidate style="display:none;">
+        <div id="su-found-banner" style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1.2rem;font-size:.9rem;">
+          <div style="font-weight:800;margin-bottom:3px;" id="su-found-name"></div>
+          <div style="color:var(--gray);font-size:.82rem;" id="su-found-meta"></div>
+        </div>
+        <div class="auth-field">
+          <label for="su-name">الاسم الكامل</label>
+          <input id="su-name" type="text" placeholder="اسمك الكامل" autocomplete="name" required>
+        </div>
+        <div class="auth-field">
+          <label for="su-email">البريد الإلكتروني</label>
+          <input id="su-email" type="email" placeholder="example@mail.com" autocomplete="email" required>
+        </div>
+        <div class="auth-field">
+          <label for="su-password">كلمة المرور <span style="font-weight:400;color:var(--gray)">(6 أحرف على الأقل)</span></label>
+          <input id="su-password" type="password" placeholder="••••••••" autocomplete="new-password" required>
+        </div>
+        <input type="hidden" id="su-usercode">
+        <button type="submit" class="auth-submit" id="btn-signup">إنشاء الحساب</button>
+        <div class="auth-msg" id="msg-signup"></div>
+        <div style="text-align:center;margin-top:.8rem;">
+          <button type="button" onclick="resetCodeStep()" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:underline;">← تغيير الرمز التعريفي</button>
+        </div>
+      </form>
+
+      <div class="auth-divider">
+        لديك حساب؟
+        <button onclick="switchTab('signin')" style="background:none;border:none;color:#7c3aed;font-weight:700;cursor:pointer;font-family:inherit;font-size:inherit;">سجّل دخولك</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="./js/auth-creator.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+@import "../../design/landing.css";
+
+:root {
+  --ix-accent: #16a34a;
+  --ix-accent-rgb: 22, 163, 74;
+  --ix-accent-text: #15803d;
+  --ix-accent-dark: #0f7a35;
+  --ix-accent-darker: #0f7a35;
+  --ix-accent-tint: #ecfdf3;
+  --ix-accent-border: #bbf7d0;
+
+  --ix-accent-grad-start: #22c55e;
+  --ix-accent-grad-mid: #16a34a;
+  --ix-accent-grad-end: #0f7a35;
+
+  --ix-btn-inset-dark: #0f7a35;
+  --ix-btn-inset-light: #22c55e;
+  --ix-btn-border: #0f7a35;
+}

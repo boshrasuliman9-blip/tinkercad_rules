@@ -1,0 +1,5 @@
+@import "../../design/auth.css";
+
+/* ── overrides: Base/Admin → orange (default) ── */
+/* الألوان الافتراضية في design/auth.css هي البرتقالي */
+/* هذا الملف يظل كـ entry point للصفحة الرئيسية */

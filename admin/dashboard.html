@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الأدمن - إنجاز</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/dashboard.css">
+</head>
+<body>
+
+<div id="app">
+<nav class="mobile-bar" aria-label="تنقل لوحة الأدمن">
+  <button class="mobile-nav-btn active" data-mobile-nav="overview" onclick="showSection('overview')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-9"/></svg></span><span>نظرة</span></button>
+  <button class="mobile-nav-btn" data-mobile-nav="schools" onclick="showSection('schools')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/></svg></span><span>مدارس</span></button>
+  <button class="mobile-nav-btn" data-mobile-nav="requests" onclick="showSection('requests')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>طلبات</span></button>
+  <button class="mobile-nav-btn" data-mobile-nav="teachers" onclick="showSection('teachers')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span><span>معلمون</span></button>
+  <button class="mobile-nav-btn" data-mobile-nav="students" onclick="showSection('students')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 9.5L12 4l9.5 5.5L12 15 2.5 9.5Z"/><path d="M6.5 12v5c0 1.5 3 3 5.5 3s5.5-1.5 5.5-3v-5"/></svg></span><span>طلاب</span></button>
+  <button class="mobile-nav-btn" data-mobile-nav="challenges" onclick="showSection('challenges')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg></span><span>تحديات</span></button>
+</nav>
+<div class="shell">
+
+  <!-- ─── Sidebar ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="http://127.0.0.1:5501/admin/" class="sidebar-logo-name">إنجاز</a>
+      <small>لوحة الأدمن</small>
+      <div class="admin-badge">
+        <div class="admin-badge-name" id="sb-name">—</div>
+        <div class="admin-badge-sub">إدارة المنصة الكاملة</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-9"/></svg></span> نظرة عامة
+      </div>
+      <div class="nav-item" onclick="showSection('schools')" id="nav-schools">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/><path d="M8 12h2"/><path d="M14 12h2"/></svg></span> المدارس/المراكز
+      </div>
+      <div class="nav-item" onclick="showSection('requests')" id="nav-requests">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> طلبات التسجيل
+        <span class="nav-notif-count" id="nav-req-badge" style="display:none">0</span>
+      </div>
+      <div class="nav-item" onclick="showSection('teachers')" id="nav-teachers">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span> المعلمون
+      </div>
+      <div class="nav-item" onclick="showSection('students')" id="nav-students">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 9.5L12 4l9.5 5.5L12 15 2.5 9.5Z"/><path d="M6.5 12v5c0 1.5 3 3 5.5 3s5.5-1.5 5.5-3v-5"/></svg></span> الطلاب
+      </div>
+      <div class="nav-item" onclick="showSection('challenges')" id="nav-challenges">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg></span> التحديات
+      </div>
+      <div class="nav-item" onclick="showSection('creators')" id="nav-creators">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المبتكرون
+      </div>
+      <div class="nav-item" onclick="showSection('notifs')" id="nav-notifs">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> الإشعارات
+        <span class="nav-notif-count" id="nav-notif-badge" style="display:none">0</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="chg-pass-btn-s" onclick="openChangePass()"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2"/><path d="M7 7a5 5 0 1 1 9 4l-2 2-3 8-3-3 8-3 2-2"/></svg></span> تغيير كلمة المرور</button>
+      <button class="signout-btn-s" onclick="doLogout()"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span> تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <!-- ─── Main ─── -->
+  <main class="main">
+
+    <!-- ── Topbar ── -->
+    <div class="topbar">
+      <div class="topbar-actions">
+        <div class="topbar-user">
+          <span id="topbar-name">—</span>
+        </div>
+        <button class="topbar-icon-btn" onclick="openChangePass()" title="الإعدادات">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="topbar-icon-btn" id="themeToggle" onclick="toggleDashTheme()" title="تبديل الوضع">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="18" height="18"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="topbar-icon-btn" onclick="showSection('requests')" title="طلبات التسجيل">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="topbar-notif-dot" id="topbar-req-badge" style="display:none">0</span>
+        </button>
+        <button class="topbar-icon-btn" onclick="showSection('notifs')" title="الإشعارات">
+          <svg class="bell-svg" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </button>
+      </div>
+      <a href="./index.html" class="topbar-home">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        الرئيسية
+      </a>
+    </div>
+
+
+    <!-- ════ نظرة عامة ════ -->
+    <div class="section active" id="section-overview">
+
+      <!-- Hero موحد -->
+      <div class="hero-panel">
+        <div>
+          <div class="hero-kicker">لوحة تشغيل الأدمن</div>
+          <div class="hero-welcome">مرحباً <span id="ov-name"></span> 👋</div>
+          <div class="hero-date" id="ov-date"></div>
+          <div class="hero-sub">أدر المدارس، المعلمين، الطلاب، والتحديات من مكان واحد.</div>
+          <div class="hero-actions">
+            <button class="btn btn-hero" onclick="showSection('challenges')">إنشاء تحدي</button>
+            <button class="btn btn-hero-outline" onclick="showSection('teachers')">إدارة المعلمين</button>
+            <button class="btn btn-hero-outline" onclick="showSection('schools')">إدارة المدارس</button>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div>
+            <div class="hero-side-label">إجمالي المنصة</div>
+            <div class="hero-side-value" id="hero-summary">جار تحميل البيانات...</div>
+          </div>
+          <div class="hero-side-note">نظرة شاملة على نشاط المنصة وآخر التحديثات.</div>
+        </div>
+      </div>
+
+      <!-- إحصائيات -->
+      <div class="stats-row">
+        <div class="stat-card blue">
+          <div class="stat-val" id="st-schools">—</div>
+          <div class="stat-lbl">المدارس/المراكز</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-val" id="st-teachers">—</div>
+          <div class="stat-lbl">المعلمون</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-val" id="st-students">—</div>
+          <div class="stat-lbl">الطلاب</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-val" id="st-challenges">—</div>
+          <div class="stat-lbl">التحديات المنشورة</div>
+        </div>
+      </div>
+
+      <!-- وصول سريع -->
+      <div class="quick-actions">
+        <button class="quick-action" onclick="showSection('requests')">
+          <span class="quick-action-icon">📋</span>
+          <span class="quick-action-title">طلبات التسجيل <span id="ov-req-badge" style="display:none;background:#ef4444;color:#fff;border-radius:999px;padding:1px 7px;font-size:.75rem;margin-right:4px">0</span></span>
+          <span class="quick-action-sub">مراجعة وقبول طلبات المعلمين والطلاب</span>
+        </button>
+        <button class="quick-action" onclick="showSection('schools')">
+          <span class="quick-action-icon">🏫</span>
+          <span class="quick-action-title">المدارس/المراكز</span>
+          <span class="quick-action-sub">إضافة وإدارة المدارس والمراكز</span>
+        </button>
+        <button class="quick-action" onclick="showSection('teachers')">
+          <span class="quick-action-icon">👤</span>
+          <span class="quick-action-title">المعلمون</span>
+          <span class="quick-action-sub">تسجيل وإدارة حسابات المعلمين</span>
+        </button>
+        <button class="quick-action" onclick="showSection('students')">
+          <span class="quick-action-icon">🎓</span>
+          <span class="quick-action-title">الطلاب</span>
+          <span class="quick-action-sub">عرض جميع الطلاب عبر المدارس</span>
+        </button>
+        <button class="quick-action" onclick="showSection('challenges')">
+          <span class="quick-action-icon">⚡</span>
+          <span class="quick-action-title">التحديات</span>
+          <span class="quick-action-sub">إنشاء وتحرير ونشر التحديات</span>
+        </button>
+      </div>
+      <div class="overview-grid">
+        <div class="overview-stack">
+          <div class="panel">
+            <div class="panel-hd">
+              <span class="panel-title">آخر التحديات المضافة</span>
+              <button class="btn btn-sm btn-outline" onclick="showSection('challenges')">عرض الكل</button>
+            </div>
+            <div id="ov-challenges-list"><div class="empty"><div class="empty-icon">⚡</div>لا توجد تحديات بعد</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd">
+              <span class="panel-title">آخر المعلمين المسجلين</span>
+              <button class="btn btn-sm btn-outline" onclick="showSection('teachers')">عرض الكل</button>
+            </div>
+            <div id="ov-teachers-list" class="mini-list"><div class="empty"><div class="empty-icon">👤</div>لا يوجد معلمون بعد</div></div>
+          </div>
+        </div>
+        <div class="overview-stack">
+          <div class="panel">
+            <div class="panel-hd">
+              <span class="panel-title">آخر النشاطات</span>
+              <button class="btn btn-sm btn-outline" onclick="showSection('notifs')">كل الإشعارات</button>
+            </div>
+            <div id="ov-activity" class="mini-list"><div class="empty"><div class="empty-icon">🔔</div>لا توجد نشاطات بعد</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><span class="panel-title">صلاحيات الأدمن</span></div>
+            <div class="guide-list">
+              <div class="guide-item"><span class="guide-dot"></span><span>الأدمن ينشئ التحديات ويضعها في مسودة أو ينشرها للمعلمين.</span></div>
+              <div class="guide-item"><span class="guide-dot"></span><span>المعلم لا يرى التحدي إلا بعد نشره من الأدمن.</span></div>
+              <div class="guide-item"><span class="guide-dot"></span><span>يمكن ربط معلم بأكثر من مدرسة أو مركز.</span></div>
+              <div class="guide-item"><span class="guide-dot"></span><span>الطلاب يسجّلون برمز ST-2026-XXXX والمعلمون برمز TE-2026-XXXX.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ المدارس/المراكز ════ -->
+    <div class="section" id="section-schools">
+      <div class="page-header">
+        <div>
+          <div class="page-title">المدارس/المراكز</div>
+          <div class="page-sub">إدارة المدارس والمراكز المشاركة في المنصة</div>
+        </div>
+        <button class="btn btn-blue" onclick="openAddSchool()">+ إضافة مدرسة/مركز</button>
+      </div>
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">قائمة المدارس والمراكز</span>
+          <div class="search-bar" style="margin-bottom:0">
+            <input type="text" id="school-search" placeholder="بحث..." oninput="filterSchools()" style="width:200px">
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>الاسم</th><th>المدينة</th><th>النوع</th><th>المعلمون</th><th>الطلاب</th><th>إجراءات</th>
+            </tr></thead>
+            <tbody id="schools-tbody"><tr><td colspan="6"><div class="empty"><div class="empty-icon">🏫</div>لا توجد مدارس بعد</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ طلبات التسجيل ════ -->
+    <div class="section" id="section-requests">
+      <div class="page-header">
+        <div>
+          <div class="page-title">طلبات التسجيل</div>
+          <div class="page-sub">المعلمون والطلاب المنتظرون للمراجعة</div>
+        </div>
+        <button class="btn btn-sm btn-outline" onclick="loadAll()">تحديث</button>
+      </div>
+
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab('requests','teachers',this)">
+          المعلمون <span id="req-teacher-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('requests','students',this)">
+          الطلاب <span id="req-student-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('requests','creators',this)">
+          المبتكرون <span id="req-creator-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('requests','challenges',this)">
+          التحديات <span id="req-challenge-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+        </button>
+      </div>
+
+      <div id="requests-tab-teachers">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">معلمون بانتظار الموافقة</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الاسم</th><th>البريد</th><th>الهاتف</th><th>تاريخ التسجيل</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="req-teachers-tbody">
+                <tr><td colspan="5"><div class="empty"><div class="empty-icon">👤</div>لا توجد طلبات معلقة</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="requests-tab-students" style="display:none">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">طلاب بانتظار الموافقة</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الاسم</th><th>البريد</th><th>الهاتف</th><th>تاريخ التسجيل</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="req-students-tbody">
+                <tr><td colspan="5"><div class="empty"><div class="empty-icon">🎓</div>لا توجد طلبات معلقة</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="requests-tab-creators" style="display:none">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">مبتكرون بانتظار الموافقة</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الاسم</th><th>البريد</th><th>الهاتف</th><th>تاريخ التسجيل</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="req-creators-tbody">
+                <tr><td colspan="5"><div class="empty"><div class="empty-icon">✨</div>لا توجد طلبات معلقة</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="requests-tab-challenges" style="display:none">
+        <div class="panel">
+          <div class="panel-hd">
+            <span class="panel-title">تحديات بانتظار المراجعة</span>
+            <button class="btn btn-sm btn-outline" onclick="loadSubmissions()">تحديث</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الاسم</th><th>المدرسة</th><th>التحدي</th><th>الصورة</th><th>التاريخ</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="req-challenges-tbody">
+                <tr><td colspan="6"><div class="empty"><div class="empty-icon">⚡</div>لا توجد تحديات معلقة</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ المعلمون ════ -->
+    <div class="section" id="section-teachers">
+      <div class="page-header">
+        <div>
+          <div class="page-title">المعلمون</div>
+          <div class="page-sub">إدارة حسابات المعلمين وربطهم بالمدارس</div>
+        </div>
+        <button class="btn btn-blue" onclick="openAddTeacher()">+ إضافة معلم</button>
+      </div>
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab('teachers','list',this)">قائمة المعلمين</button>
+        <button class="inner-tab" onclick="switchTab('teachers','import',this)">استيراد Excel</button>
+      </div>
+
+      <div id="teachers-tab-list">
+        <div class="panel">
+          <div class="panel-hd">
+            <span class="panel-title">المعلمون المسجلون</span>
+            <div class="search-bar" style="margin-bottom:0">
+              <input type="text" id="teacher-search" placeholder="بحث بالاسم أو الرمز..." oninput="filterTeachers()" style="width:220px">
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الاسم</th><th>الرمز التعريفي</th><th>البريد</th><th>المدارس</th><th>حالة الحساب</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="teachers-tbody"><tr><td colspan="6"><div class="empty"><div class="empty-icon">👤</div>لا يوجد معلمون بعد</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="teachers-tab-import" style="display:none">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">استيراد معلمين من Excel</span></div>
+          <div class="f-grid">
+            <div class="f-field">
+              <label>المدرسة/المركز</label>
+              <select id="import-teacher-school"></select>
+            </div>
+            <div class="f-field">
+              <label>ملف Excel (.xlsx)</label>
+              <input type="file" id="import-teacher-file" accept=".xlsx,.xls,.csv">
+            </div>
+          </div>
+          <div class="f-msg" id="import-teacher-msg"></div>
+          <div style="margin-top:1rem">
+            <button class="btn btn-blue" onclick="doImportTeachers()">استيراد</button>
+          </div>
+          <div style="margin-top:1rem; font-size:.82rem; color:var(--gray);">
+            الأعمدة المطلوبة: <strong>الاسم، البريد الإلكتروني</strong> — الإيميل المكرر يُرفض تلقائياً.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ الطلاب ════ -->
+    <div class="section" id="section-students">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الطلاب</div>
+          <div class="page-sub">عرض وإدارة جميع الطلاب على المنصة</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">الطلاب</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="student-school-filter" onchange="filterStudents()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem">
+              <option value="">كل المدارس</option>
+            </select>
+            <input type="text" id="student-search" placeholder="بحث بالاسم أو الرمز..." oninput="filterStudents()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;width:200px">
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>الاسم</th><th>الرمز التعريفي</th><th>البريد</th><th>الصف</th><th>المدرسة</th><th>حالة الحساب</th><th>إجراءات</th>
+            </tr></thead>
+            <tbody id="students-tbody"><tr><td colspan="7"><div class="empty"><div class="empty-icon">🎓</div>لا يوجد طلاب بعد</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ التحديات ════ -->
+    <div class="section" id="section-challenges">
+      <div class="page-header">
+        <div>
+          <div class="page-title">التحديات</div>
+          <div class="page-sub">إنشاء وتحرير ونشر التحديات للمعلمين</div>
+        </div>
+        <button class="btn btn-blue" onclick="openAddChallenge()">+ تحدي جديد</button>
+      </div>
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab('challenges','published',this)">المنشورة</button>
+        <button class="inner-tab" onclick="switchTab('challenges','draft',this)">المسودات</button>
+      </div>
+
+      <div id="challenges-tab-published">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">التحديات المنشورة</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>عنوان التحدي</th><th>المسار</th><th>الصعوبة</th><th>تاريخ النشر</th><th>المعلمون الذين عيّنوه</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="challenges-published-tbody"><tr><td colspan="6"><div class="empty"><div class="empty-icon">⚡</div>لا توجد تحديات منشورة</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="challenges-tab-draft" style="display:none">
+        <div class="panel">
+          <div class="panel-hd"><span class="panel-title">المسودات</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>عنوان التحدي</th><th>المسار</th><th>الصعوبة</th><th>آخر تعديل</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="challenges-draft-tbody"><tr><td colspan="5"><div class="empty"><div class="empty-icon">📝</div>لا توجد مسودات</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ المبتكرون ════ -->
+    <div class="section" id="section-creators">
+      <div class="page-header">
+        <div>
+          <div class="page-title">المبتكرون</div>
+          <div class="page-sub">إدارة حسابات المبتكرين (CR-2026-XXXX)</div>
+        </div>
+        <button class="btn btn-purple" onclick="openAddCreator()">+ إضافة مبتكر</button>
+      </div>
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">المبتكرون المسجلون</span>
+          <input type="text" id="creator-search" placeholder="بحث..." oninput="filterCreators()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;width:200px">
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>الاسم</th><th>الرمز التعريفي</th><th>البريد</th><th>حالة الحساب</th><th>إجراءات</th>
+            </tr></thead>
+            <tbody id="creators-tbody"><tr><td colspan="5"><div class="empty"><div class="empty-icon">✨</div>لا يوجد مبتكرون بعد</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ الإشعارات ════ -->
+    <div class="section" id="section-notifs">
+      <div class="page-header">
+        <div><div class="page-title">الإشعارات</div></div>
+        <button class="btn btn-sm btn-outline" onclick="markAllRead()">تحديد الكل كمقروء</button>
+      </div>
+      <div class="panel">
+        <ul class="notif-list" id="notif-list">
+          <div class="empty"><div class="empty-icon">🔔</div>لا توجد إشعارات</div>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<!-- ════ Modal: إضافة مدرسة/مركز ════ -->
+<div class="modal-bg" id="modal-addschool">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">إضافة مدرسة/مركز</span>
+      <button class="modal-close" onclick="closeModal('modal-addschool')">✕</button>
+    </div>
+    <div class="f-grid">
+      <div class="f-field">
+        <label>الاسم</label>
+        <input type="text" id="school-name" placeholder="مثال: مدرسة الرواد">
+      </div>
+      <div class="f-field">
+        <label>المدينة</label>
+        <input type="text" id="school-city" placeholder="مثال: الرياض">
+      </div>
+      <div class="f-field">
+        <label>النوع</label>
+        <select id="school-type">
+          <option value="school">مدرسة</option>
+          <option value="center">مركز</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-msg" id="school-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-blue" onclick="doAddSchool()">إضافة</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-addschool')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: إضافة معلم ════ -->
+<div class="modal-bg" id="modal-addteacher">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">إضافة معلم جديد</span>
+      <button class="modal-close" onclick="closeModal('modal-addteacher')">✕</button>
+    </div>
+    <div class="f-grid">
+      <div class="f-field">
+        <label>الاسم الكامل</label>
+        <input type="text" id="teacher-name" placeholder="مثال: أحمد محمد">
+      </div>
+      <div class="f-field">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="teacher-email" placeholder="example@email.com">
+      </div>
+      <div class="f-field">
+        <label>المدرسة/المركز</label>
+        <select id="teacher-school-sel"></select>
+      </div>
+      <div class="f-field">
+        <label>كلمة المرور الأولية</label>
+        <input type="password" id="teacher-pass" placeholder="6 أحرف على الأقل">
+      </div>
+    </div>
+    <div class="f-msg" id="teacher-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-blue" onclick="doAddTeacher()">إضافة المعلم</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-addteacher')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: إنشاء تحدي ════ -->
+<div class="modal-bg" id="modal-addchallenge">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-hd">
+      <span class="modal-title" id="challenge-modal-title">تحدي جديد</span>
+      <button class="modal-close" onclick="closeModal('modal-addchallenge')">✕</button>
+    </div>
+    <div class="f-grid">
+      <div class="f-field" style="grid-column:1/-1">
+        <label>عنوان التحدي</label>
+        <input type="text" id="chal-title" placeholder="مثال: بناء دارة LED بسيطة">
+      </div>
+      <div class="f-field">
+        <label>المسار</label>
+        <select id="chal-track">
+          <option value="1">المسار الأول</option>
+          <option value="2">المسار الثاني</option>
+          <option value="3">المسار الثالث</option>
+          <option value="4">المسار الرابع</option>
+        </select>
+      </div>
+      <div class="f-field">
+        <label>مستوى الصعوبة</label>
+        <select id="chal-difficulty">
+          <option value="easy">سهل</option>
+          <option value="medium">متوسط</option>
+          <option value="hard">صعب</option>
+        </select>
+      </div>
+      <div class="f-field" style="grid-column:1/-1">
+        <label>وصف التحدي</label>
+        <textarea id="chal-desc" rows="3" placeholder="اشرح ما يجب على الطالب بناؤه..."></textarea>
+      </div>
+      <div class="f-field" style="grid-column:1/-1">
+        <label>رابط TinkerCAD (اختياري)</label>
+        <input type="url" id="chal-link" placeholder="https://www.tinkercad.com/things/...">
+      </div>
+      <div class="f-field" style="grid-column:1/-1">
+        <label>الحالة</label>
+        <select id="chal-status">
+          <option value="draft">مسودة</option>
+          <option value="published">نشر الآن</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-msg" id="chal-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-blue" onclick="doSaveChallenge()">حفظ التحدي</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-addchallenge')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: إضافة مبتكر ════ -->
+<div class="modal-bg" id="modal-addcreator">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">إضافة مبتكر</span>
+      <button class="modal-close" onclick="closeModal('modal-addcreator')">✕</button>
+    </div>
+    <div class="f-grid">
+      <div class="f-field">
+        <label>الاسم الكامل</label>
+        <input type="text" id="creator-name" placeholder="مثال: سارة علي">
+      </div>
+      <div class="f-field">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="creator-email" placeholder="example@email.com">
+      </div>
+      <div class="f-field">
+        <label>كلمة المرور الأولية</label>
+        <input type="password" id="creator-pass" placeholder="6 أحرف على الأقل">
+      </div>
+    </div>
+    <div class="f-msg" id="creator-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-purple" onclick="doAddCreator()">إضافة</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-addcreator')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: تغيير كلمة المرور ════ -->
+<div class="modal-bg" id="modal-chgpass">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">تغيير كلمة المرور</span>
+      <button class="modal-close" onclick="closeModal('modal-chgpass')">✕</button>
+    </div>
+    <div class="f-grid">
+      <div class="f-field">
+        <label>كلمة المرور الجديدة</label>
+        <input type="password" id="new-pass" placeholder="6 أحرف على الأقل">
+      </div>
+      <div class="f-field">
+        <label>تأكيد كلمة المرور</label>
+        <input type="password" id="new-pass-confirm" placeholder="••••••••">
+      </div>
+    </div>
+    <div class="f-msg" id="chgpass-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-blue" onclick="doChangePassword()">حفظ التغييرات</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-chgpass')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="./js/dashboard.js"></script>
+
+</body>
+</html>

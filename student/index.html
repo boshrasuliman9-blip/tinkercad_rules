@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>صفحة الطالب — إنجاز</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="./css/student.css">
+</head>
+<body>
+
+<!-- ═══ NAV ════════════════════════════════════ -->
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="../index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="./tracks/tracks.html" class="site-back">المسارات</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ CONTENT ════════════════════════════════ -->
+<main class="page-body" style="padding-top: 1.4rem;">
+
+  <!-- Profile Hero -->
+  <div class="std-hero" id="std-hero">
+    <div class="std-avatar" id="std-avatar">؟</div>
+    <div>
+      <div class="std-name" id="std-name">...</div>
+      <div class="std-email" id="std-email"></div>
+      <div class="std-since" id="std-since"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="std-stats">
+    <div class="std-stat-card">
+      <div class="std-stat-val" id="stat-tracks">0</div>
+      <div class="std-stat-lbl">مسارات مكتملة</div>
+    </div>
+    <div class="std-stat-card">
+      <div class="std-stat-val" id="stat-stages">0</div>
+      <div class="std-stat-lbl">مراحل منجزة</div>
+    </div>
+    <div class="std-stat-card">
+      <div class="std-stat-val" id="stat-points">0</div>
+      <div class="std-stat-lbl">نقطة مكتسبة</div>
+    </div>
+  </div>
+
+  <!-- إشعارات التحديات -->
+  <div id="challenges-notif-section" style="display:none;margin-bottom:1.4rem;">
+    <div class="std-section-title">🔔 تحدياتك</div>
+    <div id="challenge-notifs" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- Track Progress -->
+  <div class="std-section-title">تقدّمك في المسارات</div>
+  <div class="tracks-progress-list" id="tracks-progress"></div>
+
+  <div class="student-actions">
+    <button class="profile-action-btn" onclick="openChangePass()">
+      <span>🔑</span> تغيير كلمة المرور
+    </button>
+    <button class="signout-btn" onclick="Auth.signOut()">
+      <span>🚪</span> تسجيل الخروج
+    </button>
+  </div>
+
+</main>
+
+<div class="modal-bg" id="modal-chgpass">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">تغيير كلمة المرور</div>
+      <button class="modal-close" onclick="closeChangePass()">×</button>
+    </div>
+    <div class="pass-field">
+      <label>كلمة المرور الجديدة</label>
+      <input type="password" id="new-pass" placeholder="6 أحرف على الأقل">
+    </div>
+    <div class="pass-field">
+      <label>تأكيد كلمة المرور</label>
+      <input type="password" id="new-pass-confirm" placeholder="••••••••">
+    </div>
+    <div class="pass-msg" id="chgpass-msg"></div>
+    <div class="modal-actions">
+      <button class="profile-action-btn primary" onclick="doChangePassword()">حفظ التغييرات</button>
+      <button class="profile-action-btn" onclick="closeChangePass()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="./js/notif-bell.js"></script>
+<script src="./js/student.js"></script>
+</body>
+</html>

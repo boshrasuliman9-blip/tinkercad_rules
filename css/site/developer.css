@@ -1,0 +1,213 @@
+:root {
+  --dev-red: #f04e23;
+  --dev-ink: #15171d;
+  --dev-muted: #667085;
+  --dev-line: #e7ebf0;
+  --dev-soft: #f6f8fb;
+}
+
+body {
+  min-height: 100vh;
+  background: #f6f8fb;
+  color: var(--dev-ink);
+}
+
+.dev-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 48px;
+}
+
+.dev-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.dev-kicker {
+  color: var(--dev-red);
+  font-weight: 900;
+  font-size: .86rem;
+  margin-bottom: 8px;
+}
+
+.dev-title {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 3.1rem);
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.dev-sub {
+  margin: 12px 0 0;
+  color: var(--dev-muted);
+  max-width: 650px;
+  line-height: 1.8;
+}
+
+.dev-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--dev-line);
+  color: var(--dev-ink);
+  text-decoration: none;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dev-grid {
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.dev-panel {
+  background: #fff;
+  border: 1px solid var(--dev-line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.dev-panel h2 {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.dev-creds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dev-cred {
+  border: 1px solid var(--dev-line);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--dev-soft);
+}
+
+.dev-cred span {
+  display: block;
+  color: var(--dev-muted);
+  font-size: .8rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.dev-cred strong {
+  display: block;
+  overflow-wrap: anywhere;
+  direction: ltr;
+  text-align: right;
+  font-size: .95rem;
+}
+
+.dev-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dev-btn {
+  min-height: 42px;
+  border: 1.5px solid rgba(240, 78, 35, .24);
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #ff6b35 0%, #f04e23 58%, #d94318 100%);
+  box-shadow: 0 12px 26px rgba(240, 78, 35, .22), inset 0 1px 0 rgba(255,255,255,.24);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.dev-btn.secondary {
+  color: var(--dev-ink);
+  background: rgba(255,255,255,.72);
+  border-color: rgba(221, 227, 234, .95);
+  box-shadow: 0 10px 24px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.74);
+}
+
+.dev-btn.dark {
+  background: linear-gradient(135deg, #2b313d 0%, #15171d 58%, #0b0d12 100%);
+  border-color: rgba(21,23,29,.45);
+  box-shadow: 0 12px 26px rgba(15,23,42,.22), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.dev-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,.26);
+}
+
+.dev-note {
+  margin: 12px 0 0;
+  color: var(--dev-muted);
+  line-height: 1.7;
+  font-size: .9rem;
+}
+
+.dev-status {
+  display: none;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eefbf3;
+  color: #166534;
+  border: 1px solid #b9efca;
+  font-weight: 800;
+}
+
+.dev-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dev-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--dev-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--dev-ink);
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.dev-link:hover {
+  border-color: rgba(240, 78, 35, .35);
+}
+
+.dev-link small {
+  color: var(--dev-muted);
+  font-weight: 800;
+  direction: ltr;
+}
+
+@media (max-width: 880px) {
+  .dev-top,
+  .dev-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dev-grid,
+  .dev-creds,
+  .dev-actions,
+  .dev-links {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,73 @@
+/* Sub-tabs: wires / code */
+.sub-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+.sub-tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  font-family: 'Tajawal', sans-serif;
+  font-size: .86rem;
+  font-weight: 700;
+  color: var(--gray);
+  cursor: pointer;
+  transition: all .15s;
+}
+.sub-tab.active {
+  background: var(--white);
+  color: var(--dark);
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+
+.sub-panel { display: none; }
+.sub-panel.active { display: flex; flex-direction: column; gap: 1rem; }
+
+/* Wire reference table */
+.wire-table {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.wire-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.wire-row:last-child { border-bottom: none; }
+.wire-color {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.wire-from { font-size: .82rem; font-weight: 700; color: var(--dark); flex: 1; }
+.wire-to   { font-size: .82rem; color: var(--mid); flex: 1; }
+
+/* Code block */
+.code-block {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 1.2rem;
+  overflow-x: auto;
+}
+.code-block pre {
+  font-family: 'Courier New', monospace;
+  font-size: .8rem;
+  color: #e2e8f0;
+  line-height: 1.7;
+  white-space: pre;
+  direction: ltr;
+  text-align: left;
+}
+.code-block .kw  { color: #93c5fd; }
+.code-block .fn  { color: #86efac; }
+.code-block .cm  { color: #64748b; }
+.code-block .nm  { color: #fca5a5; }

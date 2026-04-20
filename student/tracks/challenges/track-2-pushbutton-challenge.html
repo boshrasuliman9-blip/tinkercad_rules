@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>زر الضغط — Push Button</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../css/main.css">
+<link rel="stylesheet" href="../../css/challenges/track-2-pushbutton-challenge.css">
+</head>
+<body>
+
+<!-- Header -->
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="../../.../../../index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="../../.../../../index.html" class="site-back">الرئيسية</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    </div>
+  </div>
+</nav>
+
+<main class="page-body">
+
+  <div class="track-banner">
+    <img src="../../../img/challenge-covers/pushbutton-challenge.png" alt="تحدي زر الضغط" onerror="this.onerror=null;this.src='../../../img/challenges/pushbutton-challenge.svg';">
+    <div class="track-banner-overlay">
+      <div class="track-banner-copy">
+        <span class="badge badge-red">تحدي ٢ — المسار الثاني</span>
+        <h1 class="track-banner-title">زر الضغط — Push Button 🔘</h1>
+        <p class="track-banner-sub">وصّل زر الضغط والـ LED — عند الضغط على الزر يضيء المصباح</p>
+        <div class="track-banner-pills">
+          <span class="track-banner-pill">⏱ 15 دقيقة</span>
+          <span class="track-banner-pill">⭐ متوسط</span>
+          <span class="track-banner-pill">🔧 6 مكونات</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSub(0)">🔌 توصيل الأسلاك</button>
+    <button class="sub-tab" onclick="switchSub(1)">💻 البرمجة</button>
+  </div>
+
+  <!-- ── Wire panel ── -->
+  <div class="sub-panel active" id="sub0">
+
+    <div class="card">
+      <div class="section-label" style="margin-bottom:.8rem">المكونات المطلوبة</div>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">١</div>
+          <div class="step-text"><b>Arduino UNO</b> — العقل الذي يتحكم في الدائرة</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٢</div>
+          <div class="step-text"><b>Breadboard</b> — لوحة التوصيل بدون لحام</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٣</div>
+          <div class="step-text"><b>Push Button</b> — زر الضغط</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٤</div>
+          <div class="step-text"><b>LED</b> — المصباح الضوئي</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٥</div>
+          <div class="step-text"><b>مقاومة 220Ω</b> — لحماية LED</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٦</div>
+          <div class="step-text"><b>مقاومة 10kΩ</b> — لزر الضغط (pull-down)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-wrap" id="wire-carousel">
+      <div class="carousel-track">
+
+        <div class="carousel-slide">
+          <div class="carousel-img">
+            <img src="../../../img/tinkercad-account/email-verify.png" alt="ضع المكونات">
+          </div>
+          <div class="carousel-body">
+            <div class="carousel-step">الخطوة ١ من ٤</div>
+            <h3 class="carousel-title">ضع المكونات على البريدبورد</h3>
+            <p class="carousel-desc">
+              ضع <b>زر الضغط</b> في منتصف البريدبورد بحيث يمتد على الفجوة الوسطى.
+              ضع <b>LED</b> بجانبه، واربط المقاومة 220Ω مع الطرف الطويل للـ LED.
+            </p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <div class="carousel-img">
+            <img src="../../../img/tinkercad-account/account-login.png" alt="توصيل زر الضغط">
+          </div>
+          <div class="carousel-body">
+            <div class="carousel-step">الخطوة ٢ من ٤</div>
+            <h3 class="carousel-title">وصّل زر الضغط</h3>
+            <p class="carousel-desc">
+              طرف زر الضغط الأول → <b>5V</b> في Arduino.<br>
+              الطرف الثاني → <b>Pin 7</b> + مقاومة 10kΩ إلى GND.
+            </p>
+            <div class="tip tip-red" style="margin-top:.5rem">
+              ⚠️ تأكد من وضع المقاومة pull-down لتجنب قراءات خاطئة
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <div class="carousel-img">
+            <img src="../../../img/tinkercad-account/ready-to-build.png" alt="توصيل LED">
+          </div>
+          <div class="carousel-body">
+            <div class="carousel-step">الخطوة ٣ من ٤</div>
+            <h3 class="carousel-title">وصّل الـ LED</h3>
+            <p class="carousel-desc">
+              الطرف الطويل (+) للـ LED → مقاومة 220Ω → <b>Pin 13</b>.<br>
+              الطرف القصير (-) → خط <b>GND</b>.
+            </p>
+          </div>
+        </div>
+
+        <div class="carousel-slide">
+          <div class="carousel-img">
+            <img src="../../../img/tinkercad-account/account-create.png" alt="مرجع الأسلاك">
+          </div>
+          <div class="carousel-body">
+            <div class="carousel-step">الخطوة ٤ من ٤ — مرجع الأسلاك</div>
+            <h3 class="carousel-title">جدول توصيل الأسلاك</h3>
+            <div class="wire-table" style="margin-top:.6rem">
+              <div class="wire-row">
+                <div class="wire-color" style="background:#ef4444"></div>
+                <div class="wire-from">5V (Arduino)</div>
+                <div class="wire-to">← طرف زر الضغط</div>
+              </div>
+              <div class="wire-row">
+                <div class="wire-color" style="background:#f97316"></div>
+                <div class="wire-from">Pin 7 (Arduino)</div>
+                <div class="wire-to">← الطرف الثاني للزر</div>
+              </div>
+              <div class="wire-row">
+                <div class="wire-color" style="background:#000"></div>
+                <div class="wire-from">GND (Arduino)</div>
+                <div class="wire-to">← مقاومة 10kΩ + (−) LED</div>
+              </div>
+              <div class="wire-row">
+                <div class="wire-color" style="background:#22c55e"></div>
+                <div class="wire-from">Pin 13 (Arduino)</div>
+                <div class="wire-to">← مقاومة 220Ω ← (+) LED</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="carousel-nav">
+        <button class="carousel-btn btn-prev">›</button>
+        <div class="carousel-dots">
+          <button class="carousel-dot active"></button>
+          <button class="carousel-dot"></button>
+          <button class="carousel-dot"></button>
+          <button class="carousel-dot"></button>
+        </div>
+        <button class="carousel-btn btn-next">‹</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Code panel ── -->
+  <div class="sub-panel" id="sub1">
+
+    <div class="card">
+      <p style="font-size:.86rem;color:var(--mid);line-height:1.8">
+        افتح <b>Code Editor</b> داخل Tinkercad (أعلى يمين المحاكاة) واختر نوع الكود <b>Text</b>،
+        ثم الصق الكود التالي:
+      </p>
+    </div>
+
+    <div class="code-block">
+      <pre><span class="cm">// زر الضغط — Push Button Challenge</span>
+<span class="kw">const int</span> <span class="nm">buttonPin</span> = <span class="nm">7</span>;
+<span class="kw">const int</span> <span class="nm">ledPin</span>    = <span class="nm">13</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  <span class="fn">pinMode</span>(<span class="nm">buttonPin</span>, INPUT);
+  <span class="fn">pinMode</span>(<span class="nm">ledPin</span>,    OUTPUT);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">int</span> <span class="nm">state</span> = <span class="fn">digitalRead</span>(<span class="nm">buttonPin</span>);
+
+  <span class="kw">if</span> (<span class="nm">state</span> == HIGH) {
+    <span class="fn">digitalWrite</span>(<span class="nm">ledPin</span>, HIGH); <span class="cm">// شغّل LED</span>
+  } <span class="kw">else</span> {
+    <span class="fn">digitalWrite</span>(<span class="nm">ledPin</span>, LOW);  <span class="cm">// أطفئ LED</span>
+  }
+}</pre>
+    </div>
+
+    <div class="card">
+      <div class="section-label" style="margin-bottom:.8rem">شرح الكود</div>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">١</div>
+          <div class="step-text"><b>setup()</b> — تُحدد أن Pin 7 مدخل (زر) وPin 13 مخرج (LED)</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٢</div>
+          <div class="step-text"><b>digitalRead()</b> — تقرأ حالة الزر: HIGH = مضغوط، LOW = غير مضغوط</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">٣</div>
+          <div class="step-text"><b>digitalWrite()</b> — تُشغّل أو تُطفئ الـ LED بناءً على حالة الزر</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip tip-yellow">
+      💡 اضغط <b>Start Simulation</b> ثم اضغط على الزر في الدائرة — يجب أن يضيء الـ LED عند الضغط
+    </div>
+
+  </div>
+
+  <!-- Submit link -->
+  <div class="card" style="text-align:center">
+    <p style="font-size:.86rem;color:var(--gray);margin-bottom:1rem">
+      أنجزت التحدي؟ التقط صورة للدائرة وأرسلها
+    </p>
+    <a href="../track-3.html" class="btn-main">📤 أرسل عملك ←</a>
+  </div>
+
+</main>
+<script src="../../../js/config.js"></script>
+<script src="../../../js/api.js"></script>
+<script src="../../../js/main.js"></script>
+<script src="../../../js/notif-bell.js"></script>
+<script src="../js/track-2-pushbutton-challenge.js"></script>
+</body>
+</html>

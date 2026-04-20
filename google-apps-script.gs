@@ -62,7 +62,7 @@ function doGet(e) {
     if (action === 'approve') return _approveSubmission(p);
     if (action === 'reject')  return _rejectSubmission(p);
 
-    if      (action === 'list')                result = _listSubmissions();
+    if      (action === 'list')                result = _listSubmissions(p);
     else if (action === 'signUp')              result = _signUp(p);
     else if (action === 'signIn')              result = _signIn(p);
     // ── أدمن ──
@@ -77,6 +77,7 @@ function doGet(e) {
     // ── مدارس ──
     else if (action === 'createSchool')        result = _createSchool(p);
     else if (action === 'getSchools')          result = _getSchools(p);
+    else if (action === 'updateSchool')        result = _updateSchool(p);
     else if (action === 'deleteSchool')        result = _deleteSchool(p);
     // ── علاقة معلم←مدارس ──
     else if (action === 'assignTeacherSchool') result = _assignTeacherSchool(p);
@@ -87,14 +88,18 @@ function doGet(e) {
     else if (action === 'getChallenges')       result = _getChallenges(p);
     else if (action === 'updateChallenge')     result = _updateChallenge(p);
     else if (action === 'publishChallenge')    result = _publishChallenge(p);
+    else if (action === 'unpublishChallenge')  result = _unpublishChallenge(p);
     else if (action === 'deleteChallenge')     result = _deleteChallenge(p);
     // ── استيراد Excel ──
     else if (action === 'importUsers')         result = _importUsers(p);
     else if (action === 'adminCreateUser')     result = _adminCreateUser(p);
+    else if (action === 'adminUpdateUser')     result = _adminUpdateUser(p);
+    else if (action === 'adminSetUserStatus')  result = _adminSetUserStatus(p);
     else if (action === 'lookupCode')          result = _lookupCode(p);
     // ── معلم — صفوف ──
     else if (action === 'getClasses')          result = _getClasses(p);
     else if (action === 'createClass')         result = _createClass(p);
+    else if (action === 'updateClass')         result = _updateClass(p);
     else if (action === 'deleteClass')         result = _deleteClass(p);
     // ── معلم — طلاب ──
     else if (action === 'getStudentsByClass')  result = _getStudentsByClass(p);
@@ -102,6 +107,7 @@ function doGet(e) {
     // ── معلم — تحديات ──
     else if (action === 'assignChallenge')     result = _assignChallenge(p);
     else if (action === 'getAssignments')      result = _getAssignments(p);
+    else if (action === 'adminGetAllAssignments') result = _adminGetAllAssignments(p);
     else if (action === 'getSubmissionsByAssignment') result = _getSubmissionsByAssignment(p);
     else if (action === 'approveSubmissionTeacher')   result = _approveSubmissionTeacher(p);
     else if (action === 'rejectSubmissionTeacher')    result = _rejectSubmissionTeacher(p);
@@ -278,7 +284,7 @@ function _signUp(p) {
   var email   = (p.email || '').trim().toLowerCase();
   var phone   = _normalizePhone(p.phone);
   var ph      = p.passwordHash || '';
-  var role    = p.role === 'teacher' ? 'teacher' : 'student';
+  var role    = p.role === 'teacher' ? 'teacher' : (p.role === 'creator' ? 'creator' : 'student');
   var userCode= _normalizeCode(p.userCode || '');
   var section = (p.section || '').trim();
   var autoApprove = String(p.autoApprove || '') === 'true';
@@ -288,72 +294,37 @@ function _signUp(p) {
 
   var users = _rows(SH.USERS);
 
-  // تحقق من الإيميل المكرر
   var exists = users.find(function(u) {
     return String(u.email || '').trim().toLowerCase() === email;
   });
   if (exists) return {ok: false, msg: 'تم التسجيل بهذا الإيميل مسبقاً'};
 
-  var schoolId = '';
-  var cls      = '';
+  var schoolId    = '';
+  var cls         = '';
   var studentCode = '';
   var teacherCode = '';
 
-  if (role === 'student') {
-    // الطالب يجب أن يدخل الكود
-    if (!userCode) return {ok: false, msg: 'يرجى إدخال رمزك التعريفي (ST-2026-XXXX)'};
-    if (!userCode.toUpperCase().startsWith('ST-')) return {ok: false, msg: 'رمز الطالب يجب أن يبدأ بـ ST-'};
+  if (role === 'creator') {
+    if (!userCode) return {ok: false, msg: 'يرجى إدخال رمزك التعريفي (CR-2026-XXXX)'};
+    if (!userCode.toUpperCase().startsWith('CR-')) return {ok: false, msg: 'رمز المبتكر يجب أن يبدأ بـ CR-'};
 
-    // تحقق من الكود في جدول Users (سجل موجود مسبقاً)
-    var preReg = users.find(function(u) {
-      return _normalizeCode(u.studentCode) === userCode && u.role === 'student' && !u.email;
+    var preRegC = users.find(function(u) {
+      return _normalizeCode(u.teacherCode) === userCode && u.role === 'creator' && !u.email;
     });
-    if (!preReg) {
-      // الكود غير موجود كسجل مسبق → ننشئ حساباً جديداً مباشرة
-      studentCode = userCode;
-    } else {
-      // استخدام بيانات السجل المسبق
-      schoolId    = preReg.schoolId || '';
-      cls         = preReg.class    || '';
-      section     = preReg.section  || section;
-      studentCode = userCode;
-      // تحديث السجل الموجود بدل إضافة جديد
-      var preIdx = _rowIdx(SH.USERS, 'studentCode', userCode);
-      if (preIdx > 0) {
-        _setCell(SH.USERS, preIdx, 'email',        email);
-        _setCell(SH.USERS, preIdx, 'phone',        phone);
-        _setCell(SH.USERS, preIdx, 'passwordHash', ph);
-        _setCell(SH.USERS, preIdx, 'name',         name);
-        _setCell(SH.USERS, preIdx, 'status',       initialStatus);
-        _setCell(SH.USERS, preIdx, 'joinedAt',     new Date().toISOString());
-        var updUser = {id: preReg.id, name: name, email: email, phone: phone, role: 'student', status: initialStatus, schoolId: schoolId, class: cls, section: section, studentCode: studentCode, teacherCode: '', joinedAt: new Date().toISOString()};
-        return {ok: true, pending: !autoApprove, user: _safeUser(updUser)};
-      }
-    }
-  } else {
-    // معلم
-    if (!userCode) return {ok: false, msg: 'يرجى إدخال رمزك التعريفي (TE-2026-XXXX)'};
-    if (!userCode.toUpperCase().startsWith('TE-')) return {ok: false, msg: 'رمز المعلم يجب أن يبدأ بـ TE-'};
-
-    var preRegT = users.find(function(u) {
-      return _normalizeCode(u.teacherCode) === userCode && u.role === 'teacher' && !u.email;
-    });
-    if (!preRegT) {
+    if (!preRegC) {
       teacherCode = userCode;
     } else {
-      schoolId    = preRegT.schoolId || '';
       teacherCode = userCode;
-      var preIdxT = _rowIdx(SH.USERS, 'teacherCode', userCode);
-      if (preIdxT > 0) {
-        _setCell(SH.USERS, preIdxT, 'email',        email);
-        _setCell(SH.USERS, preIdxT, 'phone',        phone);
-        _setCell(SH.USERS, preIdxT, 'passwordHash', ph);
-        _setCell(SH.USERS, preIdxT, 'name',         name);
-        _setCell(SH.USERS, preIdxT, 'status',       initialStatus);
-        _setCell(SH.USERS, preIdxT, 'joinedAt',     new Date().toISOString());
-        var updUserT = {id: preRegT.id, name: name, email: email, phone: phone, role: 'teacher', status: initialStatus, schoolId: schoolId, class: '', section: '', studentCode: '', teacherCode: teacherCode, joinedAt: new Date().toISOString()};
-        if (!autoApprove) _notifyAdminNewTeacher(updUserT);
-        return {ok: true, pending: !autoApprove, user: _safeUser(updUserT)};
+      var preIdxC = _rowIdx(SH.USERS, 'teacherCode', userCode);
+      if (preIdxC > 0) {
+        _setCell(SH.USERS, preIdxC, 'email',        email);
+        _setCell(SH.USERS, preIdxC, 'phone',        phone);
+        _setCell(SH.USERS, preIdxC, 'passwordHash', ph);
+        _setCell(SH.USERS, preIdxC, 'name',         name);
+        _setCell(SH.USERS, preIdxC, 'status',       initialStatus);
+        _setCell(SH.USERS, preIdxC, 'joinedAt',     new Date().toISOString());
+        var updUserC = {id: preRegC.id, name: name, email: email, phone: phone, role: 'creator', status: initialStatus, studentCode: '', teacherCode: teacherCode, joinedAt: new Date().toISOString()};
+        return {ok: true, pending: !autoApprove, user: _safeUser(updUserC)};
       }
     }
   }
@@ -379,14 +350,17 @@ function _signUp(p) {
   });
 
   var user = {id: id, name: name, email: email, phone: phone, role: role, status: initialStatus, schoolId: schoolId, class: cls, section: section, studentCode: studentCode, teacherCode: teacherCode, joinedAt: now};
-  if (role === 'teacher' && !autoApprove) _notifyAdminNewTeacher(user);
+  if (!autoApprove) {
+    if (role === 'teacher') _notifyAdminNewTeacher(user);
+    else if (role === 'student') _notifyAdminNewStudent(user);
+  }
   return {ok: true, pending: !autoApprove, user: _safeUser(user)};
 }
 
 function _signIn(p) {
   var email = (p.email || '').trim().toLowerCase();
   var ph    = String(p.passwordHash || '').trim();
-  var role  = p.role === 'teacher' ? 'teacher' : 'student';
+  var role  = p.role === 'teacher' ? 'teacher' : (p.role === 'creator' ? 'creator' : 'student');
   var autoApprove = String(p.autoApprove || '') === 'true';
 
   if (!email || !ph) return {ok: false, msg: 'بيانات ناقصة'};
@@ -401,7 +375,8 @@ function _signIn(p) {
   if (!match) {
     var byEmail = users.find(function(u) { return String(u.email || '').trim().toLowerCase() === email; });
     if (byEmail && String(byEmail.role || '').trim() !== role) {
-      return {ok: false, msg: byEmail.role === 'teacher' ? 'هذا البريد مسجل كمعلم' : 'هذا البريد مسجل كطالب'};
+      var r = String(byEmail.role || '').trim();
+      return {ok: false, msg: r === 'teacher' ? 'هذا البريد مسجل كمعلم' : (r === 'creator' ? 'هذا البريد مسجل كمبتكر' : 'هذا البريد مسجل كطالب')};
     }
     if (!byEmail) return {ok: false, msg: 'لا يوجد حساب بهذا البريد'};
     return {ok: false, msg: 'كلمة المرور غير صحيحة'};
@@ -534,6 +509,16 @@ function _deleteSchool(p) {
   return {ok: true};
 }
 
+function _updateSchool(p) {
+  if (p.token !== SECRET) return {ok: false, msg: 'غير مصرح'};
+  var idx = _rowIdx(SH.SCHOOLS, 'id', p.schoolId);
+  if (idx < 0) return {ok: false, msg: 'المدرسة غير موجودة'};
+  if (p.name != null) _setCell(SH.SCHOOLS, idx, 'name', String(p.name || '').trim());
+  if (p.city != null) _setCell(SH.SCHOOLS, idx, 'city', String(p.city || '').trim());
+  if (p.type != null) _setCell(SH.SCHOOLS, idx, 'type', String(p.type || '').trim());
+  return {ok: true};
+}
+
 // ════════════════════════════════════════════
 //  علاقة معلم ← مدارس
 // ════════════════════════════════════════════
@@ -637,6 +622,15 @@ function _publishChallenge(p) {
   return {ok: true};
 }
 
+function _unpublishChallenge(p) {
+  if (p.token !== SECRET) return {ok: false, msg: 'غير مصرح'};
+  var idx = _rowIdx(SH.CHALLENGES, 'id', p.challengeId);
+  if (idx < 0) return {ok: false, msg: 'التحدي غير موجود'};
+  _setCell(SH.CHALLENGES, idx, 'status', 'draft');
+  _setCell(SH.CHALLENGES, idx, 'publishedAt', '');
+  return {ok: true};
+}
+
 function _deleteChallenge(p) {
   if (p.token !== SECRET) return {ok: false, msg: 'غير مصرح'};
   var idx = _rowIdx(SH.CHALLENGES, 'id', p.challengeId);
@@ -715,12 +709,12 @@ function _adminCreateUser(p) {
   var email   = (p.email   || '').trim().toLowerCase();
   var phone   = _normalizePhone(p.phone || '');
   var ph      = p.passwordHash || '';
-  var role    = p.role === 'teacher' ? 'teacher' : 'student';
+  var role    = p.role === 'teacher' ? 'teacher' : (p.role === 'creator' ? 'creator' : 'student');
   var schoolId= (p.schoolId || '').trim();
   var cls     = (p.class   || '').trim();
   var section = (p.section || '').trim();
 
-  if (!name || !email || !ph) return {ok: false, msg: 'الاسم والبريد وكلمة المرور مطلوبة'};
+  if (!email || !ph) return {ok: false, msg: 'البريد وكلمة المرور مطلوبان'};
 
   var existingUsers = _rows(SH.USERS);
 
@@ -734,7 +728,7 @@ function _adminCreateUser(p) {
   var existingCodes = existingUsers.map(function(u) {
     return _normalizeCode(u.studentCode || u.teacherCode || '');
   });
-  var prefix   = role === 'teacher' ? 'TE' : 'ST';
+  var prefix   = role === 'teacher' ? 'TE' : (role === 'creator' ? 'CR' : 'ST');
   var userCode = '';
   var attempts = 0;
   do {
@@ -756,7 +750,7 @@ function _adminCreateUser(p) {
     class:        cls,
     section:      section,
     studentCode:  role === 'student' ? userCode : '',
-    teacherCode:  role === 'teacher' ? userCode : '',
+    teacherCode:  (role === 'teacher' || role === 'creator') ? userCode : '',
     joinedAt:     now,
     reviewedAt:   now,
     leftSchool:   ''
@@ -767,8 +761,45 @@ function _adminCreateUser(p) {
     userCode: userCode,
     user:     {id: id, name: name, email: email, role: role, status: 'active',
                studentCode: role === 'student' ? userCode : '',
-               teacherCode: role === 'teacher' ? userCode : ''}
+               teacherCode: (role === 'teacher' || role === 'creator') ? userCode : ''}
   };
+}
+
+function _adminUpdateUser(p) {
+  if (p.token !== SECRET) return {ok: false, msg: 'غير مصرح'};
+  var userId = p.userId || '';
+  var idx = _rowIdx(SH.USERS, 'id', userId);
+  if (idx < 0) return {ok: false, msg: 'المستخدم غير موجود'};
+
+  // منع تكرار البريد عند تغييره
+  if (p.email) {
+    var email = String(p.email || '').trim().toLowerCase();
+    var dup = _rows(SH.USERS).find(function(u) {
+      return u.id !== userId && String(u.email || '').trim().toLowerCase() === email;
+    });
+    if (dup) return {ok: false, msg: 'البريد الإلكتروني مستخدم مسبقاً'};
+    _setCell(SH.USERS, idx, 'email', email);
+  }
+
+  if (p.name != null)     _setCell(SH.USERS, idx, 'name', String(p.name || '').trim());
+  if (p.phone != null)    _setCell(SH.USERS, idx, 'phone', _normalizePhone(p.phone || ''));
+  if (p.schoolId != null) _setCell(SH.USERS, idx, 'schoolId', String(p.schoolId || '').trim());
+  if (p.class != null)    _setCell(SH.USERS, idx, 'class', String(p.class || '').trim());
+  if (p.section != null)  _setCell(SH.USERS, idx, 'section', String(p.section || '').trim());
+  if (p.leftSchool != null) _setCell(SH.USERS, idx, 'leftSchool', p.leftSchool === 'true' || p.leftSchool === true);
+  if (p.status != null)   _setCell(SH.USERS, idx, 'status', String(p.status || '').trim());
+
+  return {ok: true};
+}
+
+function _adminSetUserStatus(p) {
+  if (p.token !== SECRET) return {ok: false, msg: 'غير مصرح'};
+  var userId = p.userId || '';
+  var idx = _rowIdx(SH.USERS, 'id', userId);
+  if (idx < 0) return {ok: false, msg: 'المستخدم غير موجود'};
+  if (p.status != null) _setCell(SH.USERS, idx, 'status', String(p.status || '').trim());
+  if (p.leftSchool != null) _setCell(SH.USERS, idx, 'leftSchool', p.leftSchool === 'true' || p.leftSchool === true);
+  return {ok: true};
 }
 
 // ════════════════════════════════════════════
@@ -785,8 +816,10 @@ function _lookupCode(p) {
     found = users.find(function(u) { return _normalizeCode(u.studentCode) === code && u.role === 'student'; });
   } else if (code.startsWith('TE-')) {
     found = users.find(function(u) { return _normalizeCode(u.teacherCode) === code && u.role === 'teacher'; });
+  } else if (code.startsWith('CR-')) {
+    found = users.find(function(u) { return _normalizeCode(u.teacherCode) === code && u.role === 'creator'; });
   } else {
-    return {ok: false, msg: 'الرمز غير صالح. يجب أن يبدأ بـ ST- أو TE-'};
+    return {ok: false, msg: 'الرمز غير صالح. يجب أن يبدأ بـ ST- أو TE- أو CR-'};
   }
 
   if (!found) return {ok: false, msg: 'الرمز غير موجود'};
@@ -841,6 +874,51 @@ function _createClass(p) {
   var now = new Date().toISOString();
   _appendObject(SH.CLASSES, {id: id, teacherId: teacherId, teacherEmail: p.teacherEmail || '', name: name, schoolId: schoolId, section: section, createdAt: now});
   return {ok: true, data: {id: id, teacherId: teacherId, name: name, schoolId: schoolId, section: section, createdAt: now}};
+}
+
+function _updateClass(p) {
+  var token     = p.token || '';
+  var teacherId = p.teacherId || '';
+  var idx = _rowIdx(SH.CLASSES, 'id', p.classId);
+  if (idx < 0) return {ok: false, msg: 'الصف غير موجود'};
+
+  var sheet   = _sheet(SH.CLASSES);
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var row     = sheet.getRange(idx, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var rowTeacherId = row[headers.indexOf('teacherId')] || '';
+
+  // مسموح للأدمن أو لصاحب الصف
+  if (token !== SECRET && rowTeacherId !== teacherId) return {ok: false, msg: 'غير مصرح'};
+
+  var oldName    = String(row[headers.indexOf('name')] || '').trim();
+  var oldSchoolId= String(row[headers.indexOf('schoolId')] || row[headers.indexOf('school')] || '').trim();
+
+  var newName    = (p.name != null) ? String(p.name || '').trim() : oldName;
+  var newSchoolId= (p.schoolId != null || p.school != null) ? String(p.schoolId || p.school || '').trim() : oldSchoolId;
+
+  if (p.name != null) _setCell(SH.CLASSES, idx, 'name', newName);
+  if (p.section != null) _setCell(SH.CLASSES, idx, 'section', String(p.section || '').trim());
+  if (p.schoolId != null || p.school != null) _setCell(SH.CLASSES, idx, 'schoolId', newSchoolId);
+  if (p.teacherEmail != null) _setCell(SH.CLASSES, idx, 'teacherEmail', String(p.teacherEmail || '').trim());
+
+  // إذا تغير اسم الصف/المدرسة: حدث طلاب هذا الصف
+  if (newName !== oldName || newSchoolId !== oldSchoolId) {
+    var users = _rows(SH.USERS);
+    users.forEach(function(u) {
+      if (u.role !== 'student') return;
+      var uSchool = String(u.schoolId || u.school || '').trim();
+      var uClass  = String(u.class || '').trim();
+      if (uSchool === oldSchoolId && uClass === oldName) {
+        var uIdx = _rowIdx(SH.USERS, 'id', u.id);
+        if (uIdx > 0) {
+          _setCell(SH.USERS, uIdx, 'schoolId', newSchoolId);
+          _setCell(SH.USERS, uIdx, 'class', newName);
+        }
+      }
+    });
+  }
+
+  return {ok: true};
 }
 
 function _deleteClass(p) {
@@ -946,6 +1024,25 @@ function _getAssignments(p) {
     return a;
   });
   return {ok: true, data: data, assignments: data};
+}
+
+function _adminGetAllAssignments(p) {
+  if (p.secret !== SECRET) return {ok: false, msg: 'غير مصرح'};
+  var users   = _rows(SH.USERS);
+  var classes = _rows(SH.CLASSES);
+  var codes   = _rows(SH.CODES);
+  var data = _rows(SH.ASSIGNMENTS).map(function(a) {
+    var cls     = classes.find(function(c) { return c.id === a.classId; });
+    var teacher = users.find(function(u) { return u.id === a.teacherId; });
+    var related = codes.filter(function(c) { return c.assignmentId === a.id; });
+    a.className   = cls     ? cls.name     : '';
+    a.teacherName = teacher ? teacher.name : '';
+    a.totalCount     = related.length;
+    a.submittedCount = related.filter(function(c) { return c.submittedAt;           }).length;
+    a.approvedCount  = related.filter(function(c) { return c.status === 'approved'; }).length;
+    return a;
+  });
+  return {ok: true, data: data};
 }
 
 function _getSubmissionsByAssignment(p) {
@@ -1320,22 +1417,26 @@ function _submit(p) {
 function _approveSubmission(p) {
   if (p.token !== SECRET) return _htmlPage('غير مصرح ❌','#fef2f2','#dc2626');
   _updateSubmissionStatus(p.id, 'approved');
-  return _htmlPage('✅ تم النشر!','#f0fdf4','#16a34a');
+  if (p.ajax) return _json({ok: true});
+  return _htmlPage('✅ تم القبول!','#f0fdf4','#16a34a');
 }
 
 function _rejectSubmission(p) {
   if (p.token !== SECRET) return _htmlPage('غير مصرح ❌','#fef2f2','#dc2626');
   _updateSubmissionStatus(p.id, 'rejected');
+  if (p.ajax) return _json({ok: true});
   return _htmlPage('❌ تم الرفض','#fef2f2','#dc2626');
 }
 
-function _listSubmissions() {
+function _listSubmissions(p) {
+  var token = p ? (p.token || '') : '';
+  if (token !== SECRET) return {ok: false, msg: 'غير مصرح'};
   var rows = _getSubmissionsSheet().getDataRange().getValues();
   var res  = [];
   for (var i = 1; i < rows.length; i++) {
-    if (rows[i][5] === 'approved') res.push({id:rows[i][0],name:rows[i][1],school:rows[i][2],challenge:rows[i][3],imageUrl:rows[i][4],date:rows[i][6]?rows[i][6].toString():''});
+    if (rows[i][5] === 'pending') res.push({id:rows[i][0],name:rows[i][1],school:rows[i][2],challenge:rows[i][3],imageUrl:rows[i][4],status:rows[i][5],date:rows[i][6]?rows[i][6].toString():''});
   }
-  return res;
+  return {ok: true, submissions: res};
 }
 
 function _updateSubmissionStatus(id, status) {
@@ -1370,6 +1471,27 @@ function _notifyAdminNewTeacher(teacher) {
   } catch(e) {}
 }
 
+function _notifyAdminNewStudent(student) {
+  try {
+    var base       = ScriptApp.getService().getUrl();
+    var approveUrl = base + '?action=approveStudent&userId=' + student.id + '&token=' + SECRET;
+    var rejectUrl  = base + '?action=rejectStudent&userId='  + student.id + '&token=' + SECRET;
+    var html =
+      '<div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto">' +
+      '<div style="background:#ea580c;padding:20px;border-radius:12px 12px 0 0"><h2 style="color:#fff;margin:0">🎓 طلب طالب جديد</h2></div>' +
+      '<div style="background:#fff;padding:20px;border:1px solid #eee;border-top:none">' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">' +
+      '<tr style="background:#f8f8f8"><td style="padding:10px;font-weight:700">الاسم</td><td style="padding:10px">' + student.name + '</td></tr>' +
+      '<tr><td style="padding:10px;font-weight:700">البريد</td><td style="padding:10px">' + (student.email||'—') + '</td></tr>' +
+      '<tr style="background:#f8f8f8"><td style="padding:10px;font-weight:700">الهاتف</td><td style="padding:10px">' + (student.phone||'—') + '</td></tr>' +
+      '</table>' +
+      '<a href="' + approveUrl + '" style="display:inline-block;background:#22c55e;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin-left:8px">✅ قبول</a>' +
+      '<a href="' + rejectUrl  + '" style="display:inline-block;background:#ef4444;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">❌ رفض</a>' +
+      '</div></div>';
+    GmailApp.sendEmail(ADMIN_EMAIL, '🎓 طلب طالب: ' + student.name, '', {htmlBody: html});
+  } catch(e) {}
+}
+
 function _submissionEmail(p, approveUrl, rejectUrl) {
   return '<div dir="rtl" style="font-family:sans-serif;max-width:600px;margin:auto">' +
     '<div style="background:#f04e23;padding:20px;border-radius:12px 12px 0 0"><h2 style="color:#fff;margin:0">🔔 إنجاز جديد</h2></div>' +
@@ -1401,4 +1523,128 @@ function _htmlPage(title, bg, color, sub) {
     '<div style="font-size:56px;margin-bottom:16px">' + title.split(' ')[0] + '</div>' +
     '<h1 style="color:' + color + ';margin:0 0 12px">' + title + '</h1>' + s + '</body></html>'
   );
+}
+
+// ════════════════════════════════════════════
+//  بيانات تجريبية — شغّلها مرة واحدة فقط
+//  من محرر GAS: اختر seedData ← Run
+// ════════════════════════════════════════════
+function seedData() {
+  var ss  = _ss();
+  var now = new Date().toISOString();
+
+  function uid() { return Utilities.getUuid(); }
+  function pad(n, len) { var s = String(n); while (s.length < len) s = '0' + s; return s; }
+
+  // نفس دالة الهاش المستخدمة في الواجهة
+  function simpleHash(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) {
+      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    }
+    return h.toString(16);
+  }
+
+  var PASS = simpleHash('123456'); // كلمة مرور الجميع
+
+  var SCHOOLS_DATA = [
+    { name: 'مدرسة الرواد الأساسية',  city: 'عمّان',   type: 'school'  },
+    { name: 'مدرسة الأمل للبنات',     city: 'إربد',    type: 'school'  },
+    { name: 'مركز STEM المستقبل',     city: 'الزرقاء', type: 'center'  },
+    { name: 'مدرسة النور الوطنية',    city: 'العقبة',  type: 'school'  },
+    { name: 'مدرسة الإبداع التقني',   city: 'السلط',   type: 'school'  }
+  ];
+
+  var GRADES   = ['السادس', 'السابع', 'الثامن', 'التاسع', 'العاشر'];
+  var SECTIONS = ['أ', 'ب'];
+
+  var MALE_NAMES   = ['أحمد','محمد','عمر','يوسف','خالد','سامر','نادر','علي','زيد','باسل'];
+  var FEMALE_NAMES = ['سارة','ليلى','منى','رنا','دانا','نور','آية','ريم','سلمى','هبة'];
+  var LAST_NAMES   = ['الأحمد','السالم','العمري','الخالد','القاسم','الحسن','الرحمن','العلي','النعيمي','الشريف'];
+
+  var schools       = [];
+  var users         = [];   // معلمون + طلاب
+  var teacherSchols = [];
+  var classes       = [];
+
+  var tCount = 0;
+  var sCount = 0;
+
+  SCHOOLS_DATA.forEach(function(sc, si) {
+    var schId = uid();
+    schools.push({ id: schId, name: sc.name, city: sc.city, type: sc.type, createdAt: now });
+
+    // ── معلمان لكل مدرسة ──────────────────────────
+    var schTeachers = [];
+    for (var t = 0; t < 2; t++) {
+      tCount++;
+      var tId   = uid();
+      var tCode = 'TE-2026-' + pad(tCount, 3);
+      var tEmail = 'teacher' + tCount + '@cq.test';
+      var tName  = (t === 0 ? 'أستاذ ' : 'أستاذة ') + ['ماجد','سمر','وليد','ريم','طارق','دانا','نبيل','هند','رامي','لينا'][tCount - 1] + ' - مدرسة ' + (si + 1);
+      users.push({
+        id: tId, name: tName, email: tEmail,
+        phone: '0791' + pad(tCount, 6),
+        passwordHash: PASS, role: 'teacher', status: 'active',
+        schoolId: schId, class: '', section: '',
+        studentCode: '', teacherCode: tCode,
+        joinedAt: now, reviewedAt: now, leftSchool: false
+      });
+      teacherSchols.push({ id: uid(), teacherId: tId, schoolId: schId, createdAt: now });
+      schTeachers.push({ id: tId, email: tEmail });
+    }
+
+    // ── 5 صفوف × 2 شعب = 10 صفوف لكل مدرسة ──────
+    GRADES.forEach(function(grade) {
+      SECTIONS.forEach(function(section, secIdx) {
+        var teacher  = schTeachers[secIdx]; // المعلم الأول → شعبة أ ، الثاني → شعبة ب
+        var clsId    = uid();
+        var clsName  = 'الصف ' + grade + ' ' + section;
+        classes.push({
+          id: clsId, teacherId: teacher.id, teacherEmail: teacher.email,
+          name: clsName, schoolId: schId, section: section, createdAt: now
+        });
+
+        // ── 10 طلاب لكل صف ────────────────────────
+        var firstNames = (sc.name.indexOf('بنات') > -1) ? FEMALE_NAMES : MALE_NAMES;
+        for (var n = 0; n < 10; n++) {
+          sCount++;
+          var stCode  = 'ST-2026-' + pad(sCount, 4);
+          var stName  = firstNames[n] + ' ' + LAST_NAMES[n];
+          var stEmail = 'st' + sCount + '@cq.test';
+          users.push({
+            id: uid(), name: stName, email: stEmail,
+            phone: '0790' + pad(sCount, 6),
+            passwordHash: PASS, role: 'student', status: 'active',
+            schoolId: schId, class: grade, section: section,
+            studentCode: stCode, teacherCode: '',
+            joinedAt: now, reviewedAt: now, leftSchool: false
+          });
+        }
+      });
+    });
+  });
+
+  // ── الكتابة في الجداول ────────────────────────────
+  function writeRows(sheetName, rows) {
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) { sheet = ss.insertSheet(sheetName); }
+    if (sheet.getLastRow() === 0) sheet.appendRow(HEADERS[sheetName]);
+    var heads = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    rows.forEach(function(row) {
+      sheet.appendRow(heads.map(function(h) { return row.hasOwnProperty(h) ? row[h] : ''; }));
+    });
+  }
+
+  writeRows('Schools',       schools);
+  writeRows('Users',         users);
+  writeRows('TeacherSchools',teacherSchols);
+  writeRows('Classes',       classes);
+
+  Logger.log('✅ تم إنشاء البيانات التجريبية:');
+  Logger.log('   مدارس:  ' + schools.length);
+  Logger.log('   معلمون: ' + (tCount) + '  (TE-2026-001 → TE-2026-' + pad(tCount,3) + ')');
+  Logger.log('   صفوف:   ' + classes.length);
+  Logger.log('   طلاب:   ' + (sCount) + '  (ST-2026-0001 → ST-2026-' + pad(sCount,4) + ')');
+  Logger.log('   كلمة المرور لجميع الحسابات: 123456');
 }

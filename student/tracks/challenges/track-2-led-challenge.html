@@ -1,0 +1,507 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>أول دائرة — إضاءة LED</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../css/main.css">
+<link rel="stylesheet" href="../../css/challenges/track-2-led-challenge.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="../../.../../../index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="../../.../../../index.html" class="site-back">الرئيسية</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    </div>
+  </div>
+</nav>
+
+<main class="page-body">
+  <div class="teacher-preview-note">
+    معاينة المعلم: كل خطوات التحدي مفتوحة بدون مؤقت أو تسليم. هذه النسخة للشرح داخل الصف، أما الطالب فيدخل النسخة العادية باللون البرتقالي والوقت.
+  </div>
+
+  <!-- ══ Hero ══ -->
+  <div class="track-banner">
+    <img src="../../../img/challenge-covers/led-challenge.png" alt="تحدي إضاءة LED">
+    <div class="track-banner-overlay">
+      <div class="track-banner-copy">
+        <span class="badge badge-red">تحدي ١ — المسار الثاني</span>
+        <h1 class="track-banner-title">إضاءة LED 💡</h1>
+        <p class="track-banner-sub">ابنِ دائرتك الأولى — مصباح LED يومض تلقائياً كل ثانية بدون أي زر</p>
+        <div class="track-banner-pills">
+          <span class="track-banner-pill">⏱ 10 دقائق</span>
+          <span class="track-banner-pill">⭐ مبتدئ</span>
+          <span class="track-banner-pill">🔧 5 مكونات</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Top row: stage preview cards ══ -->
+  <div class="steps-top-row">
+    <section class="step-panel is-unlocked" data-step-headonly="1" onclick="toggleStepContent(1)">
+      <div class="step-header">
+        <div class="step-header-info">
+          <div class="step-header-title">توصيل القطع</div>
+          <div class="step-header-meta">
+            <span class="step-duration" id="top-wiring-step-duration">⏱ 10 دقائق</span>
+            <span class="step-status">● نشطة</span>
+          </div>
+        </div>
+        <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة" aria-expanded="false"></button>
+      </div>
+    </section>
+    <section class="step-panel is-locked" data-step-preview="2" onclick="toggleStepContent(2)">
+      <div class="step-header">
+        <div class="step-header-info">
+          <div class="step-header-title">البرمجة</div>
+          <div class="step-header-meta">
+            <span class="step-duration">⏱ 5 دقائق</span>
+            <span class="step-status">🔒 مقفلة</span>
+          </div>
+        </div>
+        <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة" aria-expanded="false"></button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══ Step 1: Wiring ══ -->
+  <section class="step-panel is-unlocked is-header-hidden" data-step="1">
+    <div class="step-header">
+      <div class="step-num-badge">١</div>
+      <div class="step-header-info">
+        <div class="step-header-title">توصيل الأسلاك</div>
+        <div class="step-header-meta">
+          <span class="step-duration" id="wiring-step-duration">⏱ 4 خطوات</span>
+          <span class="step-status">● نشطة</span>
+        </div>
+      </div>
+      <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة" aria-expanded="false"></button>
+    </div>
+    <div class="step-content">
+
+      <!-- Components list -->
+      <div class="stage-block" id="components-stage">
+        <div class="components-head">
+          <div class="section-label" style="margin-bottom:0">المكونات المطلوبة</div>
+          <button type="button" class="components-toggle" id="components-toggle">إظهار القطع المطلوبة</button>
+        </div>
+        <div class="components-grid is-static">
+          <div class="comp-chip" data-comp="arduino-uno">
+            <span class="comp-check">✓</span>
+            <div class="comp-thumb"><img src="../../../img/components/arduino-uno.svg" alt="Arduino UNO"></div>
+            <div class="comp-info"><div class="comp-name">Arduino UNO</div><div class="comp-qty">× 1</div></div>
+          </div>
+          <div class="comp-chip" data-comp="breadboard">
+            <span class="comp-check">✓</span>
+            <div class="comp-thumb"><img src="../../../img/components/breadboard.svg" alt="Breadboard"></div>
+            <div class="comp-info"><div class="comp-name">Breadboard</div><div class="comp-qty">× 1</div></div>
+          </div>
+          <div class="comp-chip" data-comp="led">
+            <span class="comp-check">✓</span>
+            <div class="comp-thumb"><img src="../../../img/components/led.svg" alt="LED"></div>
+            <div class="comp-info"><div class="comp-name">LED</div><div class="comp-qty">× 1 — أي لون</div></div>
+          </div>
+          <div class="comp-chip" data-comp="resistor">
+            <span class="comp-check">✓</span>
+            <div class="comp-thumb"><img src="../../../img/components/resistor-220.svg" alt="مقاومة 220 أوم"></div>
+            <div class="comp-info"><div class="comp-name">مقاومة 220Ω</div><div class="comp-qty">× 1</div></div>
+          </div>
+          <div class="comp-chip" data-comp="wire-red">
+            <span class="comp-check">✓</span>
+            <div class="comp-thumb"><img src="../../../img/components/wire-red.svg" alt="سلك أحمر"></div>
+            <div class="comp-info"><div class="comp-name">سلك أحمر</div><div class="comp-qty">× 1</div></div>
+          </div>
+          <div class="comp-chip" data-comp="wire-black">
+            <span class="comp-check">✓</span>
+            <div class="comp-thumb"><img src="../../../img/components/wire-black.svg" alt="سلك أسود"></div>
+            <div class="comp-info"><div class="comp-name">سلك أسود</div><div class="comp-qty">× 1</div></div>
+          </div>
+        </div>
+        <div class="wiring-start-wrap">
+          <button type="button" class="btn-main" id="wiring-start-btn" style="min-width:220px">ابدأ التحدي</button>
+        </div>
+      </div>
+
+      <!-- Wiring substeps -->
+      <div class="stage-block is-hidden" id="wiring-steps-stage">
+        <div class="steps-label">
+          <div class="section-label">خطوات التوصيل</div>
+          <div class="steps-counter" id="steps-counter">0 من 4</div>
+        </div>
+
+        <div class="wiring-substeps">
+
+          <!-- Guide preview (dummy) substep -->
+          <div class="wiring-substep is-dummy is-expanded" id="guide-dummy-step">
+            <div class="wiring-substep-header" id="guide-dummy-header">
+              <div class="wiring-substep-badge">1</div>
+              <div class="wiring-substep-copy">
+                <div class="wiring-substep-title">ضع Arduino والـ Breadboard</div>
+                <div class="wiring-substep-meta"><span class="wiring-substep-status">معاينة</span></div>
+              </div>
+            </div>
+            <div class="wiring-substep-body">
+              <div class="wiring-lesson-panel">
+                <div class="wiring-carousel-look carousel-wrap" id="guide-dummy-carousel">
+                  <div class="carousel-track">
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-01-board-a.png" alt="معاينة الخطوة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-01-board-b.png" alt="معاينة الخطوة الأولى - الصورة الثانية" class="media-crop-soft"></div></div>
+                  </div>
+                  <div class="carousel-nav" id="guide-dummy-nav">
+                    <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+                    <div class="carousel-dots">
+                      <button class="carousel-dot active" aria-label="١"></button>
+                      <button class="carousel-dot" aria-label="٢"></button>
+                    </div>
+                    <button class="carousel-btn btn-next" id="guide-dummy-next" aria-label="التالي">›</button>
+                  </div>
+                </div>
+                <div class="wiring-piece-wrap" id="guide-dummy-pieces">
+                  <div class="wiring-piece-grid">
+                    <button type="button" class="comp-chip" data-guide-check>
+                      <span class="comp-check">✓</span>
+                      <div class="comp-thumb"><img src="../../../img/components/arduino-uno.svg" alt="Arduino UNO"></div>
+                      <div class="comp-info"><div class="comp-name">Arduino UNO</div><div class="comp-qty">× 1</div></div>
+                    </button>
+                    <button type="button" class="comp-chip" data-guide-check>
+                      <span class="comp-check">✓</span>
+                      <div class="comp-thumb"><img src="../../../img/components/breadboard.svg" alt="Breadboard"></div>
+                      <div class="comp-info"><div class="comp-name">Breadboard</div><div class="comp-qty">× 1</div></div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Substep 1 -->
+          <div class="wiring-substep is-locked" data-wiring-step data-wiring-index="0">
+            <div class="wiring-substep-header" id="guide-real-step-header">
+              <div class="wiring-substep-badge">1</div>
+              <div class="wiring-substep-copy">
+                <div class="wiring-substep-title">ضع Arduino والـ Breadboard</div>
+                <div class="wiring-substep-meta"><span class="wiring-substep-status">🔒 مقفلة</span></div>
+              </div>
+              <button type="button" class="wiring-substep-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+            </div>
+            <div class="wiring-substep-body">
+              <div class="wiring-lesson-panel">
+                <div class="wiring-carousel-look carousel-wrap" id="wiring-step-1-carousel">
+                  <div class="carousel-track">
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-01-board-a.png" alt="ضع Arduino والـ Breadboard - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-01-board-b.png" alt="ضع Arduino والـ Breadboard - الصورة الثانية" class="media-crop-soft"></div></div>
+                  </div>
+                  <div class="carousel-nav">
+                    <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+                    <div class="carousel-dots">
+                      <button class="carousel-dot active" aria-label="١"></button>
+                      <button class="carousel-dot" aria-label="٢"></button>
+                    </div>
+                    <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+                  </div>
+                </div>
+                <div class="wiring-carousel-copy">
+                  <p class="wiring-step-desc">افتح Tinkercad وابدأ دائرة جديدة، ثم أضف <b>Arduino UNO</b> و<b>Breadboard</b> إلى مساحة العمل وضعهما بجانب بعض.</p>
+                </div>
+              </div>
+              <div class="wiring-piece-wrap">
+                <div class="wiring-piece-label">القطع المطلوبة لهذه الخطوة</div>
+                <div class="wiring-piece-grid">
+                  <button type="button" class="comp-chip" data-wiring-check data-comp="arduino-uno">
+                    <span class="comp-check">✓</span>
+                    <div class="comp-thumb"><img src="../../../img/components/arduino-uno.svg" alt="Arduino UNO"></div>
+                    <div class="comp-info"><div class="comp-name">Arduino UNO</div><div class="comp-qty">× 1</div></div>
+                  </button>
+                  <button type="button" class="comp-chip" data-wiring-check data-comp="breadboard">
+                    <span class="comp-check">✓</span>
+                    <div class="comp-thumb"><img src="../../../img/components/breadboard.svg" alt="Breadboard"></div>
+                    <div class="comp-info"><div class="comp-name">Breadboard</div><div class="comp-qty">× 1</div></div>
+                  </button>
+                </div>
+                <div class="wiring-check-guide">بعد تركيب القطع، حدِّدها هنا لإكمال هذه الخطوة.</div>
+              </div>
+              <div class="substep-actions is-hidden">
+                <button type="button" class="btn-main step-done-btn" data-complete-wiring-step>أنهيت هذه الخطوة</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Substep 2 -->
+          <div class="wiring-substep is-locked" data-wiring-step data-wiring-index="1">
+            <div class="wiring-substep-header">
+              <div class="wiring-substep-badge">2</div>
+              <div class="wiring-substep-copy">
+                <div class="wiring-substep-title">ركّب LED على الـ Breadboard</div>
+                <div class="wiring-substep-meta"><span class="wiring-substep-status">🔒 مقفلة</span></div>
+              </div>
+              <button type="button" class="wiring-substep-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+            </div>
+            <div class="wiring-substep-body">
+              <div class="wiring-lesson-panel">
+                <div class="wiring-carousel-look carousel-wrap" id="wiring-step-2-carousel">
+                  <div class="carousel-track">
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-02-led-a.png" alt="ركّب LED - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-02-led-b.png" alt="ركّب LED - الصورة الثانية"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-02-led-c.png" alt="ركّب LED - الصورة الثالثة" class="media-crop-soft"></div></div>
+                  </div>
+                  <div class="carousel-nav">
+                    <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+                    <div class="carousel-dots">
+                      <button class="carousel-dot active" aria-label="١"></button>
+                      <button class="carousel-dot" aria-label="٢"></button>
+                      <button class="carousel-dot" aria-label="٣"></button>
+                    </div>
+                    <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+                  </div>
+                </div>
+                <p class="wiring-step-desc">ضع الـ <b>LED</b> على الـ Breadboard بشكل صحيح، واحرص أن يكون الطرف الطويل (+) والطرف القصير (-) في صفّين مناسبين.</p>
+                <div class="tip tip-yellow">💡 الطرف الطويل = موجب (+) والطرف القصير = سالب (−).</div>
+                <div class="wiring-piece-wrap">
+                  <div class="wiring-piece-label">القطعة المطلوبة لهذه الخطوة</div>
+                  <div class="wiring-piece-grid">
+                    <button type="button" class="comp-chip" data-wiring-check data-comp="led">
+                      <span class="comp-check">✓</span>
+                      <div class="comp-thumb"><img src="../../../img/components/led.svg" alt="LED"></div>
+                      <div class="comp-info"><div class="comp-name">LED</div><div class="comp-qty">× 1</div></div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="substep-actions is-hidden">
+                <button type="button" class="btn-main step-done-btn" data-complete-wiring-step>أنهيت هذه الخطوة</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Substep 3 -->
+          <div class="wiring-substep is-locked" data-wiring-step data-wiring-index="2">
+            <div class="wiring-substep-header">
+              <div class="wiring-substep-badge">3</div>
+              <div class="wiring-substep-copy">
+                <div class="wiring-substep-title">أضف المقاومة 220Ω</div>
+                <div class="wiring-substep-meta"><span class="wiring-substep-status">🔒 مقفلة</span></div>
+              </div>
+              <button type="button" class="wiring-substep-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+            </div>
+            <div class="wiring-substep-body">
+              <div class="wiring-lesson-panel">
+                <div class="wiring-carousel-look carousel-wrap" id="wiring-step-3-carousel">
+                  <div class="carousel-track">
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-03-resistor-a.png" alt="أضف المقاومة - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-03-resistor-b.png" alt="أضف المقاومة - الصورة الثانية"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-03-resistor-c.png" alt="أضف المقاومة - الصورة الثالثة" class="media-crop-soft"></div></div>
+                  </div>
+                  <div class="carousel-nav">
+                    <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+                    <div class="carousel-dots">
+                      <button class="carousel-dot active" aria-label="١"></button>
+                      <button class="carousel-dot" aria-label="٢"></button>
+                      <button class="carousel-dot" aria-label="٣"></button>
+                    </div>
+                    <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+                  </div>
+                </div>
+                <p class="wiring-step-desc">ضع المقاومة <b>220Ω</b> بحيث تكون متصلة مع الطرف الطويل للـ LED على نفس خط التوصيل المناسب.</p>
+                <div class="wiring-piece-wrap">
+                  <div class="wiring-piece-label">القطعة المطلوبة لهذه الخطوة</div>
+                  <div class="wiring-piece-grid">
+                    <button type="button" class="comp-chip" data-wiring-check data-comp="resistor">
+                      <span class="comp-check">✓</span>
+                      <div class="comp-thumb"><img src="../../../img/components/resistor-220.svg" alt="مقاومة 220 أوم"></div>
+                      <div class="comp-info"><div class="comp-name">مقاومة 220Ω</div><div class="comp-qty">× 1</div></div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="substep-actions is-hidden">
+                <button type="button" class="btn-main step-done-btn" data-complete-wiring-step>أنهيت هذه الخطوة</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Substep 4 -->
+          <div class="wiring-substep is-locked" data-wiring-step data-wiring-index="3">
+            <div class="wiring-substep-header">
+              <div class="wiring-substep-badge">4</div>
+              <div class="wiring-substep-copy">
+                <div class="wiring-substep-title">وصّل السلك الأحمر والأسود</div>
+                <div class="wiring-substep-meta"><span class="wiring-substep-status">🔒 مقفلة</span></div>
+              </div>
+              <button type="button" class="wiring-substep-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+            </div>
+            <div class="wiring-substep-body">
+              <div class="wiring-lesson-panel">
+                <div class="wiring-carousel-look carousel-wrap" id="wiring-step-4-carousel">
+                  <div class="carousel-track">
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-04-wires-a.png" alt="وصّل الأسلاك - الصورة الأولى"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-04-wires-b.png" alt="وصّل الأسلاك - الصورة الثانية" class="media-crop-soft"></div></div>
+                    <div class="carousel-slide"><div class="wiring-step-media"><img src="../../../img/led-circuit/led-circuit-step-04-wires-c.png" alt="وصّل الأسلاك - الصورة الثالثة" class="media-crop-soft"></div></div>
+                  </div>
+                  <div class="carousel-nav">
+                    <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+                    <div class="carousel-dots">
+                      <button class="carousel-dot active" aria-label="١"></button>
+                      <button class="carousel-dot" aria-label="٢"></button>
+                      <button class="carousel-dot" aria-label="٣"></button>
+                    </div>
+                    <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+                  </div>
+                </div>
+                <p class="wiring-step-desc">وصّل <b>السلك الأحمر</b> من <b>Pin 13</b> إلى المقاومة، ثم وصّل <b>السلك الأسود</b> من <b>GND</b> إلى الطرف القصير للـ LED.</p>
+                <div class="wiring-piece-wrap">
+                  <div class="wiring-piece-label">القطع المطلوبة لهذه الخطوة</div>
+                  <div class="wiring-piece-grid">
+                    <button type="button" class="comp-chip" data-wiring-check data-comp="wire-red">
+                      <span class="comp-check">✓</span>
+                      <div class="comp-thumb"><img src="../../../img/components/wire-red.svg" alt="سلك أحمر"></div>
+                      <div class="comp-info"><div class="comp-name">سلك أحمر</div><div class="comp-qty">× 1</div></div>
+                    </button>
+                    <button type="button" class="comp-chip" data-wiring-check data-comp="wire-black">
+                      <span class="comp-check">✓</span>
+                      <div class="comp-thumb"><img src="../../../img/components/wire-black.svg" alt="سلك أسود"></div>
+                      <div class="comp-info"><div class="comp-name">سلك أسود</div><div class="comp-qty">× 1</div></div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="substep-actions is-hidden">
+                <button type="button" class="btn-main step-done-btn" data-complete-wiring-step>أنهيت هذه الخطوة</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.wiring-substeps -->
+      </div><!-- /#wiring-steps-stage -->
+
+      <div class="step-actions is-hidden" id="wiring-done-actions">
+        <button type="button" class="btn-main step-done-btn" data-unlock="2">أنهيت خطوة التوصيل</button>
+      </div>
+
+    </div><!-- /.step-content -->
+  </section>
+
+  <!-- ══ Step 2: Simulation ══ -->
+  <section class="step-panel is-locked is-hidden" data-step="2">
+    <div class="step-header">
+      <div class="step-num-badge">٢</div>
+      <div class="step-header-info">
+        <div class="step-header-title">البرمجة</div>
+        <div class="step-header-meta">
+          <span class="step-duration">⏱ 5 دقائق</span>
+          <span class="step-status">🔒 مقفلة</span>
+        </div>
+      </div>
+      <button type="button" class="step-toggle" aria-label="إظهار أو إخفاء الخطوة" aria-expanded="false"></button>
+    </div>
+    <div class="step-content">
+      <div class="stage-block">
+        <div class="steps-label">
+          <div class="section-label">خطوات البرمجة</div>
+          <div class="steps-counter" id="programming-steps-counter">0 من 1</div>
+        </div>
+
+        <div class="wiring-substeps">
+          <div class="wiring-substep is-locked" data-programming-step data-programming-index="0">
+            <div class="wiring-substep-header">
+              <div class="wiring-substep-badge">1</div>
+              <div class="wiring-substep-copy">
+                <div class="wiring-substep-title">شغّل المحاكاة</div>
+                <div class="wiring-substep-meta"><span class="wiring-substep-status">🔒 مقفلة</span></div>
+              </div>
+              <button type="button" class="wiring-substep-toggle" aria-label="إظهار أو إخفاء الخطوة"></button>
+            </div>
+            <div class="wiring-substep-body">
+              <div class="wiring-carousel-look carousel-wrap">
+                <div class="carousel-track">
+                  <div class="carousel-slide">
+                    <div class="programming-slide">
+                      <div class="programming-slide-title">اضغط Start Simulation</div>
+                      <div class="programming-slide-text">بعد إنهاء التوصيل، اضغط زر <b>Start Simulation</b> في Tinkercad لتشغيل الدائرة.</div>
+                    </div>
+                  </div>
+                  <div class="carousel-slide">
+                    <div class="programming-slide">
+                      <div class="programming-slide-title">تأكد من النتيجة</div>
+                      <div class="programming-slide-text">راقب الـ LED. إذا كان التوصيل صحيحًا سيبدأ بالعمل في المحاكاة. إذا لم يعمل، اضغط <b>Stop</b> وراجع الأسلاك ثم شغّلها مرة ثانية.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="carousel-nav">
+                  <button class="carousel-btn btn-prev" aria-label="السابق">‹</button>
+                  <div class="carousel-dots">
+                    <button class="carousel-dot active" aria-label="١"></button>
+                    <button class="carousel-dot" aria-label="٢"></button>
+                  </div>
+                  <button class="carousel-btn btn-next" aria-label="التالي">›</button>
+                </div>
+              </div>
+              <div class="substep-actions">
+                <button type="button" class="btn-main step-done-btn" data-complete-programming-step>أنهيت هذه الخطوة</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-actions is-hidden" id="coding-done-actions">
+        <button type="button" class="btn-main step-done-btn" data-finish="true">أنهيت خطوة البرمجة</button>
+      </div>
+
+    </div><!-- /.step-content -->
+  </section>
+
+  <div class="submit-gate hidden" id="submit-gate">
+    <div class="submit-gate-title">جاهز لتسليم مشروعك؟</div>
+    <p class="submit-gate-text">يمكنك فتح “توصيل القطع” و“البرمجة” الآن للمراجعة قبل التسليم.</p>
+    <button type="button" class="btn-main" id="submit-project-btn">سلّم مشروعك</button>
+    <div class="submit-warning" id="submit-warning">
+      بعد تأكيد إنهاء المشروع لن تستطيع الرجوع لفتح خطوات التوصيل أو البرمجة في هذه المحاولة.
+      <div class="submit-warning-actions">
+        <button type="button" class="btn-soft-inline" id="submit-cancel-btn">رجوع للمراجعة</button>
+        <button type="button" class="btn-main" id="submit-confirm-btn">أنهيت المشروع</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Finish CTA ══ -->
+  <div class="finish-cta hidden" id="next-track-cta">
+    <div class="finish-icon">📸</div>
+    <div class="finish-title">أنجزت التحدي؟</div>
+    <p class="finish-sub">اضغط Start Simulation، التقط صورة شاشة للدائرة وهي تعمل، ثم أرسلها</p>
+    <a href="../track-3.html" class="btn-finish">📤 سلّم مشروعك ←</a>
+  </div>
+
+</main>
+
+<div class="challenge-tip" id="challenge-tip" aria-live="polite">
+  <div class="challenge-tip-copy">
+    <span class="challenge-tip-step" id="challenge-tip-step">1</span>
+    <span class="challenge-tip-text" id="challenge-tip-text">اضغط على «ابدأ التحدي» لعرض شرح سريع لطريقة تنفيذ خطوات التوصيل.</span>
+  </div>
+  <div class="challenge-tip-actions">
+    <button type="button" class="challenge-tip-btn challenge-tip-dismiss" id="challenge-tip-dismiss">تخطي</button>
+    <button type="button" class="challenge-tip-btn challenge-tip-next is-hidden" id="challenge-tip-next">التالي</button>
+  </div>
+</div>
+
+<div class="guide-overlay" id="guide-overlay" aria-hidden="true">
+  <div class="guide-spotlight" id="guide-spotlight"></div>
+</div>
+
+<div class="time-up-panel" id="time-up-panel">
+  انتهى وقت التحدي. راجع خطواتك بهدوء، ثم أعد المحاولة من البداية للحصول على وقت كامل.
+</div>
+
+<script src="../../../js/config.js"></script>
+<script src="../../../js/api.js"></script>
+<script src="../../../js/main.js"></script>
+<script src="../../../js/notif-bell.js"></script>
+<script src="../js/track-2-led-challenge.js"></script>
+</body>
+</html>

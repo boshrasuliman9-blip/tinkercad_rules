@@ -1,0 +1,46 @@
+@import "../../design/dashboard.css";
+
+/* ── overrides: Admin → blue ── */
+:root {
+  --dash-accent:          #2563eb;
+  --dash-accent-rgb:      37, 99, 235;
+  --dash-accent-dark:     #1d4ed8;
+  --dash-accent-light:    #eff6ff;
+
+  --dash-logo-grad-start: #93c5fd;
+  --dash-logo-grad-end:   #2563eb;
+
+  --dash-hero-grad:         linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  --dash-hero-grad-refresh: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+
+  --dash-nav-active-grad:   linear-gradient(135deg, #3b82f6, #2563eb);
+  --dash-nav-active-shadow: rgba(37, 99, 235, .22);
+
+  --dash-quick-action-hover-border: rgba(37, 99, 235, .45);
+
+  --dash-badge-bg:           rgba(37, 99, 235, .15);
+  --dash-badge-border:       rgba(37, 99, 235, .3);
+  --dash-badge-name-color:   #93c5fd;
+
+  --dash-f-focus-color:      #2563eb;
+  --dash-f-msg-ok-bg:        #eff6ff;
+  --dash-f-msg-ok-color:     #1e40af;
+  --dash-f-msg-ok-border:    #bfdbfe;
+
+  --dash-spinner-color:      #2563eb;
+  --dash-guide-dot:          #2563eb;
+  --dash-notif-unread-bg:    #eff6ff;
+  --dash-notif-unread-border: rgba(37, 99, 235, .3);
+  --dash-notif-dot:          #2563eb;
+  --dash-mobile-active-bg:   #eff6ff;
+}
+
+/* ── Admin-specific badge ── */
+.admin-badge { margin-top: .8rem; background: var(--dash-badge-bg); border: 1px solid var(--dash-badge-border); border-radius: 8px; padding: .6rem .8rem; }
+.admin-badge-name { font-size: .88rem; font-weight: 800; color: var(--dash-badge-name-color); }
+.admin-badge-sub  { font-size: .72rem; color: #64748b; margin-top: 2px; }
+
+/* Visual refresh: admin badge */
+.admin-badge { background: #eff6ff; border-color: #bfdbfe; box-shadow: none; }
+.admin-badge-name { color: #1d4ed8; }
+.admin-badge-sub  { color: #6b7280; }

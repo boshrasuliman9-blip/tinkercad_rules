@@ -1,0 +1,31 @@
+@import "../../design/landing.css";
+
+:root {
+  --ix-accent: #2563eb;
+  --ix-accent-rgb: 37, 99, 235;
+  --ix-accent-text: #2563eb;
+  --ix-accent-dark: #1d4ed8;
+  --ix-accent-darker: #1d4ed8;
+  --ix-accent-tint: rgba(37,99,235,0.10);
+  --ix-accent-border: rgba(37,99,235,0.28);
+
+  --ix-accent-grad-start: #3b82f6;
+  --ix-accent-grad-mid: #2563eb;
+  --ix-accent-grad-end: #1d4ed8;
+
+  --ix-btn-inset-dark: #1d4ed8;
+  --ix-btn-inset-light: #3b82f6;
+  --ix-btn-border: #1d4ed8;
+
+  /* Admin chip uses role-tinted nav pill */
+  --ix-pill-fg: #1d4ed8;
+  --ix-pill-bg: rgba(37,99,235,0.10);
+  --ix-pill-border: rgba(37,99,235,0.22);
+  --ix-pill-shadow: inset 2px 2px 5px rgba(37,99,235,0.10), inset -2px -2px 5px rgba(255,255,255,0.7);
+}
+
+.ix-nav-pill.admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

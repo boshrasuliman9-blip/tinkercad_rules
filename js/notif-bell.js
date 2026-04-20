@@ -15,14 +15,10 @@
 
     var wrap = document.createElement('div');
     wrap.id = 'cq-notif-wrap';
-    wrap.style.cssText = 'position:relative;display:inline-flex;margin:0 4px;';
+    // styling via css/main.css (#cq-notif-wrap, #cq-bell-btn, #cq-bell-count)
     wrap.innerHTML =
-      '<button id="cq-bell-btn" title="الإشعارات" onclick="CQBell.toggle()" '
-      + 'style="background:none;border:none;cursor:pointer;font-size:1.1rem;padding:6px;border-radius:8px;line-height:1;transition:background .15s;"'
-      + ' onmouseover="this.style.background=\'rgba(0,0,0,.07)\'" onmouseout="this.style.background=\'none\'">🔔</button>'
-      + '<span id="cq-bell-count" style="display:none;position:absolute;top:-2px;right:-4px;background:#ef4444;color:#fff;'
-      + 'font-size:.58rem;font-weight:900;min-width:15px;height:15px;border-radius:999px;'
-      + 'align-items:center;justify-content:center;padding:0 3px;pointer-events:none;"></span>';
+      '<button id="cq-bell-btn" class="site-icon-btn" type="button" aria-label="الإشعارات" title="الإشعارات" onclick="CQBell.toggle()">🔔</button>'
+      + '<span id="cq-bell-count"></span>';
 
     /* Insert before the theme-toggle button */
     var themeBtn = actions.querySelector('#themeToggle, .site-theme-btn');
