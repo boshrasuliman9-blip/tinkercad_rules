@@ -75,23 +75,10 @@
 
     <!-- إنشاء حساب -->
     <div class="auth-panel" id="panel-signup">
-      <div id="step-code">
+      <form id="form-signup" onsubmit="handleSignUp(event)" novalidate>
         <p style="font-size:.88rem;color:var(--gray);margin-bottom:1.2rem;line-height:1.6;">
-          أدخل رمزك التعريفي <strong>CR-2026-XXXX</strong> الذي أعطاك إياه الأدمن.
+          سيُراجع طلبك من قبل الأدمن ويُفعَّل حسابك عند الموافقة.
         </p>
-        <div class="auth-field">
-          <label for="su-code">الرمز التعريفي</label>
-          <input id="su-code" type="text" placeholder="CR-2026-XXXX" autocomplete="off" style="text-transform:uppercase;letter-spacing:1px;">
-        </div>
-        <button type="button" class="auth-submit" id="btn-lookup" onclick="handleLookupCode()">تحقق من الرمز</button>
-        <div class="auth-msg" id="msg-lookup"></div>
-      </div>
-
-      <form id="form-signup" onsubmit="handleSignUp(event)" novalidate style="display:none;">
-        <div id="su-found-banner" style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:1.2rem;font-size:.9rem;">
-          <div style="font-weight:800;margin-bottom:3px;" id="su-found-name"></div>
-          <div style="color:var(--gray);font-size:.82rem;" id="su-found-meta"></div>
-        </div>
         <div class="auth-field">
           <label for="su-name">الاسم الكامل</label>
           <input id="su-name" type="text" placeholder="اسمك الكامل" autocomplete="name" required>
@@ -104,12 +91,8 @@
           <label for="su-password">كلمة المرور <span style="font-weight:400;color:var(--gray)">(6 أحرف على الأقل)</span></label>
           <input id="su-password" type="password" placeholder="••••••••" autocomplete="new-password" required>
         </div>
-        <input type="hidden" id="su-usercode">
-        <button type="submit" class="auth-submit" id="btn-signup">إنشاء الحساب</button>
+        <button type="submit" class="auth-submit" id="btn-signup">إرسال طلب التسجيل</button>
         <div class="auth-msg" id="msg-signup"></div>
-        <div style="text-align:center;margin-top:.8rem;">
-          <button type="button" onclick="resetCodeStep()" style="background:none;border:none;color:var(--gray);font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:underline;">← تغيير الرمز التعريفي</button>
-        </div>
       </form>
 
       <div class="auth-divider">

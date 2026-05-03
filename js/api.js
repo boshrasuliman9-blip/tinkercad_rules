@@ -65,18 +65,28 @@ var CQ_API = (function () {
   function _mockSeed() {
     var existing = localStorage.getItem(MOCK_KEY);
     if (existing) {
-      try { return JSON.parse(existing); } catch (e) {}
+      try {
+        var parsed = JSON.parse(existing);
+        if (!parsed.creators) parsed.creators = [];
+        return parsed;
+      } catch (e) {}
     }
 
     var now = new Date().toISOString();
     var db = {
       schools: [
-        {id:'sch-arc', name:'مدرسة الإبداع', city:'عمّان', type:'school', createdAt:now},
-        {id:'sch-stem', name:'مركز STEM الصغير', city:'إربد', type:'center', createdAt:now}
+        {id:'sch-arc',  name:'مدرسة الإبداع',    city:'عمّان', type:'school',  status:'active', createdAt:now},
+        {id:'sch-stem', name:'مركز STEM الصغير', city:'إربد',  type:'center', status:'active', createdAt:now}
+      ],
+      teachers: [
+        {id:'teacher1', name:'أحمد محمود',  email:'ahmad@school.com',  teacherCode:'TE-1001', role:'teacher', status:'active',  schoolId:'sch-arc',  createdAt:now},
+        {id:'teacher2', name:'سارة الخالد', email:'sara@school.com',   teacherCode:'TE-1002', role:'teacher', status:'active',  schoolId:'sch-arc',  createdAt:now},
+        {id:'teacher3', name:'محمد علي',    email:'mohamad@stem.com',  teacherCode:'TE-1003', role:'teacher', status:'pending', schoolId:'sch-stem', createdAt:now}
       ],
       classes: [
-        {id:'cls-8a', teacherId:'dev-teacher-dashboard', teacherEmail:'teacher@dev.local', name:'الصف الثامن أ', schoolId:'sch-arc', schoolName:'مدرسة الإبداع', section:'أ', studentCount:5, createdAt:now},
-        {id:'cls-9b', teacherId:'dev-teacher-dashboard', teacherEmail:'teacher@dev.local', name:'الصف التاسع ب', schoolId:'sch-stem', schoolName:'مركز STEM الصغير', section:'ب', studentCount:4, createdAt:now}
+        {id:'cls-8a', teacherId:'teacher1', teacherEmail:'ahmad@school.com',  name:'الثامن أ',  grade:'الثامن',  schoolId:'sch-arc',  schoolName:'مدرسة الإبداع',    section:'ا', studentCount:5, createdAt:now},
+        {id:'cls-9b', teacherId:'teacher2', teacherEmail:'sara@school.com',   name:'التاسع ب',  grade:'التاسع',  schoolId:'sch-arc',  schoolName:'مدرسة الإبداع',    section:'ب', studentCount:4, createdAt:now},
+        {id:'cls-7a', teacherId:'teacher3', teacherEmail:'mohamad@stem.com',  name:'السابع ا',  grade:'السابع',  schoolId:'sch-stem', schoolName:'مركز STEM الصغير', section:'ا', studentCount:3, createdAt:now}
       ],
       students: [
         {id:'stu-aya', name:'آية خليل', email:'aya@example.com', studentCode:'ST-2026-1001', schoolId:'sch-arc', class:'الصف الثامن أ', section:'أ', status:'active', hasAccount:true, leftSchool:false},
@@ -109,6 +119,7 @@ var CQ_API = (function () {
       achievements: [
         {id:'ach-1', teacherId:'dev-teacher-dashboard', studentId:'stu-omar', studentName:'عمر زيد', schoolId:'sch-arc', text:'أسرع حل صحيح لتحدي LED', badge:'rocket', createdAt:_daysFromNow(-1)}
       ],
+      creators: [],
       notifs: [
         {id:'nt-1', userId:'dev-teacher-dashboard', type:'submission', title:'تسليم جديد', body:'آية خليل سلّمت تحدي إضاءة LED', message:'آية خليل سلّمت تحدي إضاءة LED', read:false, readAt:'', createdAt:_daysFromNow(-1)},
         {id:'nt-2', userId:'dev-teacher-dashboard', type:'new_challenge', title:'تحدي جديد', body:'تحدي Push Button متاح للتعيين', message:'تحدي Push Button متاح للتعيين', read:false, readAt:'', createdAt:_daysFromNow(-2)}
@@ -175,12 +186,13 @@ var CQ_API = (function () {
     var action = params.action || '';
 
     if (action === 'signIn') {
-      var role = params.role === 'teacher' ? 'teacher' : 'student';
-      return {ok:true, user:{id: role === 'teacher' ? 'dev-teacher-dashboard' : 'stu-aya', name: role === 'teacher' ? 'معلم تجريبي' : 'آية خليل', email: params.email || '', role: role, status:'active', teacherCode: role === 'teacher' ? 'DEV-TEACHER' : '', studentCode: role === 'student' ? 'ST-2026-1001' : ''}};
+      var role = params.role === 'teacher' ? 'teacher' : (params.role === 'creator' ? 'creator' : 'student');
+      return {ok:true, user:{id: role === 'teacher' ? 'dev-teacher-dashboard' : (role === 'creator' ? 'dev-creator-dashboard' : 'stu-aya'), name: role === 'teacher' ? 'معلم تجريبي' : (role === 'creator' ? 'مبتكر تجريبي' : 'آية خليل'), email: params.email || '', role: role, status:'active', teacherCode: role === 'teacher' ? 'DEV-TEACHER' : '', studentCode: role === 'student' ? 'ST-2026-1001' : '', creatorCode: role === 'creator' ? 'DEV-CREATOR' : ''}};
     }
     if (action === 'signUp') return _mockCall({action:'signIn', role:params.role, email:params.email});
     if (action === 'getSchools') return {ok:true, data:db.schools, schools:db.schools};
     if (action === 'getClasses') return {ok:true, data:db.classes, classes:db.classes};
+    if (action === 'getCourses') return {ok:true, data:db.courses||[], courses:db.courses||[]};
     if (action === 'getStudentsByClass') {
       var cls = db.classes.find(function(c) { return c.id === params.classId; });
       var students = cls ? db.students.filter(function(s) { return s.schoolId === cls.schoolId && s.class === cls.name && !s.leftSchool; }) : [];
@@ -203,6 +215,16 @@ var CQ_API = (function () {
       db.classes = db.classes.filter(function(c) { return c.id !== params.classId; });
       _mockSave(db);
       return {ok:true};
+    }
+    if (action === 'updateClass') {
+      var updCls = db.classes.find(function(c) { return c.id === params.classId; });
+      if (!updCls) return {ok:false, msg:'الصف غير موجود'};
+      if (params.name      != null) updCls.name      = params.name;
+      if (params.section   != null) updCls.section   = params.section;
+      if (params.teacherId != null) updCls.teacherId = params.teacherId;
+      if (params.teacherEmail != null) updCls.teacherEmail = params.teacherEmail;
+      if (params.status    != null) updCls.status    = params.status;
+      _mockSave(db); return {ok:true};
     }
     if (action === 'getChallenges') return {ok:true, data:db.challenges, challenges:db.challenges};
     if (action === 'createChallenge') {
@@ -309,25 +331,96 @@ var CQ_API = (function () {
         role: role, status: 'active',
         studentCode: role === 'student' ? code : '',
         teacherCode: role === 'teacher' ? code : '',
+        creatorCode: role === 'creator' ? code : '',
         schoolId: params.schoolId || '', class: params.class || '', section: params.section || ''
       };
-      if (role === 'teacher') db.students; // no-op to reference db
+      if (role === 'teacher') db.teachers.push(newUser);
+      else if (role === 'creator') db.creators.push(newUser);
+      else db.students.push(newUser);
+      _mockSave(db);
       return {ok:true, userCode: code, user: newUser};
     }
     if (action === 'getTeachers') {
-      var teachers = db.students.filter(function(u){ return false; }); // empty mock
-      return {ok:true, data:[], teachers:[]};
+      return {ok:true, data:db.teachers||[], teachers:db.teachers||[]};
     }
     if (action === 'getStudents') {
       return {ok:true, data:db.students, students:db.students};
     }
-    if (action === 'approveTeacher' || action === 'rejectTeacher' || action === 'approveStudent' || action === 'rejectStudent') return {ok:true};
+    if (action === 'getCreators') {
+      return {ok:true, data:db.creators||[], creators:db.creators||[]};
+    }
+    if (action === 'getAdminNotifs') {
+      return {ok:true, data:db.notifs||[], notifs:db.notifs||[]};
+    }
+    if (action === 'adminSetUserStatus') {
+      [db.teachers, db.students, db.creators || []].some(function(list) {
+        var user = list.find(function(u) { return u.id === params.userId; });
+        if (!user) return false;
+        user.status = params.status || user.status;
+        return true;
+      });
+      _mockSave(db);
+      return {ok:true};
+    }
+    if (action === 'adminUpdateUser') {
+      [db.teachers, db.students, db.creators || []].some(function(list) {
+        var user = list.find(function(u) { return u.id === params.userId; });
+        if (!user) return false;
+        ['name','email','schoolId','class','section','status'].forEach(function(k) {
+          if (params[k] != null) user[k] = params[k];
+        });
+        if (params.className != null) user.class = params.className;
+        if (params.leftSchool != null) user.leftSchool = params.leftSchool === true || params.leftSchool === 'true';
+        return true;
+      });
+      _mockSave(db);
+      return {ok:true};
+    }
+    if (action === 'approveTeacher' || action === 'rejectTeacher' || action === 'approveStudent' || action === 'rejectStudent' || action === 'approveCreator' || action === 'rejectCreator') return {ok:true};
     if (action === 'createSchool') {
-      var newSch = {id:_id('sch'), name:params.name||'', city:params.city||'', type:params.type||'school', createdAt:new Date().toISOString()};
+      var newSch = {id:_id('sch'), name:params.name||'', city:params.city||'', type:params.type||'school', status:'active', createdAt:new Date().toISOString()};
       db.schools.push(newSch); _mockSave(db);
       return {ok:true, data:newSch};
     }
+    if (action === 'updateSchool') {
+      var updSch = db.schools.find(function(s){ return s.id === params.schoolId; });
+      if (!updSch) return {ok:false, msg:'المدرسة غير موجودة'};
+      if (params.name   != null) updSch.name   = params.name;
+      if (params.city   != null) updSch.city   = params.city;
+      if (params.type   != null) updSch.type   = params.type;
+      if (params.status != null) updSch.status = params.status;
+      _mockSave(db);
+      return {ok:true};
+    }
     if (action === 'deleteSchool') { db.schools=db.schools.filter(function(s){return s.id!==params.schoolId;}); _mockSave(db); return {ok:true}; }
+    if (action === 'adminCreateClass') {
+      var schForCls = db.schools.find(function(s){ return s.id === params.schoolId; }) || {};
+      var grade = params.grade || params.name || '';
+      var clsName = (grade + (params.section ? ' ' + params.section : '')).trim();
+      var newCls = {id:_id('cls'), teacherId:'', teacherEmail:'', name:clsName, grade:grade, section:params.section||'', schoolId:params.schoolId||'', schoolName:schForCls.name||'', createdAt:new Date().toISOString()};
+      db.classes.push(newCls); _mockSave(db);
+      return {ok:true, data:newCls};
+    }
+    if (action === 'createCourse') {
+      var schForCrs = db.schools.find(function(s){ return s.id === params.schoolId; }) || {};
+      var newCrs = {id:_id('crs'), name:params.name||'', schoolId:params.schoolId||'', schoolName:schForCrs.name||'', startTime:params.startTime||'', endTime:params.endTime||'', weeks:params.weeks||'', trainerId:'', trainerName:'', courseStatus:'active', activeStatus:'active', createdAt:new Date().toISOString()};
+      if (!db.courses) db.courses = [];
+      db.courses.push(newCrs); _mockSave(db);
+      return {ok:true, data:newCrs};
+    }
+    if (action === 'updateCourse') {
+      if (!db.courses) return {ok:true};
+      var updCrs = db.courses.find(function(c){ return c.id === params.courseId; });
+      if (updCrs && params.trainerId != null) { updCrs.trainerId = params.trainerId; updCrs.trainerName = params.trainerName||''; }
+      if (updCrs && params.name != null) updCrs.name = params.name;
+      if (updCrs && params.startTime != null) updCrs.startTime = params.startTime;
+      if (updCrs && params.endTime != null) updCrs.endTime = params.endTime;
+      if (updCrs && params.weeks != null) updCrs.weeks = params.weeks;
+      if (updCrs && params.courseStatus != null) { updCrs.courseStatus = params.courseStatus; updCrs.activeStatus = params.courseStatus; }
+      if (updCrs && params.activeStatus != null) { updCrs.activeStatus = params.activeStatus; updCrs.courseStatus = params.activeStatus; }
+      _mockSave(db);
+      return {ok:true};
+    }
     if (action === 'assignTeacherSchool' || action === 'removeTeacherSchool') return {ok:true};
     if (action === 'getTeacherSchools') return {ok:true, data:[], schools:[]};
     if (action === 'importUsers') return {ok:true, added:0, skipped:0, errors:[]};
@@ -353,6 +446,9 @@ var CQ_API = (function () {
     getStudents: function (token) {
       return _call({action: 'getStudents', token: token});
     },
+    getCreators: function (token) {
+      return _call({action: 'getCreators', token: token});
+    },
     approveTeacher: function (userId, token) {
       return _call({action: 'approveTeacher', userId: userId, token: token, ajax: 'true'});
     },
@@ -360,10 +456,19 @@ var CQ_API = (function () {
       return _call({action: 'rejectTeacher', userId: userId, token: token, ajax: 'true'});
     },
     approveStudent: function (userId, token) {
-      return _call({action: 'approveStudent', userId: userId, token: token});
+      return _call({action: 'approveStudent', userId: userId, token: token, ajax: 'true'});
     },
     rejectStudent: function (userId, token) {
-      return _call({action: 'rejectStudent', userId: userId, token: token});
+      return _call({action: 'rejectStudent', userId: userId, token: token, ajax: 'true'});
+    },
+    approveCreator: function (userId, token) {
+      return _call({action: 'approveCreator', userId: userId, token: token, ajax: 'true'});
+    },
+    rejectCreator: function (userId, token) {
+      return _call({action: 'rejectCreator', userId: userId, token: token, ajax: 'true'});
+    },
+    getAdminNotifs: function (token) {
+      return _call({action: 'getAdminNotifs', token: token});
     },
     generateResetLink: function (userId, token) {
       return _call({action: 'generateResetLink', userId: userId, token: token});
@@ -444,9 +549,23 @@ var CQ_API = (function () {
       return _call({action: 'importUsers', role: role, rows: JSON.stringify(rows), token: token});
     },
 
+    // ── الأدمن — إضافة صف / دورة ────────────
+    adminCreateClass: function (data, token) {
+      return _call(Object.assign({action: 'adminCreateClass', token: token}, data));
+    },
+    getCourses: function (token) {
+      return _call({action: 'getCourses', token: token || ''});
+    },
+    createCourse: function (data, token) {
+      return _call(Object.assign({action: 'createCourse', token: token}, data));
+    },
+    updateCourse: function (courseId, data, token) {
+      return _call(Object.assign({action: 'updateCourse', courseId: courseId, token: token}, data));
+    },
+
     // ── المعلم — الصفوف ──────────────────────
-    getClasses: function (teacherId) {
-      return _call({action: 'getClasses', teacherId: teacherId});
+    getClasses: function (teacherId, token) {
+      return _call({action: 'getClasses', teacherId: teacherId || '', token: token || ''});
     },
     createClass: function (teacherId, teacherEmail, name, schoolId, section) {
       return _call({action: 'createClass', teacherId: teacherId, teacherEmail: teacherEmail, name: name, schoolId: schoolId, section: section || ''});
@@ -454,8 +573,8 @@ var CQ_API = (function () {
     updateClass: function (classId, teacherId, data, token) {
       return _call(Object.assign({action: 'updateClass', classId: classId, teacherId: teacherId, token: token || ''}, data));
     },
-    deleteClass: function (classId, teacherId) {
-      return _call({action: 'deleteClass', classId: classId, teacherId: teacherId});
+    deleteClass: function (classId, teacherId, token) {
+      return _call({action: 'deleteClass', classId: classId, teacherId: teacherId, token: token || ''});
     },
 
     // ── المعلم — الطلاب ──────────────────────

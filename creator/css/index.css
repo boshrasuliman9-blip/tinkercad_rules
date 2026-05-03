@@ -17,3 +17,21 @@
   --ix-btn-inset-light: #9b6bff;
   --ix-btn-border: #5b21b6;
 }
+
+.ix-nav {
+  z-index: 1000;
+}
+
+.ix-hero-text {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-3d {
+  z-index: 1;
+}
+
+.hero-3d canvas,
+#model-loader {
+  max-width: 100%;
+}

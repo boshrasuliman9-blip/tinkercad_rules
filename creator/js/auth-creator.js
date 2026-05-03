@@ -7,34 +7,6 @@ function switchTab(tab) {
   });
 }
 
-function handleLookupCode() {
-  var code = document.getElementById('su-code').value.trim().toUpperCase();
-  var btn  = document.getElementById('btn-lookup');
-  var msg  = document.getElementById('msg-lookup');
-  if (!code) { msg.textContent = 'أدخل الرمز التعريفي'; msg.className = 'auth-msg error'; return; }
-  btn.disabled = true; btn.textContent = 'جاري التحقق...'; msg.className = 'auth-msg';
-
-  CQ_API.lookupCode(code).then(function(result) {
-    btn.disabled = false; btn.textContent = 'تحقق من الرمز';
-    if (!result.ok) { msg.textContent = result.msg; msg.className = 'auth-msg error'; return; }
-    if (result.role !== 'creator') { msg.textContent = 'هذا الرمز ليس لمبتكر. استخدم رمزاً يبدأ بـ CR-'; msg.className = 'auth-msg error'; return; }
-    document.getElementById('su-usercode').value  = code;
-    document.getElementById('su-name').value      = result.name || '';
-    document.getElementById('su-found-name').textContent = result.name || '';
-    document.getElementById('su-found-meta').textContent = 'مبتكر معتمد';
-    document.getElementById('step-code').style.display   = 'none';
-    document.getElementById('form-signup').style.display = '';
-    msg.className = 'auth-msg';
-  });
-}
-
-function resetCodeStep() {
-  document.getElementById('step-code').style.display   = '';
-  document.getElementById('form-signup').style.display = 'none';
-  document.getElementById('msg-lookup').className = 'auth-msg';
-  document.getElementById('su-code').value = '';
-}
-
 function handleSignIn(e) {
   e.preventDefault();
   var btn = document.getElementById('btn-signin');
@@ -57,24 +29,30 @@ function handleSignIn(e) {
 
 function handleSignUp(e) {
   e.preventDefault();
+  var name     = document.getElementById('su-name').value.trim();
+  var email    = document.getElementById('su-email').value.trim().toLowerCase();
+  var password = document.getElementById('su-password').value;
   var btn = document.getElementById('btn-signup');
   var msg = document.getElementById('msg-signup');
-  msg.className = 'auth-msg'; btn.disabled = true; btn.textContent = 'جاري الإنشاء...';
+
+  if (!name)  { msg.textContent = 'أدخل اسمك الكامل'; msg.className = 'auth-msg error'; return; }
+  if (!email) { msg.textContent = 'أدخل بريدك الإلكتروني'; msg.className = 'auth-msg error'; return; }
+  if (password.length < 6) { msg.textContent = 'كلمة المرور 6 أحرف على الأقل'; msg.className = 'auth-msg error'; return; }
+
+  msg.className = 'auth-msg'; btn.disabled = true; btn.textContent = 'جاري الإرسال...';
   CQ_API.signUp({
-    name:         document.getElementById('su-name').value.trim(),
-    email:        document.getElementById('su-email').value.trim().toLowerCase(),
-    passwordHash: (function(p){ var h=0; for(var i=0;i<p.length;i++) h=(Math.imul(31,h)+p.charCodeAt(i))|0; return h.toString(16); })(document.getElementById('su-password').value),
-    role:         'creator',
-    userCode:     document.getElementById('su-usercode').value
+    name:         name,
+    email:        email,
+    passwordHash: (function(p){ var h=0; for(var i=0;i<p.length;i++) h=(Math.imul(31,h)+p.charCodeAt(i))|0; return h.toString(16); })(password),
+    role:         'creator'
   }).then(function(result) {
-    btn.disabled = false; btn.textContent = 'إنشاء الحساب';
+    btn.disabled = false; btn.textContent = 'إرسال طلب التسجيل';
     if (result.ok) {
-      msg.textContent = result.pending ? 'تم الطلب. بانتظار موافقة الأدمن.' : 'تم إنشاء الحساب! جاري التحويل...';
+      msg.textContent = 'تم إرسال طلبك بنجاح. بانتظار موافقة الأدمن.';
       msg.className = 'auth-msg success';
-      if (!result.pending) setTimeout(function() { window.location.href = './dashboard.html'; }, 800);
-      else setTimeout(function() { switchTab('signin'); }, 1400);
+      setTimeout(function() { switchTab('signin'); }, 2000);
     } else {
-      msg.textContent = result.msg; msg.className = 'auth-msg error';
+      msg.textContent = result.msg || 'حدث خطأ، حاول مجدداً'; msg.className = 'auth-msg error';
     }
   });
 }

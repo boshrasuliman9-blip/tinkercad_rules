@@ -5,14 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة الأدمن - إنجاز</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/dashboard.css">
+<link rel="stylesheet" href="./css/dashboard.css?v=admin-20260503-7">
 </head>
 <body>
 
 <div id="app">
-<nav class="mobile-bar" aria-label="تنقل لوحة الأدمن">
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+<nav class="mobile-bar" role="navigation" aria-label="تنقل لوحة الأدمن الرئيسية" aria-roledescription="شريط التنقل السفلي">
   <button class="mobile-nav-btn active" data-mobile-nav="overview" onclick="showSection('overview')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-9"/></svg></span><span>نظرة</span></button>
   <button class="mobile-nav-btn" data-mobile-nav="schools" onclick="showSection('schools')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/></svg></span><span>مدارس</span></button>
+  <button class="mobile-nav-btn" data-mobile-nav="classes" onclick="showSection('classes')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 3v4"/><path d="M16 10v4"/><path d="M8 17v4"/></svg></span><span>صفوف/دورات</span></button>
   <button class="mobile-nav-btn" data-mobile-nav="requests" onclick="showSection('requests')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>طلبات</span></button>
   <button class="mobile-nav-btn" data-mobile-nav="teachers" onclick="showSection('teachers')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span><span>معلمون</span></button>
   <button class="mobile-nav-btn" data-mobile-nav="students" onclick="showSection('students')"><span class="mobile-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 9.5L12 4l9.5 5.5L12 15 2.5 9.5Z"/><path d="M6.5 12v5c0 1.5 3 3 5.5 3s5.5-1.5 5.5-3v-5"/></svg></span><span>طلاب</span></button>
@@ -21,9 +23,14 @@
 <div class="shell">
 
   <!-- ─── Sidebar ─── -->
-  <aside class="sidebar">
+<aside class="sidebar" role="complementary" aria-label="القائمة الجانبية للتنقل">
     <div class="sidebar-logo">
-      <a href="http://127.0.0.1:5501/admin/" class="sidebar-logo-name">إنجاز</a>
+      <div class="sidebar-logo-top">
+        <a href="http://127.0.0.1:5501/admin/" class="sidebar-logo-name">إنجاز</a>
+        <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="إغلاق القائمة">
+          <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
       <small>لوحة الأدمن</small>
       <div class="admin-badge">
         <div class="admin-badge-name" id="sb-name">—</div>
@@ -36,6 +43,9 @@
       </div>
       <div class="nav-item" onclick="showSection('schools')" id="nav-schools">
         <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/><path d="M8 12h2"/><path d="M14 12h2"/></svg></span> المدارس/المراكز
+      </div>
+      <div class="nav-item" onclick="showSection('classes')" id="nav-classes">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 3v4"/><path d="M16 10v4"/><path d="M8 17v4"/></svg></span> الصفوف والدورات
       </div>
       <div class="nav-item" onclick="showSection('requests')" id="nav-requests">
         <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> طلبات التسجيل
@@ -53,6 +63,10 @@
       <div class="nav-item" onclick="showSection('creators')" id="nav-creators">
         <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span> المبتكرون
       </div>
+      <div class="nav-item" onclick="showSection('trash')" id="nav-trash">
+        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> سلة المهملات
+        <span class="nav-notif-count" id="nav-trash-badge" style="display:none">0</span>
+      </div>
       <div class="nav-item" onclick="showSection('notifs')" id="nav-notifs">
         <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> الإشعارات
         <span class="nav-notif-count" id="nav-notif-badge" style="display:none">0</span>
@@ -65,11 +79,16 @@
   </aside>
 
   <!-- ─── Main ─── -->
-  <main class="main">
+<main class="main" role="main" aria-label="محتوى الصفحة الرئيسي">
 
     <!-- ── Topbar ── -->
     <div class="topbar">
       <div class="topbar-actions">
+<button class="hamburger-btn topbar-icon-btn" onclick="toggleSidebar()" title="القائمة" aria-label="فتح/إغلاق القائمة الجانبية" aria-expanded="false" aria-controls="sidebar">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
         <div class="topbar-user">
           <span id="topbar-name">—</span>
         </div>
@@ -103,9 +122,9 @@
           <div class="hero-kicker">لوحة تشغيل الأدمن</div>
           <div class="hero-welcome">مرحباً <span id="ov-name"></span> 👋</div>
           <div class="hero-date" id="ov-date"></div>
-          <div class="hero-sub">أدر المدارس، المعلمين، الطلاب، والتحديات من مكان واحد.</div>
+          <div class="hero-sub">أدر المدارس، الصفوف، المعلمين، الطلاب، والمبتكرين من مكان واحد مع صلاحيات واضحة لكل جهة.</div>
           <div class="hero-actions">
-            <button class="btn btn-hero" onclick="showSection('challenges')">إنشاء تحدي</button>
+            <button class="btn btn-hero" onclick="showSection('challenges')">إدارة التحديات</button>
             <button class="btn btn-hero-outline" onclick="showSection('teachers')">إدارة المعلمين</button>
             <button class="btn btn-hero-outline" onclick="showSection('schools')">إدارة المدارس</button>
           </div>
@@ -144,12 +163,17 @@
         <button class="quick-action" onclick="showSection('requests')">
           <span class="quick-action-icon">📋</span>
           <span class="quick-action-title">طلبات التسجيل <span id="ov-req-badge" style="display:none;background:#ef4444;color:#fff;border-radius:999px;padding:1px 7px;font-size:.75rem;margin-right:4px">0</span></span>
-          <span class="quick-action-sub">مراجعة وقبول طلبات المعلمين والطلاب</span>
+          <span class="quick-action-sub">مراجعة user_request القادمة من الموقع أو الإيميل وقبولها أو رفضها</span>
         </button>
         <button class="quick-action" onclick="showSection('schools')">
           <span class="quick-action-icon">🏫</span>
           <span class="quick-action-title">المدارس/المراكز</span>
-          <span class="quick-action-sub">إضافة وإدارة المدارس والمراكز</span>
+          <span class="quick-action-sub">إضافة المدارس للصفوف والمراكز للدورات</span>
+        </button>
+        <button class="quick-action" onclick="showSection('classes')">
+          <span class="quick-action-icon">🧩</span>
+          <span class="quick-action-title">الصفوف والدورات</span>
+          <span class="quick-action-sub">مدارس للصفوف ومراكز للدورات بدون خلط</span>
         </button>
         <button class="quick-action" onclick="showSection('teachers')">
           <span class="quick-action-icon">👤</span>
@@ -164,7 +188,29 @@
         <button class="quick-action" onclick="showSection('challenges')">
           <span class="quick-action-icon">⚡</span>
           <span class="quick-action-title">التحديات</span>
-          <span class="quick-action-sub">إنشاء وتحرير ونشر التحديات</span>
+          <span class="quick-action-sub">إدارة التحديات ونشرها دون إنشاء تحديات جديدة من لوحة الأدمن</span>
+        </button>
+      </div>
+      <div class="admin-command-grid">
+        <button class="command-card" onclick="showSection('requests')">
+          <span class="command-card-label">طلبات تحت المراجعة</span>
+          <strong class="command-card-value" id="cmd-pending-total">0</strong>
+          <span class="command-card-sub">معلمون، طلاب، مبتكرون، وتسليمات</span>
+        </button>
+        <button class="command-card" onclick="showSection('challenges')">
+          <span class="command-card-label">تحديات جاهزة للنشر</span>
+          <strong class="command-card-value" id="cmd-draft-challenges">0</strong>
+          <span class="command-card-sub">مسودات يمكن للأدمن مراجعتها ونشرها</span>
+        </button>
+        <button class="command-card" onclick="showSection('teachers')">
+          <span class="command-card-label">حسابات تحت الإدارة</span>
+          <strong class="command-card-value" id="cmd-managed-users">0</strong>
+          <span class="command-card-sub">إدارة المعلمين والطلاب والمبتكرين من واجهة واحدة</span>
+        </button>
+        <button class="command-card" onclick="showSection('schools')">
+          <span class="command-card-label">نطاق المنصة</span>
+          <strong class="command-card-value" id="cmd-school-coverage">0</strong>
+          <span class="command-card-sub">مدارس ومراكز مرتبطة بإدارة الأدمن</span>
         </button>
       </div>
       <div class="overview-grid">
@@ -194,11 +240,18 @@
           </div>
           <div class="panel">
             <div class="panel-hd"><span class="panel-title">صلاحيات الأدمن</span></div>
-            <div class="guide-list">
-              <div class="guide-item"><span class="guide-dot"></span><span>الأدمن ينشئ التحديات ويضعها في مسودة أو ينشرها للمعلمين.</span></div>
-              <div class="guide-item"><span class="guide-dot"></span><span>المعلم لا يرى التحدي إلا بعد نشره من الأدمن.</span></div>
-              <div class="guide-item"><span class="guide-dot"></span><span>يمكن ربط معلم بأكثر من مدرسة أو مركز.</span></div>
-              <div class="guide-item"><span class="guide-dot"></span><span>الطلاب يسجّلون برمز ST-2026-XXXX والمعلمون برمز TE-2026-XXXX.</span></div>
+            <div class="permission-panel-copy">
+              هذه الواجهة تجمع الإجراءات التي يقدر الأدمن يديرها من اللوحة، مع توضيح ما هو متاح في الواجهة وما يظل مرتبطًا بالخادم.
+            </div>
+            <div class="permission-pill-list" id="permission-pill-list"></div>
+            <div class="permission-matrix" id="permission-matrix"></div>
+            <div class="permission-limits">
+              <div class="permission-limits-title">حدود الواجهة</div>
+              <div class="guide-list">
+                <div class="guide-item"><span class="guide-dot"></span><span>يمكن للأدمن إدارة المحتوى والمستخدمين عندما تكون خدمات المنصة متصلة بشكل طبيعي.</span></div>
+                <div class="guide-item"><span class="guide-dot"></span><span>تغيير بنية قاعدة البيانات أو صلاحيات الخادم ليس جزءًا من هذه اللوحة.</span></div>
+                <div class="guide-item"><span class="guide-dot"></span><span>القدرات المعروضة هنا تعكس الإجراءات المربوطة حاليًا عبر `CQ_API` من دون تعديل عقود الباك إند.</span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -217,17 +270,98 @@
       <div class="panel">
         <div class="panel-hd">
           <span class="panel-title">قائمة المدارس والمراكز</span>
-          <div class="search-bar" style="margin-bottom:0">
-            <input type="text" id="school-search" placeholder="بحث..." oninput="filterSchools()" style="width:200px">
-          </div>
+          <form class="uiverse-search" onreset="setTimeout(filterSchools,0)">
+            <button type="button" class="search-icon-btn" tabindex="-1">
+              <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9" stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <input class="search-input" type="text" id="school-search" placeholder="بحث..." oninput="filterSchools()" style="width:200px">
+            <button type="reset" class="clear-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </form>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>الاسم</th><th>المدينة</th><th>النوع</th><th>المعلمون</th><th>الطلاب</th><th>إجراءات</th>
+              <th>الاسم</th><th>النوع</th><th>الحالة</th><th>المعلمون</th><th>الطلاب</th><th>الصفوف/الدورات</th><th>إجراءات</th>
             </tr></thead>
-            <tbody id="schools-tbody"><tr><td colspan="6"><div class="empty"><div class="empty-icon">🏫</div>لا توجد مدارس بعد</div></td></tr></tbody>
+            <tbody id="schools-tbody"><tr><td colspan="7"><div class="empty"><div class="empty-icon">🏫</div>لا توجد مدارس بعد</div></td></tr></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="section-classes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الصفوف والدورات</div>
+          <div class="page-sub">المدارس تعرض صفوف وشعب، والمراكز تعرض دورات ومدربين</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">تقسيم صفوف / دورات</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="class-school-filter" onchange="loadClassesForDirectoryFilter()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem">
+              <option value="">كل المدارس والمراكز</option>
+            </select>
+            <form class="uiverse-search" onreset="setTimeout(renderClassesDirectory,0)">
+              <button type="button" class="search-icon-btn" tabindex="-1">
+                <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9" stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <input class="search-input" type="text" id="class-search" placeholder="بحث بصف أو دورة أو شعبة..." oninput="renderClassesDirectory()" style="width:220px">
+              <button type="reset" class="clear-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="inner-tabs classes-split-tabs">
+          <button class="inner-tab active" data-classes-tab="classes" onclick="switchTab('classes','classes',this)">صفوف</button>
+          <button class="inner-tab" data-classes-tab="courses" onclick="switchTab('classes','courses',this)">دورات</button>
+        </div>
+        <div id="classes-directory" class="classes-directory">
+          <div id="classes-tab-classes" class="classes-directory-tab">
+            <div class="tbl-wrap classes-table-wrap">
+            <table class="classes-table">
+              <thead>
+                <tr>
+                  <th>الصف</th>
+                  <th>المدرسة</th>
+                  <th>الشعبة</th>
+                  <th>المعلم</th>
+                  <th>الطلاب</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="classes-tbody">
+                <tr><td colspan="7"><div class="empty"><div class="empty-icon">🏫</div>لا توجد صفوف مطابقة حالياً</div></td></tr>
+              </tbody>
+            </table>
+            </div>
+          </div>
+          <div id="classes-tab-courses" class="classes-directory-tab" style="display:none">
+            <div class="tbl-wrap classes-table-wrap">
+              <table class="classes-table">
+                <thead>
+                  <tr>
+                    <th>الدورة</th>
+                    <th>المركز</th>
+                    <th>الوقت</th>
+                    <th>الأسابيع</th>
+                    <th>المدرب</th>
+                    <th>الطلاب</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="8"><div class="empty"><div class="empty-icon">🧩</div>لا توجد دورات مطابقة حالياً</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -237,23 +371,35 @@
       <div class="page-header">
         <div>
           <div class="page-title">طلبات التسجيل</div>
-          <div class="page-sub">المعلمون والطلاب المنتظرون للمراجعة</div>
+          <div class="page-sub">كل user_request القادمة من الموقع أو الإيميل ضمن مسار مراجعة موحد</div>
         </div>
         <button class="btn btn-sm btn-outline" onclick="loadAll()">تحديث</button>
       </div>
 
+      <div id="req-summary-bar" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:var(--bg2,#f3f7fb);padding:10px 16px;border-radius:10px;margin-bottom:12px;font-size:.88rem;font-weight:600;border:1.5px solid var(--border,#e5e7eb)">
+        <span>المعلمون: <strong id="req-sum-teachers">0</strong></span>
+        <span style="color:var(--border,#d1d5db)">|</span>
+        <span>الطلاب: <strong id="req-sum-students">0</strong></span>
+        <span style="color:var(--border,#d1d5db)">|</span>
+        <span>المبتكرون: <strong id="req-sum-creators">0</strong></span>
+        <span style="color:var(--border,#d1d5db)">|</span>
+        <span>التحديات: <strong id="req-sum-challenges">0</strong></span>
+        <span style="color:var(--border,#d1d5db)">|</span>
+        <span style="color:var(--dash-accent,#2563eb)">المجموع: <strong id="req-sum-total">0</strong></span>
+      </div>
+
       <div class="inner-tabs">
         <button class="inner-tab active" onclick="switchTab('requests','teachers',this)">
-          المعلمون <span id="req-teacher-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+          المعلمون <span id="req-teacher-count" class="request-tab-count" style="display:none">0</span>
         </button>
         <button class="inner-tab" onclick="switchTab('requests','students',this)">
-          الطلاب <span id="req-student-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+          الطلاب <span id="req-student-count" class="request-tab-count" style="display:none">0</span>
         </button>
         <button class="inner-tab" onclick="switchTab('requests','creators',this)">
-          المبتكرون <span id="req-creator-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+          المبتكرون <span id="req-creator-count" class="request-tab-count" style="display:none">0</span>
         </button>
         <button class="inner-tab" onclick="switchTab('requests','challenges',this)">
-          التحديات <span id="req-challenge-count" class="nav-notif-count" style="display:none;margin-right:4px">0</span>
+          التحديات <span id="req-challenge-count" class="request-tab-count" style="display:none">0</span>
         </button>
       </div>
 
@@ -343,9 +489,15 @@
         <div class="panel">
           <div class="panel-hd">
             <span class="panel-title">المعلمون المسجلون</span>
-            <div class="search-bar" style="margin-bottom:0">
-              <input type="text" id="teacher-search" placeholder="بحث بالاسم أو الرمز..." oninput="filterTeachers()" style="width:220px">
-            </div>
+            <form class="uiverse-search" onreset="setTimeout(filterTeachers,0)">
+              <button type="button" class="search-icon-btn" tabindex="-1">
+                <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9" stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <input class="search-input" type="text" id="teacher-search" placeholder="بحث بالاسم أو الرمز..." oninput="filterTeachers()" style="width:220px">
+              <button type="reset" class="clear-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </form>
           </div>
           <div class="tbl-wrap">
             <table>
@@ -389,6 +541,7 @@
           <div class="page-title">الطلاب</div>
           <div class="page-sub">عرض وإدارة جميع الطلاب على المنصة</div>
         </div>
+        <button class="btn btn-blue" onclick="openAddStudent()">+ إضافة طالب</button>
       </div>
       <div class="panel">
         <div class="panel-hd">
@@ -397,7 +550,15 @@
             <select id="student-school-filter" onchange="filterStudents()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem">
               <option value="">كل المدارس</option>
             </select>
-            <input type="text" id="student-search" placeholder="بحث بالاسم أو الرمز..." oninput="filterStudents()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;width:200px">
+            <form class="uiverse-search" onreset="setTimeout(filterStudents,0)">
+              <button type="button" class="search-icon-btn" tabindex="-1">
+                <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9" stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <input class="search-input" type="text" id="student-search" placeholder="بحث بالاسم أو الرمز..." oninput="filterStudents()" style="width:200px">
+              <button type="reset" class="clear-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </form>
           </div>
         </div>
         <div class="tbl-wrap">
@@ -416,9 +577,9 @@
       <div class="page-header">
         <div>
           <div class="page-title">التحديات</div>
-          <div class="page-sub">إنشاء وتحرير ونشر التحديات للمعلمين</div>
+          <div class="page-sub">الأدمن يدير ويعدل وينشر تحديات المبتكرين، ولا ينشئ تحديًا جديدًا بنفسه</div>
         </div>
-        <button class="btn btn-blue" onclick="openAddChallenge()">+ تحدي جديد</button>
+        <button class="btn btn-outline" type="button" disabled>الإنشاء من لوحة المبتكر</button>
       </div>
       <div class="inner-tabs">
         <button class="inner-tab active" onclick="switchTab('challenges','published',this)">المنشورة</button>
@@ -426,9 +587,12 @@
       </div>
 
       <div id="challenges-tab-published">
-        <div class="panel">
-          <div class="panel-hd"><span class="panel-title">التحديات المنشورة</span></div>
-          <div class="tbl-wrap">
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-title">التحديات المنشورة</span></div>
+        <div class="permission-panel-copy" style="margin-bottom:1rem">
+          ينشئ المبتكر التحديات كملفات HTML داخل مجلد `challenges`، بينما يدير الأدمن النشر، الإلغاء، والتعديل فقط.
+        </div>
+        <div class="tbl-wrap">
             <table>
               <thead><tr>
                 <th>عنوان التحدي</th><th>المسار</th><th>الصعوبة</th><th>تاريخ النشر</th><th>المعلمون الذين عيّنوه</th><th>إجراءات</th>
@@ -459,21 +623,29 @@
       <div class="page-header">
         <div>
           <div class="page-title">المبتكرون</div>
-          <div class="page-sub">إدارة حسابات المبتكرين (CR-2026-XXXX)</div>
+          <div class="page-sub">إدارة حسابات المبتكرين</div>
         </div>
         <button class="btn btn-purple" onclick="openAddCreator()">+ إضافة مبتكر</button>
       </div>
       <div class="panel">
         <div class="panel-hd">
           <span class="panel-title">المبتكرون المسجلون</span>
-          <input type="text" id="creator-search" placeholder="بحث..." oninput="filterCreators()" style="font-family:'Tajawal',sans-serif;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;width:200px">
+          <form class="uiverse-search" onreset="setTimeout(filterCreators,0)">
+            <button type="button" class="search-icon-btn" tabindex="-1">
+              <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9" stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <input class="search-input" type="text" id="creator-search" placeholder="بحث..." oninput="filterCreators()" style="width:200px">
+            <button type="reset" class="clear-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </form>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
-              <th>الاسم</th><th>الرمز التعريفي</th><th>البريد</th><th>حالة الحساب</th><th>إجراءات</th>
+              <th>الاسم</th><th>البريد</th><th>حالة الحساب</th><th>إجراءات</th>
             </tr></thead>
-            <tbody id="creators-tbody"><tr><td colspan="5"><div class="empty"><div class="empty-icon">✨</div>لا يوجد مبتكرون بعد</div></td></tr></tbody>
+            <tbody id="creators-tbody"><tr><td colspan="4"><div class="empty"><div class="empty-icon">✨</div>لا يوجد مبتكرون بعد</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -492,15 +664,88 @@
       </div>
     </div>
 
+    <!-- ════ سلة المهملات ════ -->
+    <div class="section" id="section-trash">
+      <div class="page-header">
+        <div>
+          <div class="page-title">سلة المهملات</div>
+          <div class="page-sub">العناصر المحذوفة مؤقتاً — استعدها أو احذفها نهائياً من الخادم</div>
+        </div>
+        <button class="btn btn-danger-outline" onclick="doClearTrash()">تفريغ السلة</button>
+      </div>
+
+      <div class="trash-summary-bar" id="trash-summary-bar">
+        <span>مدارس: <strong id="trash-sum-schools">0</strong></span>
+        <span class="trash-summary-sep">|</span>
+        <span>معلمون: <strong id="trash-sum-teachers">0</strong></span>
+        <span class="trash-summary-sep">|</span>
+        <span>طلاب: <strong id="trash-sum-students">0</strong></span>
+        <span class="trash-summary-sep">|</span>
+        <span>تحديات: <strong id="trash-sum-challenges">0</strong></span>
+        <span class="trash-summary-sep">|</span>
+        <span>مبتكرون: <strong id="trash-sum-creators">0</strong></span>
+        <span class="trash-summary-sep">|</span>
+        <span>دورات: <strong id="trash-sum-courses">0</strong></span>
+        <span class="trash-summary-sep">|</span>
+        <span class="trash-sum-total">المجموع: <strong id="trash-sum-total">0</strong></span>
+      </div>
+
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchTab('trash','all',this)">
+          الكل <span id="trash-count-all" class="request-tab-count" style="display:none">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('trash','schools',this)">
+          مدارس <span id="trash-count-schools" class="request-tab-count" style="display:none">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('trash','teachers',this)">
+          معلمون <span id="trash-count-teachers" class="request-tab-count" style="display:none">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('trash','students',this)">
+          طلاب <span id="trash-count-students" class="request-tab-count" style="display:none">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('trash','challenges',this)">
+          تحديات <span id="trash-count-challenges" class="request-tab-count" style="display:none">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('trash','creators',this)">
+          مبتكرون <span id="trash-count-creators" class="request-tab-count" style="display:none">0</span>
+        </button>
+        <button class="inner-tab" onclick="switchTab('trash','courses',this)">
+          دورات <span id="trash-count-courses" class="request-tab-count" style="display:none">0</span>
+        </button>
+      </div>
+
+      <div id="trash-tab-all">
+        <div class="panel"><div class="empty"><div class="empty-icon">🗑️</div>السلة فارغة</div></div>
+      </div>
+      <div id="trash-tab-schools" style="display:none">
+        <div class="panel"><div class="empty"><div class="empty-icon">🏫</div>لا توجد مدارس محذوفة</div></div>
+      </div>
+      <div id="trash-tab-teachers" style="display:none">
+        <div class="panel"><div class="empty"><div class="empty-icon">👤</div>لا يوجد معلمون محذوفون</div></div>
+      </div>
+      <div id="trash-tab-students" style="display:none">
+        <div class="panel"><div class="empty"><div class="empty-icon">🎓</div>لا يوجد طلاب محذوفون</div></div>
+      </div>
+      <div id="trash-tab-challenges" style="display:none">
+        <div class="panel"><div class="empty"><div class="empty-icon">⚡</div>لا توجد تحديات محذوفة</div></div>
+      </div>
+      <div id="trash-tab-creators" style="display:none">
+        <div class="panel"><div class="empty"><div class="empty-icon">✨</div>لا يوجد مبتكرون محذوفون</div></div>
+      </div>
+      <div id="trash-tab-courses" style="display:none">
+        <div class="panel"><div class="empty"><div class="empty-icon">🧩</div>لا توجد دورات محذوفة</div></div>
+      </div>
+    </div>
+
   </main>
 </div>
 </div>
 
-<!-- ════ Modal: إضافة مدرسة/مركز ════ -->
+<!-- ════ Modal: إضافة/تعديل مدرسة/مركز ════ -->
 <div class="modal-bg" id="modal-addschool">
   <div class="modal">
     <div class="modal-hd">
-      <span class="modal-title">إضافة مدرسة/مركز</span>
+      <span class="modal-title" id="school-modal-title">إضافة مدرسة/مركز</span>
       <button class="modal-close" onclick="closeModal('modal-addschool')">✕</button>
     </div>
     <div class="f-grid">
@@ -509,7 +754,7 @@
         <input type="text" id="school-name" placeholder="مثال: مدرسة الرواد">
       </div>
       <div class="f-field">
-        <label>المدينة</label>
+        <label>المدينة (اختياري)</label>
         <input type="text" id="school-city" placeholder="مثال: الرياض">
       </div>
       <div class="f-field">
@@ -522,8 +767,155 @@
     </div>
     <div class="f-msg" id="school-msg"></div>
     <div style="margin-top:1rem; display:flex; gap:8px;">
-      <button class="btn btn-blue" onclick="doAddSchool()">إضافة</button>
+      <button class="btn btn-blue" id="school-submit-btn" onclick="doAddSchool()">إضافة</button>
       <button class="btn btn-outline" onclick="closeModal('modal-addschool')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: إدارة صفوف المدرسة ════ -->
+<div class="modal-bg" id="modal-manage-classes">
+  <div class="modal" style="max-width:580px;width:95%">
+    <div class="modal-hd">
+      <span class="modal-title">صفوف: <span id="mgcls-school-name" style="color:var(--dash-accent)"></span></span>
+      <button class="modal-close" onclick="closeModal('modal-manage-classes')">✕</button>
+    </div>
+    <!-- قائمة الصفوف الموجودة -->
+    <div id="mgcls-list" style="margin-bottom:1rem;min-height:48px"></div>
+    <!-- إضافة صف جديد -->
+    <div style="border-top:1.5px solid var(--border,#e5e7eb);padding-top:1rem">
+      <div id="addclass-form-title" style="font-weight:700;margin-bottom:.6rem;font-size:.88rem;color:var(--gray)">إضافة صف جديد</div>
+      <div class="f-grid" style="grid-template-columns:1fr 1fr;gap:.5rem">
+        <div class="f-field">
+          <label>الصف</label>
+          <select id="addclass-grade"></select>
+        </div>
+        <div class="f-field">
+          <label>الشعبة</label>
+          <select id="addclass-section"></select>
+        </div>
+      </div>
+    </div>
+    <div class="f-msg" id="addclass-msg"></div>
+    <div style="margin-top:.75rem;display:flex;gap:8px">
+      <button class="btn btn-blue" id="addclass-submit-btn" onclick="doAddClass()">إضافة الصف</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-manage-classes')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: ربط معلم بصف ════ -->
+<div class="modal-bg" id="modal-assign-class-teacher">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hd">
+      <span class="modal-title">ربط معلم بالصف</span>
+      <button class="modal-close" onclick="closeModal('modal-assign-class-teacher')">✕</button>
+    </div>
+    <div style="font-size:.85rem;color:var(--gray);margin-bottom:.75rem" id="acteacher-class-label"></div>
+    <div class="f-field">
+      <label>اختر المعلم</label>
+      <select id="acteacher-sel" style="width:100%">
+        <option value="">-- اختر معلماً --</option>
+      </select>
+    </div>
+    <div class="f-msg" id="acteacher-msg"></div>
+    <div style="margin-top:.75rem;display:flex;gap:8px">
+      <button class="btn btn-green" onclick="doAssignTeacherToClass()">ربط المعلم</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-assign-class-teacher')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: إدارة دورات المركز ════ -->
+<div class="modal-bg" id="modal-manage-courses">
+  <div class="modal" style="max-width:580px;width:95%">
+    <div class="modal-hd">
+      <span class="modal-title">دورات: <span id="mgcrs-school-name" style="color:#7c3aed"></span></span>
+      <button class="modal-close" onclick="closeModal('modal-manage-courses')">✕</button>
+    </div>
+    <!-- قائمة الدورات الموجودة -->
+    <div id="mgcrs-list" style="margin-bottom:1rem;min-height:48px"></div>
+    <!-- إضافة دورة جديدة -->
+    <div style="border-top:1.5px solid var(--border,#e5e7eb);padding-top:1rem">
+      <div id="mgcrs-form-title" style="font-weight:700;margin-bottom:.6rem;font-size:.88rem;color:var(--gray)">إضافة دورة جديدة</div>
+      <div class="f-grid" style="grid-template-columns:1fr 1fr 1fr;gap:.5rem">
+        <div class="f-field" style="grid-column:1/-1">
+          <label>اسم الدورة</label>
+          <input type="text" id="mgcrs-name" placeholder="مثال: دورة الإلكترونيات الأساسية">
+        </div>
+        <div class="f-field">
+          <label>من الساعة</label>
+          <select id="mgcrs-start-time"></select>
+        </div>
+        <div class="f-field">
+          <label>حتى الساعة</label>
+          <select id="mgcrs-end-time"></select>
+        </div>
+        <div class="f-field">
+          <label>عدد الأسابيع</label>
+          <select id="mgcrs-weeks">
+            <option value="">-- اختر --</option>
+            <option value="1">أسبوع</option>
+            <option value="2">أسبوعان</option>
+            <option value="3">3 أسابيع</option>
+            <option value="4">شهر (4 أسابيع)</option>
+            <option value="6">6 أسابيع</option>
+            <option value="8">8 أسابيع</option>
+            <option value="10">10 أسابيع</option>
+            <option value="12">3 أشهر (12 أسبوع)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="f-msg" id="mgcrs-msg"></div>
+    <div style="margin-top:.75rem;display:flex;gap:8px">
+      <button class="btn btn-purple" id="mgcrs-submit-btn" onclick="doAddCourseMgr()">إضافة الدورة</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-manage-courses')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: ربط مدرب بدورة ════ -->
+<div class="modal-bg" id="modal-assign-course-trainer">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hd">
+      <span class="modal-title">ربط مدرب بالدورة</span>
+      <button class="modal-close" onclick="closeModal('modal-assign-course-trainer')">✕</button>
+    </div>
+    <div style="font-size:.85rem;color:var(--gray);margin-bottom:.75rem" id="actrainer-course-label"></div>
+    <div class="f-field">
+      <label>اختر المدرب</label>
+      <select id="actrainer-sel" style="width:100%">
+        <option value="">-- اختر مدرباً --</option>
+      </select>
+    </div>
+    <div class="f-msg" id="actrainer-msg"></div>
+    <div style="margin-top:.75rem;display:flex;gap:8px">
+      <button class="btn btn-purple" onclick="doAssignTrainerToCourse()">ربط المدرب</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-assign-course-trainer')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: ربط معلم موجود بمدرسة ════ -->
+<div class="modal-bg" id="modal-connect-teacher">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title">إضافة معلم للمدرسة</span>
+      <button class="modal-close" onclick="closeModal('modal-connect-teacher')">✕</button>
+    </div>
+    <div class="f-grid">
+      <div class="f-field">
+        <label>اختر المعلم</label>
+        <select id="connect-teacher-sel" style="width:100%">
+          <option value="">-- اختر معلماً --</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-msg" id="connect-teacher-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-green" onclick="doConnectTeacher()">ربط المعلم</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-connect-teacher')">إلغاء</button>
     </div>
   </div>
 </div>
@@ -532,7 +924,7 @@
 <div class="modal-bg" id="modal-addteacher">
   <div class="modal">
     <div class="modal-hd">
-      <span class="modal-title">إضافة معلم جديد</span>
+      <span class="modal-title" id="teacher-modal-title">إضافة معلم جديد</span>
       <button class="modal-close" onclick="closeModal('modal-addteacher')">✕</button>
     </div>
     <div class="f-grid">
@@ -555,13 +947,84 @@
     </div>
     <div class="f-msg" id="teacher-msg"></div>
     <div style="margin-top:1rem; display:flex; gap:8px;">
-      <button class="btn btn-blue" onclick="doAddTeacher()">إضافة المعلم</button>
+      <button class="btn btn-blue" id="teacher-submit-btn" onclick="doSaveTeacher()">إضافة المعلم</button>
       <button class="btn btn-outline" onclick="closeModal('modal-addteacher')">إلغاء</button>
     </div>
   </div>
 </div>
 
 <!-- ════ Modal: إنشاء تحدي ════ -->
+<div class="modal-bg" id="modal-addstudent">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title" id="student-modal-title">إضافة طالب جديد</span>
+      <button class="modal-close" onclick="closeModal('modal-addstudent')">✕</button>
+    </div>
+      <div class="f-grid f-grid-2">
+      <div class="f-field">
+        <label>الاسم الكامل</label>
+        <input type="text" id="student-name" placeholder="مثال: ليان أحمد">
+      </div>
+      <div class="f-field">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="student-email" placeholder="student@email.com">
+      </div>
+      <div class="f-field">
+        <label>المدرسة/المركز</label>
+        <select id="student-school-sel"></select>
+      </div>
+      <div class="f-field">
+        <label>الصف</label>
+        <select id="student-class"></select>
+      </div>
+      <div class="f-field">
+        <label>الشعبة</label>
+        <select id="student-section"></select>
+      </div>
+      <div class="f-field">
+        <label>كلمة المرور الأولية</label>
+        <input type="password" id="student-pass" placeholder="6 أحرف على الأقل">
+      </div>
+    </div>
+    <div class="f-msg" id="student-msg"></div>
+    <div style="margin-top:1rem; display:flex; gap:8px;">
+      <button class="btn btn-blue" id="student-submit-btn" onclick="doSaveStudent()">إضافة الطالب</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-addstudent')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: إضافة طالب موجود لصف/دورة ════ -->
+<div class="modal-bg" id="modal-assign-existing-student">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-hd">
+      <span class="modal-title">إضافة طالب موجود</span>
+      <button class="modal-close" onclick="closeModal('modal-assign-existing-student')">✕</button>
+    </div>
+    <div style="font-size:.85rem;color:var(--gray);line-height:1.7;margin-bottom:.75rem" id="existing-student-target"></div>
+    <div class="f-field">
+      <label>اختر الطالب</label>
+      <select id="existing-student-sel" style="width:100%"></select>
+    </div>
+    <div class="f-msg" id="existing-student-msg"></div>
+    <div style="margin-top:1rem;display:flex;gap:8px">
+      <button class="btn btn-blue" id="existing-student-submit" onclick="doAssignExistingStudent()">إضافة الطالب</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-assign-existing-student')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: تفاصيل المدرسة/المركز ════ -->
+<div class="modal-bg" id="modal-school-related">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hd">
+      <span class="modal-title" id="school-related-title">التفاصيل</span>
+      <button class="modal-close" onclick="closeModal('modal-school-related')">✕</button>
+    </div>
+    <div id="school-related-list" class="related-list"></div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modal-addchallenge">
   <div class="modal" style="max-width:640px">
     <div class="modal-hd">
@@ -668,9 +1131,10 @@
   </div>
 </div>
 
-<script src="../js/config.js"></script>
-<script src="../js/api.js"></script>
-<script src="./js/dashboard.js"></script>
+<script src="../js/config.js?v=admin-20260503-2"></script>
+<script src="../js/api.js?v=admin-20260503-2"></script>
+<script src="./js/dashboard.js?v=admin-20260503-6"></script>
+<script src="./js/dashboard-permissions.js?v=admin-20260503-6"></script>
 
 </body>
 </html>

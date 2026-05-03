@@ -7,7 +7,8 @@ const AUTH_SESSION_KEY = 'cq_session';
 
 const AUTH_ROLES = {
   STUDENT: 'student',
-  TEACHER: 'teacher'
+  TEACHER: 'teacher',
+  CREATOR: 'creator'
 };
 
 const AUTH_STATUS = {
@@ -26,20 +27,28 @@ function _approvalRequired() {
   return !(window.CQ && CQ.auth && CQ.auth.requireApproval === false);
 }
 
+function _normalizeRole(role) {
+  if (role === AUTH_ROLES.TEACHER) return AUTH_ROLES.TEACHER;
+  if (role === AUTH_ROLES.CREATOR) return AUTH_ROLES.CREATOR;
+  return AUTH_ROLES.STUDENT;
+}
+
 function _looksLikeApprovalHold(msg) {
   msg = String(msg || '').toLowerCase();
   return msg.includes('قيد') || msg.includes('مراجعة') || msg.includes('pending') || msg.includes('review');
 }
 
 function _devUser(role, email, name) {
+  role = _normalizeRole(role);
   return {
     id: 'dev-' + role + '-' + _hash(email || role).replace('-', 'n'),
-    name: name || (role === AUTH_ROLES.TEACHER ? 'معلم تجريبي' : 'طالب تجريبي'),
+    name: name || (role === AUTH_ROLES.TEACHER ? 'معلم تجريبي' : (role === AUTH_ROLES.CREATOR ? 'مبتكر تجريبي' : 'طالب تجريبي')),
     email: email || '',
     role: role,
     status: 'active',
     teacherCode: role === AUTH_ROLES.TEACHER ? 'DEV-TEACHER' : '',
-    studentCode: role === AUTH_ROLES.STUDENT ? 'DEV-STUDENT' : ''
+    studentCode: role === AUTH_ROLES.STUDENT ? 'DEV-STUDENT' : '',
+    creatorCode: role === AUTH_ROLES.CREATOR ? 'DEV-CREATOR' : ''
   };
 }
 
@@ -62,7 +71,7 @@ const Auth = {
     name  = (name  || '').trim();
     email = (email || '').trim().toLowerCase();
     phone = (phone || '').trim();
-    role  = role === AUTH_ROLES.TEACHER ? AUTH_ROLES.TEACHER : AUTH_ROLES.STUDENT;
+    role  = _normalizeRole(role);
 
     if (!name || !email || !password || !phone)
       return Promise.resolve({ok: false, msg: 'يرجى ملء جميع الحقول'});
@@ -93,7 +102,7 @@ const Auth = {
   // ── تسجيل الدخول (async) ─────────────────
   signIn(email, password, role) {
     email = (email || '').trim().toLowerCase();
-    role  = role === AUTH_ROLES.TEACHER ? AUTH_ROLES.TEACHER : AUTH_ROLES.STUDENT;
+    role  = _normalizeRole(role);
 
     if (!email || !password)
       return Promise.resolve({ok: false, msg: 'يرجى ملء جميع الحقول'});
@@ -144,7 +153,9 @@ const Auth = {
 
   getRedirectPage(user = this.getCurrentUser()) {
     if (!user) return _rootPath('auth/index.html');
-    return user.role === AUTH_ROLES.TEACHER ? _rootPath('teacher/dashboard.html') : _rootPath('student/tracks/tracks.html');
+    if (user.role === AUTH_ROLES.TEACHER) return _rootPath('teacher/dashboard.html');
+    if (user.role === AUTH_ROLES.CREATOR) return _rootPath('creator/dashboard.html');
+    return _rootPath('student/tracks/tracks.html');
   },
 
   requireAuth(opts = {}) {
@@ -198,7 +209,9 @@ function initAuthNav() {
   if (!placeholder) return;
   const user = Auth.getCurrentUser();
   if (user) {
-    const profilePage = user.role === AUTH_ROLES.TEACHER ? _rootPath('teacher/dashboard.html') : _rootPath('student/index.html');
+    const profilePage = user.role === AUTH_ROLES.TEACHER
+      ? _rootPath('teacher/dashboard.html')
+      : (user.role === AUTH_ROLES.CREATOR ? _rootPath('creator/dashboard.html') : _rootPath('student/index.html'));
     placeholder.innerHTML =
       `<a href="${profilePage}" class="auth-nav-user" title="صفحتي">
          <span class="auth-nav-avatar">${user.name.charAt(0)}</span>

@@ -17,7 +17,7 @@
   <div class="ix-nav-inner">
     <a href="../index.html" class="ix-logo-wordmark">إنجاز</a>
     <div style="display:flex;align-items:center;gap:10px;">
-      <a href="./auth-creator.html" class="ix-nav-pill">دخول المبتكر</a>
+      <a href="./auth-creator.html" class="ix-nav-pill" data-creator-login>دخول المبتكر</a>
       <button class="ix-theme-btn" id="themeToggle" title="تبديل الوضع">🌙</button>
     </div>
   </div>
@@ -31,7 +31,7 @@
       <h1>صمّم التحديات<br>وألهم <span class="ix-purple">المتعلمين.</span></h1>
       <p>ادخل كمبتكر لرفع التحديات التعليمية، ومتابعة تقدمها عبر الصفوف والمدارس.</p>
       <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <a href="./auth-creator.html" class="ix-btn">تسجيل دخول المبتكر <span style="display:inline-block;transition:transform .2s;">←</span></a>
+        <a href="./auth-creator.html" class="ix-btn" data-creator-login>تسجيل دخول المبتكر <span style="display:inline-block;transition:transform .2s;">←</span></a>
         <span class="ix-note">الدخول مخصص للمبتكرين المعتمدين فقط</span>
       </div>
     </div>
@@ -121,6 +121,12 @@
     boardArtworkSrc: '../img/arduino-board/arduino-uno-board-artwork.png',
     themeStorageKeys: ['cq-theme', 'cq_theme']
   };
+  document.querySelectorAll('[data-creator-login]').forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      window.location.assign(new URL('auth-creator.html', window.location.href).href);
+    });
+  });
 </script>
 <script src="../design/landing.js"></script>
 </body>

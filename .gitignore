@@ -11,6 +11,11 @@ hero-circuits.mp4
 node_modules/
 package-lock.json
 
+# Python backend runtime files
+__pycache__/
+*.py[cod]
+backend/database.json
+
 # CAD/3D source files
 *.SLDPRT
 *.SLDASM
