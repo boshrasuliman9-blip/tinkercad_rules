@@ -108,6 +108,8 @@ const Auth = {
       return Promise.resolve({ok: false, msg: 'يرجى ملء جميع الحقول'});
 
     return CQ_API.signIn(email, _hash(password), role).then(result => {
+      if (result.ok && result.user && result.user.status === 'inactive')
+        return {ok: false, msg: 'هذا الحساب معطل، تواصل مع الأدمن'};
       if (result.ok && result.user) this._startSession(result.user);
       else if (result.ok && !result.user && !_approvalRequired()) {
         result.user = _devUser(role, email);
@@ -124,6 +126,8 @@ const Auth = {
         };
         this._startSession(result.user);
       }
+      if (!result.ok)
+        result.msg = 'الحساب غير مسجل أو غير مفعل، راجع الأدمن';
       return result;
     }).catch(() => {
       if (!_devAuthEnabled()) return {ok: false, msg: 'تعذر الاتصال بالخادم'};

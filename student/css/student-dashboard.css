@@ -292,3 +292,17 @@
 [data-theme="dark"] .ch-notif-card { background: #1a1d25; border-color: rgba(255,255,255,.08); }
 [data-theme="dark"] .ch-notif-title { color: #f1f5f9; }
 [data-theme="dark"] .ch-notif-code { background: rgba(240,78,35,.14); }
+.ch-notif-start-btn {
+  display: inline-block;
+  background: var(--primary, #f04e23);
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.ch-notif-start-btn:hover { opacity: .85; }

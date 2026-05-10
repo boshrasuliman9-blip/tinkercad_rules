@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>مقدمة التحدي — إنجاز</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../css/main.css">
+<link rel="stylesheet" href="../../css/tracks/track-2.css">
+<style>
+body {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 14% 86%, rgba(111,185,143,.16) 0, rgba(111,185,143,.16) 88px, transparent 89px),
+    radial-gradient(circle at 74% 12%, rgba(163,194,55,.18) 0, rgba(163,194,55,.18) 92px, transparent 93px),
+    linear-gradient(180deg, #fbf9f2 0%, #f4efe3 100%);
+}
+
+.intro-page {
+  min-height: calc(100svh - 64px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem 4rem;
+}
+
+/* Re-use the modal panel as a standalone card */
+.challenge-modal-panel {
+  width: min(100%, 470px);
+  border-radius: 24px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 24px 60px rgba(15,23,42,.18);
+  overflow: hidden;
+}
+
+[data-theme="dark"] .challenge-modal-panel {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* Student name strip inside panel */
+.stu-strip {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .65rem 1.2rem .3rem;
+  font-size: .8rem;
+  color: var(--gray);
+  border-bottom: 1px solid var(--border);
+}
+.stu-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--red); color: #fff;
+  font-size: .72rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stu-name { font-weight: 700; color: var(--dark); }
+
+/* Code entry section */
+.code-section {
+  padding: 0 1.2rem .3rem;
+}
+.code-section-label {
+  font-size: .76rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: .5rem;
+  display: block;
+}
+.code-section-sub {
+  font-size: .76rem;
+  color: var(--gray);
+  margin-bottom: .7rem;
+  line-height: 1.45;
+}
+.code-inp {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  font-size: 1rem;
+  font-family: 'Tajawal', monospace;
+  font-weight: 800;
+  color: var(--dark);
+  letter-spacing: .1em;
+  text-align: center;
+  direction: ltr;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+.code-inp:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(240,78,35,.12);
+}
+.code-msg {
+  display: none;
+  font-size: .79rem;
+  border-radius: 10px;
+  padding: .55rem .9rem;
+  margin-top: .6rem;
+  line-height: 1.5;
+}
+.code-msg.err { background: #fff0ed; color: #c93a12; border: 1px solid #fdd; }
+.code-msg.ok  { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+/* Override modal actions to stretch button */
+.challenge-modal-actions {
+  padding: 0 1.2rem 1.2rem;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+.btn-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ea580c, #c2410c);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: 'Tajawal', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(234,88,12,.3);
+  transition: opacity .18s, transform .13s;
+}
+.btn-start:hover:not(:disabled) { opacity: .92; transform: translateY(-1px); }
+.btn-start:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.btn-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  color: var(--dark);
+  font-weight: 800;
+  font-family: 'Tajawal', sans-serif;
+  font-size: .9rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+[data-theme="dark"] .btn-back { background: #1e293b; color: #f1f5f9; }
+
+/* Guide hint row */
+.guide-hint {
+  margin: 0 1.2rem .85rem;
+  padding: .75rem .9rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  font-size: .8rem;
+  color: #92400e;
+  line-height: 1.5;
+}
+[data-theme="dark"] .guide-hint { background: #1c0f05; border-color: #7c2d12; color: #fdba74; }
+.guide-hint-icon { font-size: 1.1rem; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="../../index.html" class="site-logo">إنجاز</a>
+    <div class="site-nav-actions">
+      <a href="../track-2.html" class="site-back">← العودة</a>
+      <button class="site-theme-btn" id="themeToggle" title="تبديل الوضع">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="16" height="16">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<main class="intro-page">
+  <div class="challenge-modal-panel">
+
+    <!-- Student strip -->
+    <div class="stu-strip" id="stu-strip" style="display:none">
+      <div class="stu-av" id="stu-av">؟</div>
+      <div><span class="stu-name" id="stu-name">—</span> — جاهز للتحدي؟</div>
+    </div>
+
+    <!-- Header -->
+    <div class="challenge-modal-head">
+      <div>
+        <div class="challenge-modal-kicker" id="modal-kicker">تحدي ١ — المسار الثاني</div>
+        <div class="challenge-modal-title" id="modal-title">إضاءة LED 💡</div>
+        <div class="challenge-modal-status st-open" id="modal-status">متاح الآن</div>
+      </div>
+      <a href="../track-2.html" class="challenge-modal-close" title="العودة">✕</a>
+    </div>
+
+    <!-- Image -->
+    <div class="challenge-modal-media">
+      <img id="modal-image" src="../../../img/challenge-covers/led-challenge.png" alt="صورة التحدي">
+    </div>
+
+    <!-- Body -->
+    <div class="challenge-modal-body">
+      <div class="challenge-modal-text" id="modal-text">
+        ابنِ دائرتك الأولى — مصباح LED يومض تلقائياً كل ثانية بدون أي زر
+      </div>
+
+      <div class="challenge-modal-meta">
+        <span class="challenge-modal-pill" id="modal-time">⏱ 10 دقائق</span>
+        <span class="challenge-modal-pill" id="modal-level">⭐ مبتدئ</span>
+        <span class="challenge-modal-pill" id="modal-parts">🔧 6 مكونات</span>
+      </div>
+
+      <ul class="challenge-modal-list" id="modal-rules"></ul>
+    </div>
+
+    <!-- Guide hint -->
+    <div class="guide-hint">
+      <span class="guide-hint-icon">🎮</span>
+      <span>بعد البدء ستظهر جولة إرشادية سريعة — الوقت لا يبدأ أثناء الشرح.</span>
+    </div>
+
+    <!-- Code entry -->
+    <div class="code-section">
+      <label class="code-section-label" for="code-inp">🔑 أدخل كودك الخاص</label>
+      <div class="code-section-sub">الكود يصلك من معلمك — كل طالب له كود مختلف</div>
+      <input
+        class="code-inp"
+        id="code-inp"
+        type="text"
+        placeholder="أدخل الكود هنا"
+        maxlength="24"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="characters"
+        spellcheck="false"
+      >
+      <div class="code-msg" id="code-msg"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="challenge-modal-actions">
+      <button class="btn-start" id="start-btn" onclick="doStart()">ابدأ التحدي ←</button>
+      <a href="../track-2.html" class="btn-back">العودة للخريطة</a>
+    </div>
+
+  </div>
+</main>
+
+<script src="../../../js/config.js"></script>
+<script src="../../../js/api.js"></script>
+<script>
+var CHALLENGES = {
+  'led': {
+    kicker: 'تحدي ١ — المسار الثاني',
+    title:  'إضاءة LED 💡',
+    img:    '../../../img/challenge-covers/led-challenge.png',
+    time:   '⏱ 10 دقائق',
+    level:  '⭐ مبتدئ',
+    parts:  '🔧 6 مكونات',
+    text:   'ابنِ دائرتك الأولى — مصباح LED يومض تلقائياً كل ثانية بدون أي زر',
+    rules: [
+      'افتح Tinkercad وابدأ دائرة جديدة',
+      'أضف Arduino UNO والـ Breadboard وركّب LED والمقاومة 220Ω',
+      'وصّل السلك الأحمر من Pin 13 والأسود من GND',
+      'شغّل المحاكاة وتأكد أن الـ LED يضيء بشكل صحيح'
+    ],
+    dest: './track-2-led-challenge.html'
+  },
+  'push-button': {
+    kicker: 'تحدي ٢ — المسار الثاني',
+    title:  'زر الضغط 🔘',
+    img:    '../../../img/challenge-covers/pushbutton-challenge.png',
+    time:   '⏱ 15 دقيقة',
+    level:  '⭐ مبتدئ+',
+    parts:  '🔧 7 مكونات',
+    text:   'تحكّم في LED عبر زر ضغط وتعلّم مفهوم المدخلات الرقمية',
+    rules: [
+      'أكمل تحدي إضاءة LED أولاً',
+      'أضف زر الضغط على الـ Breadboard واربطه بـ Pin 2',
+      'أضف مقاومة pull-down لتجنب القراءات العشوائية',
+      'برمِج الكود وتأكد أن الـ LED يضيء عند الضغط على الزر فقط'
+    ],
+    dest: './track-2-pushbutton-challenge.html'
+  }
+};
+
+var params       = new URLSearchParams(window.location.search);
+var challengeKey = params.get('challengeKey') || 'led';
+var step         = params.get('step') || '1';
+var initialCode  = params.get('code') || '';
+var ch           = CHALLENGES[challengeKey] || CHALLENGES['led'];
+
+/* Fill content */
+document.title = ch.title.replace(/\s*[💡🔘]/g,'').trim() + ' — إنجاز';
+document.getElementById('modal-kicker').textContent = ch.kicker;
+document.getElementById('modal-title').textContent  = ch.title;
+document.getElementById('modal-image').src          = ch.img;
+document.getElementById('modal-image').alt          = ch.title;
+document.getElementById('modal-time').textContent   = ch.time;
+document.getElementById('modal-level').textContent  = ch.level;
+document.getElementById('modal-parts').textContent  = ch.parts;
+document.getElementById('modal-text').textContent   = ch.text;
+document.getElementById('modal-rules').innerHTML    = ch.rules.map(function(r) {
+  return '<li>' + r + '</li>';
+}).join('');
+
+/* Student name */
+var _session = null;
+try { _session = JSON.parse(localStorage.getItem('cq_session') || 'null'); } catch(e) {}
+if (_session && _session.name) {
+  var strip = document.getElementById('stu-strip');
+  strip.style.display = 'flex';
+  document.getElementById('stu-name').textContent = _session.name;
+  document.getElementById('stu-av').textContent   = _session.name.charAt(0);
+}
+
+if (initialCode) {
+  document.getElementById('code-inp').value = initialCode.toUpperCase();
+}
+
+/* Code submit */
+function showMsg(txt, type) {
+  var el = document.getElementById('code-msg');
+  el.textContent  = txt;
+  el.className    = 'code-msg ' + type;
+  el.style.display = 'block';
+}
+
+function doStart() {
+  if (!_session) { showMsg('يجب تسجيل الدخول أولاً', 'err'); return; }
+  var code = (document.getElementById('code-inp').value || '').trim();
+  if (!code) { showMsg('أدخل الكود أولاً', 'err'); return; }
+
+  var btn = document.getElementById('start-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  CQ_API.validateCode(code, _session.id).then(function(res) {
+    if (!res.ok) {
+      btn.disabled = false;
+      btn.textContent = 'ابدأ التحدي ←';
+      showMsg(res.msg || 'الكود غير صحيح أو منتهي الصلاحية', 'err');
+      return;
+    }
+
+    var codeId        = res.codeId;
+    var challengeName = res.challengeName || ch.title;
+    var challengeHref = resolveChallengeHref(res.href || ch.dest);
+
+    CQ_API.startChallenge(codeId, _session.id).then(function() {
+      var STORE_KEY = 'cq_t2_state_' + _session.id;
+      var state = [];
+      try { state = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); } catch(e) {}
+      var stepNum = Number(step) || 1;
+      var existing = state.find(function(s){ return s.step === stepNum; });
+      if (existing) {
+        existing.codeId = codeId; existing.name = challengeName;
+        existing.href = challengeHref; existing.status = 'started';
+      } else {
+        state.push({ step: stepNum, codeId: codeId, name: challengeName, href: challengeHref, status: 'started' });
+      }
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+
+      window.location.href = challengeHref
+        + '?codeId=' + encodeURIComponent(codeId)
+        + '&challengeKey=' + encodeURIComponent(challengeKey)
+        + '&autostart=1';
+    });
+  });
+}
+
+function resolveChallengeHref(href) {
+  if (!href) return ch.dest;
+  if (/^https?:\/\//i.test(href)) return href;
+  if (href.indexOf('./student/tracks/challenges/') === 0) {
+    return './' + href.split('/').pop();
+  }
+  if (href.indexOf('student/tracks/challenges/') === 0) {
+    return './' + href.split('/').pop();
+  }
+  if (href.indexOf('./track-') === 0 || href.indexOf('track-') === 0) return href;
+  return ch.dest;
+}
+
+document.getElementById('code-inp').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doStart();
+});
+
+/* Dark mode */
+(function() {
+  var b = document.getElementById('themeToggle');
+  var MOON = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  var SUN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>';
+  var s = localStorage.getItem('cq-theme');
+  if (s === 'dark') { document.documentElement.setAttribute('data-theme','dark'); b.innerHTML = SUN; }
+  b.addEventListener('click', function() {
+    var d = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (d) { document.documentElement.removeAttribute('data-theme'); b.innerHTML = MOON; localStorage.setItem('cq-theme','light'); }
+    else   { document.documentElement.setAttribute('data-theme','dark'); b.innerHTML = SUN; localStorage.setItem('cq-theme','dark'); }
+  });
+})();
+</script>
+</body>
+</html>

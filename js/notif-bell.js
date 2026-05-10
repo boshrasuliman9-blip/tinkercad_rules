@@ -89,6 +89,7 @@
           p.style.right = Math.max(4, window.innerWidth - r.right - 4) + 'px';
         }
         p.style.display = 'block';
+        CQBell.load();
       } else {
         p.style.display = 'none';
       }
@@ -126,12 +127,19 @@
                  : n.type === 'submission' ? '📝'
                  : '🔔';
         var d = n.createdAt ? new Date(n.createdAt).toLocaleDateString('ar-SA') : '';
+        var codeHtml = (n.type === 'challenge' && n.code)
+          ? '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">'
+            + '<span style="font-size:.68rem;color:#64748b;font-weight:800;">كود التحدي</span>'
+            + '<code style="direction:ltr;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:8px;padding:3px 8px;font-size:.82rem;font-weight:900;letter-spacing:.05em;">' + esc(n.code) + '</code>'
+            + '</div>'
+          : '';
         return '<li onclick="CQBell._read(\'' + n.id + '\',this)" '
           + 'style="display:flex;gap:8px;align-items:flex-start;padding:.55rem;border-radius:9px;cursor:pointer;background:' + bg + ';margin-bottom:3px;transition:background .12s;"'
           + ' onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'' + bg + '\'">'
           + '<span style="font-size:.95rem;flex-shrink:0;">' + icon + '</span>'
           + '<div style="flex:1;min-width:0;">'
             + '<div style="font-size:.82rem;color:#0f172a;line-height:1.5;">' + (n.message || '') + '</div>'
+            + codeHtml
             + '<div style="font-size:.7rem;color:#64748b;margin-top:1px;">' + d + '</div>'
           + '</div>'
           + dot
@@ -151,8 +159,33 @@
         var unread = CQBell._notifs.filter(function (x) { return !x.readAt; }).length;
         if (cnt) { cnt.textContent = unread; cnt.style.display = unread > 0 ? 'flex' : 'none'; }
       }
+      if (n && n.type === 'challenge' && n.code) {
+        window.location.href = challengeIntroHref(n);
+      }
     }
   };
+
+  function challengeIntroHref(n) {
+    var key = n.challengeKey || inferChallengeKey(n);
+    var step = key === 'push-button' ? '2' : '1';
+    var base = './student/tracks/track-2.html';
+    var path = window.location.pathname.replace(/\\/g, '/');
+    if (path.indexOf('/student/tracks/challenges/') >= 0) base = '../track-2.html';
+    else if (path.indexOf('/student/tracks/') >= 0) base = './track-2.html';
+    else if (path.indexOf('/student/') >= 0) base = './tracks/track-2.html';
+    return base
+      + '?modal=challenge'
+      + '&step=' + encodeURIComponent(step)
+      + '&challengeKey=' + encodeURIComponent(key)
+      + '&code=' + encodeURIComponent(n.code || '')
+      + '&assignmentId=' + encodeURIComponent(n.assignmentId || '');
+  }
+
+  function inferChallengeKey(n) {
+    var text = String((n && (n.challengeName || n.title || n.body)) || '').toLowerCase();
+    if (text.indexOf('push') >= 0 || text.indexOf('button') >= 0 || text.indexOf('زر') >= 0) return 'push-button';
+    return 'led';
+  }
 
   /* ── Boot ── */
   if (document.readyState === 'loading') {
@@ -160,6 +193,15 @@
   } else {
     injectBell();
     CQBell.load();
+  }
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
 })();

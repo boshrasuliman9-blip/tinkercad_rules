@@ -26,21 +26,38 @@ function loadChallengeNotifs(studentId) {
         : '';
       const expClass = expired ? 'over' : (nearExp ? 'near' : '');
 
+      const challengeKey = getNotifChallengeKey(n);
+      const step = challengeKey === 'push-button' ? '2' : '1';
+      const introHref = `tracks/track-2.html?modal=challenge&step=${encodeURIComponent(step)}&challengeKey=${encodeURIComponent(challengeKey)}&code=${encodeURIComponent(n.code || '')}&assignmentId=${encodeURIComponent(n.assignmentId || '')}`;
+      const startBtn = !expired && n.code
+        ? `<a href="${introHref}" class="ch-notif-start-btn">ابدأ التحدي</a>`
+        : '';
+
       const card = document.createElement('div');
       card.className = 'ch-notif-card' + (expired ? ' expired' : '') + (!n.read ? ' unread' : '');
       card.innerHTML = `
         <div class="ch-notif-left">
           <div class="ch-notif-title">${n.title}</div>
-          <div><span class="ch-notif-code">${n.code}</span></div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:.72rem;color:#64748b;font-weight:800;">كود التحدي</span>
+            <span class="ch-notif-code">${n.code}</span>
+          </div>
           ${expText ? `<div class="ch-notif-exp ${expClass}">${expText}</div>` : ''}
         </div>
-        ${expired ? '<span style="font-size:.76rem;color:#dc2626;font-weight:700;">منتهي</span>' : ''}
+        ${expired ? '<span style="font-size:.76rem;color:#dc2626;font-weight:700;">منتهي</span>' : startBtn}
       `;
       list.appendChild(card);
 
       if (!n.read) CQ_API.markNotifRead(n.id);
     });
   });
+}
+
+function getNotifChallengeKey(n) {
+  if (n && n.challengeKey) return n.challengeKey;
+  const text = ((n && (n.challengeName || n.title || n.body)) || '').toLowerCase();
+  if (text.indexOf('push') >= 0 || text.indexOf('button') >= 0 || text.indexOf('زر') >= 0) return 'push-button';
+  return 'led';
 }
 
 const TRACKS = [

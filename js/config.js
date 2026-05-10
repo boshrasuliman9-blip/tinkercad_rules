@@ -9,7 +9,7 @@
 
 var CQ = {
   imgbbKey: 'f23616775da067e60dec9b7dbafb3296',
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbxgVjtuuKq9vqAiuPmNxyTVXEWhvNsbNFn2CpCxEG8pkWWouK_M7hDiE01P15BK4Flf/exec',
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbw0gjcnNnskffcYfIBKPPjNMGeloqKdFngH1nGzzBKEBJNLa1ODlpD4i2blrQgHSt6OZw/exec',
   auth: {
     requireApproval: true
   },

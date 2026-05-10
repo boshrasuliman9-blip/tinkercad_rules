@@ -34,22 +34,31 @@ function renderNotifPanel() {
     var bg = n.readAt ? '#fff' : '#f0fdf4';
     var icon = n.type === 'approval' ? '✅' : n.type === 'rejection' ? '❌' : '🔔';
     var text = n.message || n.title || n.body || '';
+    var codeHtml = (n.type === 'challenge' && n.code)
+      ? '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">'
+        + '<span style="font-size:.68rem;color:#64748b;font-weight:800;">كود التحدي</span>'
+        + '<code style="direction:ltr;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:8px;padding:3px 8px;font-size:.82rem;font-weight:900;letter-spacing:.05em;">' + escHtml(n.code) + '</code>'
+        + '</div>'
+      : '';
     return '<li onclick="readNotif(\''+n.id+'\',this)" style="display:flex;gap:8px;padding:.6rem;border-radius:10px;cursor:pointer;background:'+bg+';margin-bottom:4px;">'
       + '<span style="font-size:1rem;flex-shrink:0;">'+icon+'</span>'
-      + '<div style="font-size:.82rem;"><div>'+text+'</div><div style="font-size:.72rem;color:#64748b;margin-top:2px;">'+fmtDate(n.createdAt)+'</div></div>'
+      + '<div style="font-size:.82rem;"><div>'+text+'</div>'+codeHtml+'<div style="font-size:.72rem;color:#64748b;margin-top:2px;">'+fmtDate(n.createdAt)+'</div></div>'
       + '</li>';
   }).join('');
 }
 
 function readNotif(id, el) {
   el.style.background = '#fff';
+  var n = _notifs.find(function(x){ return x.id === id; });
   CQ_API.markNotifRead(id).then(function() {
     var cnt = document.getElementById('notif-bell-count');
     var unread = _notifs.filter(function(n){ return !n.readAt && n.id !== id; }).length;
     if (cnt) { cnt.textContent = unread; cnt.style.display = unread ? 'flex' : 'none'; }
-    var n = _notifs.find(function(x){ return x.id === id; });
     if (n) n.readAt = new Date().toISOString();
   });
+  if (n && n.type === 'challenge' && n.code) {
+    window.location.href = challengeMapHrefFromNotif(n);
+  }
 }
 
 function markAllNotifsRead() {
@@ -67,6 +76,32 @@ function fmtDate(ts) {
   return new Date(ts).toLocaleDateString('ar-SA');
 }
 
+function challengeMapHrefFromNotif(n) {
+  var key = n.challengeKey || inferChallengeKeyFromNotif(n);
+  var step = key === 'push-button' ? '2' : '1';
+  return 'track-2.html'
+    + '?modal=challenge'
+    + '&step=' + encodeURIComponent(step)
+    + '&challengeKey=' + encodeURIComponent(key)
+    + '&code=' + encodeURIComponent(n.code || '')
+    + '&assignmentId=' + encodeURIComponent(n.assignmentId || '');
+}
+
+function inferChallengeKeyFromNotif(n) {
+  var text = String((n && (n.challengeName || n.title || n.body)) || '').toLowerCase();
+  if (text.indexOf('push') >= 0 || text.indexOf('button') >= 0 || text.indexOf('زر') >= 0) return 'push-button';
+  return 'led';
+}
+
+function escHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /* ── localStorage challenge state ── */
 var STORE_KEY = _session ? ('cq_t2_state_' + _session.id) : 'cq_t2_state_guest';
 
@@ -80,74 +115,8 @@ function saveChallengeState(arr) {
 
 /* State item: { step, codeId, name, href, status: 'started'|'submitted'|'approved'|'rejected' } */
 
-/* ── Code entry modal ── */
-var _activeStep = null;
-var _pendingCodeData = null;
-
-function openCodeModal(step, title) {
-  _activeStep = step;
-  var el = document.getElementById('code-modal');
-  var ti = document.getElementById('code-modal-title');
-  var inp = document.getElementById('code-input');
-  var msg = document.getElementById('code-msg');
-  if (ti) ti.textContent = title || ('التحدي ' + step);
-  if (inp) inp.value = '';
-  if (msg) msg.style.display = 'none';
-  if (el) el.style.display = 'flex';
-  setTimeout(function(){ if (inp) inp.focus(); }, 100);
-}
-
-function closeCodeModal() {
-  var el = document.getElementById('code-modal');
-  if (el) el.style.display = 'none';
-}
-
-function showCodeMsg(txt, type) {
-  var el = document.getElementById('code-msg');
-  if (!el) return;
-  el.textContent = txt;
-  el.style.cssText = 'display:block;font-size:.82rem;padding:9px 12px;border-radius:8px;margin-bottom:.8rem;'
-    + (type === 'ok'
-      ? 'background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;'
-      : 'background:#fff0ed;color:#c93a12;border:1px solid #fdd;');
-}
-
-function submitCode() {
-  if (!_session) {
-    showCodeMsg('يجب تسجيل الدخول أولاً', 'err');
-    return;
-  }
-  var code = (document.getElementById('code-input').value || '').trim();
-  if (!code) { showCodeMsg('أدخل الرمز أولاً', 'err'); return; }
-
-  var btn = document.querySelector('#code-modal button');
-  if (btn) { btn.disabled = true; btn.textContent = '...'; }
-
-  CQ_API.validateCode(code, _session.id).then(function(res) {
-    if (btn) { btn.disabled = false; btn.textContent = 'بدء التحدي'; }
-    if (!res.ok) { showCodeMsg(res.msg || 'الرمز غير صحيح أو منتهي الصلاحية', 'err'); return; }
-
-    var codeId = res.codeId;
-    var challengeName = res.challengeName || 'التحدي';
-    var challengeHref = res.href || res.tinkercadUrl || '#';
-
-    CQ_API.startChallenge(codeId, _session.id).then(function(startRes) {
-      var state = getChallengeState();
-      var existing = state.find(function(s){ return s.step === _activeStep; });
-      if (existing) {
-        existing.codeId = codeId; existing.name = challengeName; existing.href = challengeHref; existing.status = 'started';
-      } else {
-        state.push({ step: _activeStep, codeId: codeId, name: challengeName, href: challengeHref, status: 'started' });
-      }
-      saveChallengeState(state);
-      closeCodeModal();
-      if (challengeHref && challengeHref !== '#') {
-        window.open(challengeHref, '_blank');
-      }
-      refreshMap();
-    });
-  });
-}
+var _activeModalStep = null;
+var _activeModalData = null;
 
 /* ── Submit modal ── */
 var _submitStep = null;
@@ -199,7 +168,6 @@ function doSubmitChallenge() {
 }
 
 /* ── Close modals on outside click ── */
-document.getElementById('code-modal').addEventListener('click', function(e){ if(e.target===this) closeCodeModal(); });
 document.getElementById('submit-modal').addEventListener('click', function(e){ if(e.target===this) closeSubmitModal(); });
 
 /* ── Main page logic ── */
@@ -227,12 +195,13 @@ document.addEventListener('DOMContentLoaded', function () {
   var challengeData = {
     1: {
       title: 'إضاءة LED',
+      challengeKey: 'led',
       href: './challenges/track-2-led-challenge.html',
-      image: './img/challenge-covers/led-challenge.png',
+      image: '../../img/challenge-covers/led-challenge.png',
       desc: 'ابنِ دائرتك الأولى وشغّل LED يومض تلقائيًا حتى تتأكد من فهم التوصيل الأساسي.',
-      time: '⏱ 10 دقائق',
-      parts: '🔧 5 مكونات',
-      level: '⭐ مبتدئ',
+      time: '10 دقائق',
+      parts: '6 مكونات',
+      level: 'مبتدئ',
       rules: [
         'تأكد من وضع الـ LED والمقاومة في المكان الصحيح.',
         'شغّل المحاكاة وتحقق أن الإضاءة تعمل كما هو مطلوب.',
@@ -241,13 +210,14 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     2: {
       title: 'زر الضغط',
+      challengeKey: 'push-button',
       href: './challenges/track-2-pushbutton-challenge.html',
-      image: './img/challenge-covers/pushbutton-challenge.png',
-      fallbackImage: './img/challenges/pushbutton-challenge.svg',
+      image: '../../img/challenge-covers/pushbutton-challenge.png',
+      fallbackImage: '../../img/challenges/pushbutton-challenge.svg',
       desc: 'وصّل زر الضغط مع الـ LED وتحقق أن المصباح يضيء عند الضغط على الزر فقط.',
-      time: '⏱ 15 دقيقة',
-      parts: '🔧 6 مكونات',
-      level: '⭐ متوسط',
+      time: '15 دقيقة',
+      parts: '6 مكونات',
+      level: 'متوسط',
       rules: [
         'أكمل التحدي الأول أولًا قبل محاولة هذا التحدي.',
         'تحقق من توصيل مقاومة الـ pull-down بشكل صحيح.',
@@ -256,10 +226,10 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     3: {
       title: 'المرحلة 3',
-      image: './img/track-covers/track-2-challenges.png',
+      image: '../../img/track-covers/track-2-challenges.png',
       desc: 'هذه المرحلة قيد التجهيز حاليًا وستُضاف لاحقًا بنفس أسلوب المراحل السابقة.',
       time: 'قريبًا',
-      parts: 'مفاجآت جديدة',
+      parts: 'قيد التجهيز',
       level: 'Coming Soon',
       rules: [
         'هذه المحطة محفوظة للمراحل القادمة.',
@@ -269,10 +239,10 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     4: {
       title: 'المرحلة 4',
-      image: './img/track-covers/track-2-challenges.png',
+      image: '../../img/track-covers/track-2-challenges.png',
       desc: 'المسار مجهّز من الآن ليستقبل المرحلة الرابعة عندما تصبح جاهزة.',
       time: 'قريبًا',
-      parts: 'مزيد من الأدوات',
+      parts: 'قيد التجهيز',
       level: 'Coming Soon',
       rules: [
         'هذه المرحلة ليست متاحة بعد.',
@@ -291,10 +261,11 @@ document.addEventListener('DOMContentLoaded', function () {
   var modalTime = document.getElementById('modal-time');
   var modalParts = document.getElementById('modal-parts');
   var modalLevel = document.getElementById('modal-level');
-  var modalRules = document.getElementById('modal-rules');
   var modalStart = document.getElementById('modal-start');
+  var modalCodeSection = document.getElementById('modal-code-section');
+  var modalCodeInput = document.getElementById('modal-code-input');
+  var modalCodeMsg = document.getElementById('modal-code-msg');
   var modalClose = document.getElementById('modal-close');
-  var modalCancel = document.getElementById('modal-cancel');
   var guideOverlay = document.getElementById('guide-overlay');
   var guideSpotlight = document.getElementById('guide-spotlight');
   var guideTip = document.getElementById('challenge-tip');
@@ -375,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
         stage.classList.add('is-locked');
         if (badge) badge.textContent = 'مرفوض — أعد المحاولة';
         if (mark)  mark.textContent  = '↩';
-        stage.onclick = function(){ openCodeModal(step, data.title); };
+        stage.onclick = function(){ openModal(step, 'unlocked'); };
       } else if (started) {
         stage.classList.add('is-current');
         if (badge) badge.textContent = 'جارٍ...';
@@ -385,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
         stage.classList.add('is-current');
         if (badge) badge.textContent = step === 1 ? 'ابدأ الآن' : 'جاهز';
         if (mark)  mark.textContent  = String(step);
-        stage.onclick = function(){ openCodeModal(step, data.title); };
+        stage.onclick = function(){ openModal(step, 'unlocked'); };
       } else {
         stage.classList.add('is-locked');
         if (badge) badge.textContent = 'مقفل';
@@ -441,13 +412,15 @@ document.addEventListener('DOMContentLoaded', function () {
     guideOverlay.setAttribute('aria-hidden', 'false');
   }
 
-  function openModal(step, state, stateItem) {
+  function openModal(step, state, stateItem, prefillCode) {
     var data = challengeData[step];
     if (!modal || !data) return;
     var isUnlocked = state === 'unlocked' || state === 'started' || state === 'done';
     var isComingSoon = state === 'coming';
     var isDone = state === 'done';
     var isStarted = state === 'started';
+    _activeModalStep = step;
+    _activeModalData = data;
 
     if (isComingSoon) {
       modalKicker.textContent = 'قريبًا';
@@ -487,24 +460,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     modalTime.textContent = data.time;
     modalParts.textContent = data.parts;
-    modalLevel.textContent = isComingSoon ? data.level : (isUnlocked ? data.level : '🔒 غير متاح بعد');
+    modalLevel.textContent = isComingSoon ? data.level : (isUnlocked ? data.level : 'غير متاح بعد');
 
-    modalRules.innerHTML = '';
-    (isComingSoon
-      ? data.rules
-      : (isUnlocked ? data.rules : [
-        'أكمل التحدي السابق أولًا.',
-        'بعد الإنجاز سيصبح هذا التحدي متاحًا تلقائيًا.'
-      ])).forEach(function (rule) {
-      var li = document.createElement('li');
-      li.textContent = rule;
-      modalRules.appendChild(li);
-    });
+    var showCodeEntry = isUnlocked && !isDone && !isStarted && !isComingSoon;
+    if (modalCodeSection) modalCodeSection.style.display = showCodeEntry ? 'flex' : 'none';
+    if (modalCodeInput) modalCodeInput.value = showCodeEntry ? (prefillCode || '') : '';
+    if (modalCodeMsg) {
+      modalCodeMsg.textContent = '';
+      modalCodeMsg.className = 'challenge-code-msg';
+    }
+    if (modalStart) modalStart.disabled = false;
 
     if (isStarted && stateItem) {
       modalStart.style.display = 'inline-flex';
       modalStart.textContent = '↩ العودة للتحدي';
-      modalStart.href = stateItem.href || data.href || '#';
+      modalStart.onclick = function(){ window.location.href = stateItem.href || data.href || '#'; };
       var submitBtn = document.getElementById('modal-submit-btn');
       if (!submitBtn) {
         submitBtn = document.createElement('button');
@@ -519,26 +489,97 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.onclick = function(){ closeModal(); openSubmitModal(step); };
     } else if (isDone && stateItem && (stateItem.status === 'submitted' || stateItem.status === 'approved')) {
       modalStart.style.display = 'none';
+      modalStart.onclick = null;
       var submitBtn = document.getElementById('modal-submit-btn');
       if (submitBtn) submitBtn.style.display = 'none';
     } else if (isUnlocked && !isDone && !isStarted) {
       modalStart.style.display = 'inline-flex';
-      modalStart.textContent = 'ابدأ التحدي الآن';
-      modalStart.href = data.href || '#';
+      modalStart.textContent = 'ابدأ التحدي';
+      modalStart.onclick = doStartFromModal;
       var submitBtn = document.getElementById('modal-submit-btn');
       if (submitBtn) submitBtn.style.display = 'none';
     } else {
       modalStart.style.display = 'none';
+      modalStart.onclick = null;
       var submitBtn = document.getElementById('modal-submit-btn');
       if (submitBtn) submitBtn.style.display = 'none';
     }
 
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
+    if (showCodeEntry && modalCodeInput) setTimeout(function(){ modalCodeInput.focus(); }, 80);
+  }
+
+  function showCodeMsg(text, type) {
+    if (!modalCodeMsg) return;
+    modalCodeMsg.textContent = text;
+    modalCodeMsg.className = 'challenge-code-msg ' + type;
+  }
+
+  function resolveChallengeHref(href, fallback) {
+    if (!href) return fallback || '#';
+    if (/^https?:\/\//i.test(href)) return href;
+    if (href.indexOf('./student/tracks/challenges/') === 0 || href.indexOf('student/tracks/challenges/') === 0) {
+      return './challenges/' + href.split('/').pop();
+    }
+    if (href.indexOf('./track-') === 0) return './challenges/' + href.replace(/^\.\//, '');
+    if (href.indexOf('track-') === 0) return './challenges/' + href;
+    return href;
+  }
+
+  function doStartFromModal() {
+    if (!_session) {
+      showCodeMsg('يجب تسجيل الدخول أولاً', 'err');
+      return;
+    }
+    var code = modalCodeInput ? (modalCodeInput.value || '').trim() : '';
+    if (!code) {
+      showCodeMsg('أدخل كود التحدي أولاً', 'err');
+      return;
+    }
+    if (!modalStart || !_activeModalData || !_activeModalStep) return;
+
+    modalStart.disabled = true;
+    modalStart.textContent = 'جاري التحقق...';
+
+    CQ_API.validateCode(code, _session.id).then(function(res) {
+      if (!res.ok) {
+        modalStart.disabled = false;
+        modalStart.textContent = 'ابدأ التحدي';
+        showCodeMsg(res.msg || 'الكود غير صحيح أو منتهي الصلاحية', 'err');
+        return;
+      }
+
+      var codeId = res.codeId;
+      var challengeName = res.challengeName || _activeModalData.title;
+      var challengeHref = resolveChallengeHref(res.href || res.tinkercadUrl, _activeModalData.href);
+
+      CQ_API.startChallenge(codeId, _session.id).then(function() {
+        var state = getChallengeState();
+        var existing = state.find(function(s){ return s.step === _activeModalStep; });
+        if (existing) {
+          existing.codeId = codeId;
+          existing.name = challengeName;
+          existing.href = challengeHref;
+          existing.status = 'started';
+        } else {
+          state.push({ step: _activeModalStep, codeId: codeId, name: challengeName, href: challengeHref, status: 'started' });
+        }
+        saveChallengeState(state);
+        window.location.href = challengeHref
+          + (challengeHref.indexOf('?') >= 0 ? '&' : '?')
+          + 'codeId=' + encodeURIComponent(codeId)
+          + '&challengeKey=' + encodeURIComponent(_activeModalData.challengeKey || '');
+      });
+    });
   }
 
   if (modalClose) modalClose.addEventListener('click', closeModal);
-  if (modalCancel) modalCancel.addEventListener('click', closeModal);
+  if (modalCodeInput) {
+    modalCodeInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doStartFromModal();
+    });
+  }
   if (modal) {
     modal.addEventListener('click', function (e) {
       if (e.target === modal) closeModal();
@@ -574,6 +615,16 @@ document.addEventListener('DOMContentLoaded', function () {
   var guideTarget = document.querySelector('.roadmap-stage[data-challenge="1"]');
   var ch1State = getChallengeState().find(function(s){ return s.step === 1; });
   if (guideTarget && !localStorage.getItem(guideSeenKey) && !ch1State) showGuide(guideTarget);
+
+  /* ── Auto-open challenge modal from notifications ── */
+  var urlParams = new URLSearchParams(window.location.search);
+  var urlCode = urlParams.get('code') || '';
+  var urlKey = urlParams.get('challengeKey') || '';
+  var urlStep = Number(urlParams.get('step')) || (urlKey === 'push-button' ? 2 : 1);
+  if (urlParams.get('modal') === 'challenge' || urlCode || urlKey) {
+    openModal(urlStep, 'unlocked', null, urlCode);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
 });
 
 (function(){

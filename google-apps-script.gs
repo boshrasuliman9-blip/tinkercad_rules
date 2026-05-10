@@ -33,7 +33,7 @@ var SH = {
 // ─── رؤوس الجداول ────────────────────────────
 var HEADERS = {
   Users:          ['id','name','email','phone','passwordHash','role','status','schoolId','class','section','studentCode','teacherCode','requestSource','joinedAt','reviewedAt','updatedAt','leftSchool'],
-  Classes:        ['id','teacherId','teacherEmail','name','grade','schoolId','section','startTime','endTime','weeks','trainerId','trainerName','status','courseStatus','createdAt','updatedAt'],
+  Classes:        ['id','teacherId','teacherEmail','assistantTeacherId','assistantTeacherName','name','grade','schoolId','section','startTime','endTime','weeks','trainerId','trainerName','assistantTrainerId','assistantTrainerName','status','courseStatus','createdAt','updatedAt'],
   Assignments:    ['id','teacherId','classId','challengeKey','challengeName','expiresAt','createdAt'],
   Codes:          ['id','assignmentId','studentId','studentEmail','studentName','code','startedAt','submittedAt','status','teacherNote','createdAt'],
   Notifications:  ['id','userId','type','title','body','code','assignmentId','expiresAt','read','createdAt','readAt'],
@@ -113,6 +113,7 @@ function doGet(e) {
     else if (action === 'getClasses')          result = _getClasses(p);
     else if (action === 'createClass')         result = _createClass(p);
     else if (action === 'updateClass')         result = _updateClass(p);
+    else if (action === 'migrateStudents')     result = _migrateStudents(p);
     else if (action === 'deleteClass')         result = _deleteClass(p);
     // ── معلم — طلاب ──
     else if (action === 'getStudentsByClass')  result = _getStudentsByClass(p);
@@ -334,6 +335,95 @@ function _classDisplayName(grade, section, fallbackName) {
   return String(fallbackName || '').trim();
 }
 
+function _classTextKey(value) {
+  return String(value || '')
+    .replace(/[\u0623\u0625\u0622]/g, '\u0627')
+    .replace(/[\u0629]/g, '\u0647')
+    .replace(/\u0627\u0644\u0635\u0641/g, '')
+    .replace(/\u0635\u0641/g, '')
+    .replace(/[\u0640\-\s]+/g, '')
+    .trim();
+}
+
+function _studentMatchesClass(student, cls) {
+  if (!student || !cls) return false;
+  var schoolId = cls.schoolId || cls.school || '';
+  if ((student.schoolId || student.school || '') !== schoolId) return false;
+
+  var clsName    = _classDisplayNameNormalized(cls.grade, cls.section, cls.name);
+  var clsGrade   = String(cls.grade || cls.name || '').trim();
+  var clsSection = String(cls.section || '').trim();
+  var rawClsName  = String(cls.name || '').trim();
+  var uClass     = String(student.class || '').trim();
+  var uSection   = String(student.section || '').trim();
+  var combined   = (uClass && uSection) ? uClass + ' ' + uSection : uClass;
+
+  if (uClass && uClass === String(cls.id || '')) return true;
+  if (uClass === clsName) return true;
+  if (uClass === rawClsName) return true;
+  if (combined === clsName) return true;
+  if (combined === rawClsName) return true;
+  if (clsGrade && uClass === clsGrade && (!clsSection || uSection === clsSection)) return true;
+  var uKey = _classTextKey(combined || uClass);
+  if (uKey && (uKey === _classTextKey(clsName) || uKey === _classTextKey(rawClsName))) return true;
+  return false;
+}
+
+function _assignExistingChallengesToStudent(student) {
+  if (!student || student.role !== 'student') return {created: 0, codes: []};
+  if (String(student.status || '') !== 'active' || _bool(student.leftSchool)) return {created: 0, codes: []};
+
+  var now = new Date();
+  var classes = _rows(SH.CLASSES).filter(function(cls) {
+    return String(cls.status || 'active') !== 'deleted' && _studentMatchesClass(student, cls);
+  });
+  if (!classes.length) return {created: 0, codes: []};
+
+  var classIds = classes.map(function(cls) { return String(cls.id || ''); });
+  var assignments = _rows(SH.ASSIGNMENTS).filter(function(a) {
+    if (classIds.indexOf(String(a.classId || '')) < 0) return false;
+    if (a.expiresAt && new Date(a.expiresAt) < now) return false;
+    return true;
+  });
+  if (!assignments.length) return {created: 0, codes: []};
+
+  var existingCodes = _rows(SH.CODES);
+  var generated = [];
+  var createdAt = now.toISOString();
+
+  assignments.forEach(function(assign) {
+    var alreadyHasCode = existingCodes.some(function(c) {
+      return String(c.assignmentId || '') === String(assign.id || '') &&
+             String(c.studentId || '') === String(student.id || '');
+    });
+    if (alreadyHasCode) return;
+
+    var code = _code(8);
+    var codeId = Utilities.getUuid();
+    _appendObject(SH.CODES, {
+      id: codeId,
+      assignmentId: assign.id,
+      studentId: student.id,
+      studentEmail: student.email || '',
+      studentName: student.name || '',
+      code: code,
+      startedAt: '',
+      submittedAt: '',
+      status: 'assigned',
+      teacherNote: '',
+      createdAt: createdAt
+    });
+    _appendNotification(student.id, 'challenge', 'تحدي جديد: ' + (assign.challengeName || 'تحدي'), 'كودك الخاص للتحدي', {
+      code: code,
+      assignmentId: assign.id,
+      expiresAt: assign.expiresAt || ''
+    });
+    generated.push({assignmentId: assign.id, challengeName: assign.challengeName || '', code: code});
+  });
+
+  return {created: generated.length, codes: generated};
+}
+
 function _appendNotification(userId, type, title, body, extra) {
   var payload = extra || {};
   _appendObject(SH.NOTIFICATIONS, {
@@ -443,6 +533,7 @@ function _signIn(p) {
       _setCell(SH.USERS, idx, 'status', 'active');
       _setCell(SH.USERS, idx, 'reviewedAt', new Date().toISOString());
       match.status = 'active';
+      if (match.role === 'student') _assignExistingChallengesToStudent(match);
     }
     return {ok: true, user: _safeUser(match)};
   }
@@ -511,11 +602,12 @@ function _approveStudent(p) {
   _setCell(SH.USERS, idx, 'status', 'active');
   _setCell(SH.USERS, idx, 'reviewedAt', new Date().toISOString());
   var student = _rows(SH.USERS).find(function(u) { return u.id === p.userId; });
+  var assigned = _assignExistingChallengesToStudent(student);
   if (student && student.email) {
     try { MailApp.sendEmail(student.email, '✅ تم قبول الطلب بنجاح — Circuit Quest', '', {htmlBody: _approvalEmailHtml(student.name || '', 'طالب', _siteUrl() + '/student/index.html')}); } catch(e) { Logger.log('Email error: ' + e.message); }
   }
   if (!p.ajax) return _htmlPage('✅ تم قبول الطلب بنجاح', '#f0fdf4', '#16a34a');
-  return {ok: true};
+  return {ok: true, assignedChallenges: assigned.created};
 }
 
 function _rejectStudent(p) {
@@ -719,7 +811,11 @@ function _adminUpdateUser(p) {
   if (p.leftSchool != null) _setCell(SH.USERS, idx, 'leftSchool', p.leftSchool === 'true' || p.leftSchool === true);
   if (p.status != null)   _setCell(SH.USERS, idx, 'status', String(p.status || '').trim());
 
-  return {ok: true};
+  var updatedUser = _rows(SH.USERS).find(function(u) { return u.id === userId; });
+  var assigned = (updatedUser && updatedUser.role === 'student' && String(updatedUser.status || '') === 'active')
+    ? _assignExistingChallengesToStudent(updatedUser)
+    : {created: 0};
+  return {ok: true, assignedChallenges: assigned.created};
 }
 
 // ════════════════════════════════════════════
@@ -780,11 +876,26 @@ function _getStudentsByClass(p) {
   var cls = _rows(SH.CLASSES).find(function(c) { return c.id === p.classId; });
   if (!cls) return {ok: false, msg: 'الصف غير موجود'};
 
-  var schoolId = cls.schoolId || cls.school || '';
+  var schoolId   = cls.schoolId || cls.school || '';
+  var clsName    = _classDisplayNameNormalized(cls.grade, cls.section, cls.name);
+  var clsGrade   = String(cls.grade || cls.name || '').trim();
+  var clsSection = String(cls.section || '').trim();
+  var rawClsName = String(cls.name || '').trim();
   var students = _rows(SH.USERS).filter(function(u) {
-    return u.role === 'student' &&
-           (u.schoolId || u.school || '') === schoolId &&
-           (u.class || '') === cls.name;
+    if (u.role !== 'student') return false;
+    if ((u.schoolId || u.school || '') !== schoolId) return false;
+    var uClass   = String(u.class   || '').trim();
+    var uSection = String(u.section || '').trim();
+    if (uClass === String(cls.id || '')) return true;
+    if (uClass === clsName) return true;
+    if (uClass === rawClsName) return true;
+    var combined = (uClass && uSection) ? uClass + ' ' + uSection : uClass;
+    if (combined === clsName) return true;
+    if (combined === rawClsName) return true;
+    if (clsGrade && uClass === clsGrade && (!clsSection || uSection === clsSection)) return true;
+    var uKey = _classTextKey(combined || uClass);
+    if (uKey && (uKey === _classTextKey(clsName) || uKey === _classTextKey(rawClsName))) return true;
+    return false;
   }).map(function(u) {
     return {
       id:          u.id,
@@ -822,13 +933,26 @@ function _assignChallenge(p) {
   var cls = _rows(SH.CLASSES).find(function(c) { return c.id === classId && c.teacherId === teacherId; });
   if (!cls) return {ok: false, msg: 'الصف غير موجود'};
 
-  var schoolId = cls.schoolId || cls.school || '';
+  var schoolId    = cls.schoolId || cls.school || '';
+  var clsName     = _classDisplayNameNormalized(cls.grade, cls.section, cls.name);
+  var rawClsName  = String(cls.name || '').trim();
+  var clsGrade    = String(cls.grade || cls.name || '').trim();
+  var clsSection  = String(cls.section || '').trim();
   var students = _rows(SH.USERS).filter(function(u) {
-    return u.role === 'student' &&
-           String(u.status || '') === 'active' &&
-           !_bool(u.leftSchool) &&
-           (u.schoolId || u.school || '') === schoolId &&
-           (u.class || '') === cls.name;
+    if (u.role !== 'student' || String(u.status || '') !== 'active' || _bool(u.leftSchool)) return false;
+    if ((u.schoolId || u.school || '') !== schoolId) return false;
+    var uClass   = String(u.class   || '').trim();
+    var uSection = String(u.section || '').trim();
+    if (uClass === String(cls.id || '')) return true;
+    if (uClass === clsName) return true;
+    if (uClass === rawClsName) return true;
+    var combined = (uClass && uSection) ? uClass + ' ' + uSection : uClass;
+    if (combined === clsName) return true;
+    if (combined === rawClsName) return true;
+    if (clsGrade && uClass === clsGrade && (!clsSection || uSection === clsSection)) return true;
+    var uKey = _classTextKey(combined || uClass);
+    if (uKey && (uKey === _classTextKey(clsName) || uKey === _classTextKey(rawClsName))) return true;
+    return false;
   });
   if (!students.length) return {ok: false, msg: 'لا يوجد طلاب نشطون في هذا الصف'};
 
@@ -970,20 +1094,37 @@ function _reopenChallenge(p) {
   var assignIdx = _rowIdx(SH.ASSIGNMENTS, 'id', assignId);
   if (assignIdx > 0 && newExpiry) _setCell(SH.ASSIGNMENTS, assignIdx, 'expiresAt', newExpiry);
 
-  var notifSheet = _sheet(SH.NOTIFICATIONS);
+  var students = _rows(SH.USERS);
+  var codeRows = _rows(SH.CODES);
   var now = new Date().toISOString();
+  var sent = [];
   studentIds.forEach(function(sid) {
-    var codeRow = _rows(SH.CODES).find(function(c) { return c.assignmentId === assignId && c.studentId === sid; });
-    if (codeRow) {
-      notifSheet.appendRow([
-        Utilities.getUuid(), sid, 'challenge',
-        'تم فتح التحدي من جديد: ' + assign.challengeName,
-        'كودك السابق لا يزال صالحاً',
-        codeRow.code, assignId, newExpiry || assign.expiresAt, false, now
-      ]);
+    var student = students.find(function(u) { return u.id === sid && u.role === 'student'; }) || {};
+    var codeRow = codeRows.find(function(c) { return c.assignmentId === assignId && c.studentId === sid; });
+    var code = codeRow ? codeRow.code : _code(8);
+    if (!codeRow) {
+      _appendObject(SH.CODES, {
+        id: Utilities.getUuid(),
+        assignmentId: assignId,
+        studentId: sid,
+        studentEmail: student.email || '',
+        studentName: student.name || '',
+        code: code,
+        startedAt: '',
+        submittedAt: '',
+        status: 'assigned',
+        teacherNote: '',
+        createdAt: now
+      });
     }
+    _appendNotification(sid, 'challenge', 'تحدي متاح: ' + assign.challengeName, 'كودك الخاص للتحدي', {
+      code: code,
+      assignmentId: assignId,
+      expiresAt: newExpiry || assign.expiresAt
+    });
+    sent.push({studentId: sid, studentName: student.name || '', code: code});
   });
-  return {ok: true};
+  return {ok: true, total: sent.length, codes: sent};
 }
 
 function _getTeacherNotifs(p) {
@@ -1085,10 +1226,32 @@ function _getWinners(p) {
 // ════════════════════════════════════════════
 function _getStudentNotifs(p) {
   var now    = new Date();
+  var student = _rows(SH.USERS).find(function(u) { return u.id === p.studentId && u.role === 'student'; });
+  if (student) _assignExistingChallengesToStudent(student);
+  var assigns = _rows(SH.ASSIGNMENTS);
+  var challenges = _rows(SH.CHALLENGES);
   var notifs = _rows(SH.NOTIFICATIONS).filter(function(n) { return n.userId === p.studentId; })
     .map(function(n) {
       var read = _bool(n.read);
-      return {id: n.id, type: n.type, title: n.title, body: n.body, message: n.title || n.body || '', code: n.code, assignmentId: n.assignmentId, expiresAt: n.expiresAt, expired: n.expiresAt ? new Date(n.expiresAt) < now : false, read: read, readAt: read ? (n.createdAt || true) : '', createdAt: n.createdAt};
+      var assign = assigns.find(function(a) { return a.id === n.assignmentId; }) || {};
+      var challenge = assign.challengeKey ? (challenges.find(function(c) { return c.key === assign.challengeKey; }) || {}) : {};
+      return {
+        id: n.id,
+        type: n.type,
+        title: n.title,
+        body: n.body,
+        message: n.title || n.body || '',
+        code: n.code,
+        assignmentId: n.assignmentId,
+        challengeKey: assign.challengeKey || '',
+        challengeName: assign.challengeName || '',
+        href: challenge.href || challenge.link || '',
+        expiresAt: n.expiresAt,
+        expired: n.expiresAt ? new Date(n.expiresAt) < now : false,
+        read: read,
+        readAt: read ? (n.createdAt || true) : '',
+        createdAt: n.createdAt
+      };
     }).sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
   return {ok: true, data: notifs, notifs: notifs};
 }
@@ -1113,7 +1276,7 @@ function _markNotifRead(p) {
 function _validateCode(p) {
   var code      = _normalizeCode(p.code || '');
   var studentId = p.studentId || '';
-  var found = _rows(SH.CODES).find(function(c) { return c.code === code && c.studentId === studentId; });
+  var found = _rows(SH.CODES).find(function(c) { return _normalizeCode(c.code) === code && c.studentId === studentId; });
   if (!found) return {ok: false, msg: 'الكود غير صحيح أو لا ينتمي لحسابك'};
   var assign = _rows(SH.ASSIGNMENTS).find(function(a) { return a.id === found.assignmentId; });
   if (!assign) return {ok: false, msg: 'التحدي غير موجود'};
@@ -1567,12 +1730,22 @@ function _getClasses(p) {
     var schoolId = c.schoolId || '';
     var school = schools.find(function(s) { return s.id === schoolId; });
     var className = _classDisplayNameNormalized(c.grade, c.section, c.name);
+    var grade     = String(c.grade || c.name || '').trim();
+    var section   = String(c.section || '').trim();
     var studentCount = users.filter(function(u) {
-      return u.role === 'student' && !_bool(u.leftSchool) &&
-        String(u.schoolId || '') === schoolId && String(u.class || '') === className;
+      if (u.role !== 'student' || _bool(u.leftSchool)) return false;
+      if (String(u.schoolId || '') !== schoolId) return false;
+      var uClass   = String(u.class   || '').trim();
+      var uSection = String(u.section || '').trim();
+      if (uClass === className) return true;
+      var combined = (uClass && uSection) ? uClass + ' ' + uSection : uClass;
+      if (combined === className) return true;
+      if (grade && uClass === grade && (!section || uSection === section)) return true;
+      return false;
     }).length;
     return {
       id: c.id, teacherId: c.teacherId || '', teacherEmail: c.teacherEmail || '',
+      assistantTeacherId: c.assistantTeacherId || '', assistantTeacherName: c.assistantTeacherName || '',
       name: className, grade: c.grade || '', section: c.section || '',
       schoolId: schoolId, schoolName: school ? school.name : '',
       status: c.status || 'active', studentCount: studentCount,
@@ -1602,10 +1775,12 @@ function _createClass(p) {
   });
   if (exists) return {ok: false, msg: 'هذا الصف موجود مسبقاً'};
   var now = new Date().toISOString();
-  var cls = {
-    id: Utilities.getUuid(), teacherId: String(p.teacherId || '').trim(),
-    teacherEmail: String(p.teacherEmail || '').trim(), name: className,
-    grade: grade, schoolId: schoolId, section: section,
+    var cls = {
+      id: Utilities.getUuid(), teacherId: String(p.teacherId || '').trim(),
+      teacherEmail: String(p.teacherEmail || '').trim(), name: className,
+      assistantTeacherId: String(p.assistantTeacherId || '').trim(),
+      assistantTeacherName: String(p.assistantTeacherName || '').trim(),
+      grade: grade, schoolId: schoolId, section: section,
     status: String(p.status || 'active').trim() || 'active',
     createdAt: now, updatedAt: now
   };
@@ -1624,6 +1799,7 @@ function _getCourses(p) {
       id: c.id, name: c.name || '', schoolId: c.schoolId || '',
       startTime: c.startTime || '', endTime: c.endTime || '', weeks: c.weeks || '',
       trainerId: trainerId, trainerName: c.trainerName || (trainer ? trainer.name : ''),
+      assistantTrainerId: c.assistantTrainerId || '', assistantTrainerName: c.assistantTrainerName || '',
       courseStatus: c.courseStatus || 'active', activeStatus: c.courseStatus || 'active',
       createdAt: c.createdAt || ''
     };
@@ -1642,9 +1818,9 @@ function _createCourse(p) {
   var id  = Utilities.getUuid();
   _appendObject(SH.CLASSES, {id: id, teacherId: '', teacherEmail: '', name: name, grade: '', schoolId: schoolId,
     section: '', startTime: p.startTime || '', endTime: p.endTime || '', weeks: p.weeks || '',
-    trainerId: '', trainerName: '', status: 'course', courseStatus: 'active', createdAt: now, updatedAt: now});
+    trainerId: '', trainerName: '', assistantTrainerId: '', assistantTrainerName: '', status: 'course', courseStatus: 'active', createdAt: now, updatedAt: now});
   return {ok: true, data: {id: id, name: name, schoolId: schoolId, startTime: p.startTime || '',
-    endTime: p.endTime || '', weeks: p.weeks || '', trainerId: '', trainerName: '', courseStatus: 'active', activeStatus: 'active', createdAt: now}};
+    endTime: p.endTime || '', weeks: p.weeks || '', trainerId: '', trainerName: '', assistantTrainerId: '', assistantTrainerName: '', courseStatus: 'active', activeStatus: 'active', createdAt: now}};
 }
 
 function _updateCourse(p) {
@@ -1657,6 +1833,8 @@ function _updateCourse(p) {
   if (p.weeks     != null) _setCell(SH.CLASSES, idx, 'weeks', String(p.weeks || '').trim());
   if (p.trainerId   != null) { _setCell(SH.CLASSES, idx, 'trainerId', String(p.trainerId || '')); _setCell(SH.CLASSES, idx, 'teacherId', String(p.trainerId || '')); }
   if (p.trainerName != null) _setCell(SH.CLASSES, idx, 'trainerName', String(p.trainerName || ''));
+  if (p.assistantTrainerId != null) _setCell(SH.CLASSES, idx, 'assistantTrainerId', String(p.assistantTrainerId || ''));
+  if (p.assistantTrainerName != null) _setCell(SH.CLASSES, idx, 'assistantTrainerName', String(p.assistantTrainerName || ''));
   if (p.courseStatus != null) _setCell(SH.CLASSES, idx, 'courseStatus', String(p.courseStatus || 'active'));
   if (p.activeStatus != null) _setCell(SH.CLASSES, idx, 'courseStatus', String(p.activeStatus || 'active'));
   _setCell(SH.CLASSES, idx, 'updatedAt', new Date().toISOString());
@@ -1673,11 +1851,19 @@ function _updateClass(p) {
   var rowTeacherId = row[headers.indexOf('teacherId')] || '';
   var reqTeacherId = String(p.teacherId || '');
   if (token !== SECRET && rowTeacherId !== reqTeacherId) return {ok: false, msg: 'غير مصرح'};
+
+  // Save old grade/section/schoolId before updating to migrate students
+  var oldGrade   = String(row[headers.indexOf('grade')]    || '').trim();
+  var oldSection = String(row[headers.indexOf('section')]  || '').trim();
+  var oldSchoolId = String(row[headers.indexOf('schoolId')] || '').trim();
+
   if (p.name         != null) _setCell(SH.CLASSES, idx, 'name',         String(p.name         || '').trim());
   if (p.grade        != null) _setCell(SH.CLASSES, idx, 'grade',        String(p.grade        || '').trim());
   if (p.section      != null) _setCell(SH.CLASSES, idx, 'section',      String(p.section      || '').trim());
   if (p.schoolId     != null) _setCell(SH.CLASSES, idx, 'schoolId',     String(p.schoolId     || '').trim());
   if (p.teacherEmail != null) _setCell(SH.CLASSES, idx, 'teacherEmail', String(p.teacherEmail || '').trim());
+  if (p.assistantTeacherId != null) _setCell(SH.CLASSES, idx, 'assistantTeacherId', String(p.assistantTeacherId || '').trim());
+  if (p.assistantTeacherName != null) _setCell(SH.CLASSES, idx, 'assistantTeacherName', String(p.assistantTeacherName || '').trim());
   if (p.status       != null) _setCell(SH.CLASSES, idx, 'status',       String(p.status       || '').trim());
   if (token === SECRET && p.teacherId != null) {
     _setCell(SH.CLASSES, idx, 'teacherId', String(p.teacherId || '').trim());
@@ -1685,7 +1871,91 @@ function _updateClass(p) {
     if (tUser && !p.teacherEmail) _setCell(SH.CLASSES, idx, 'teacherEmail', tUser.email || '');
   }
   _setCell(SH.CLASSES, idx, 'updatedAt', new Date().toISOString());
+
+  // If grade or section changed, update all students in that class so they don't disappear
+  var newGrade   = String(p.grade   != null ? p.grade   : oldGrade).trim();
+  var newSection = String(p.section != null ? p.section : oldSection).trim();
+  var schoolId   = String(p.schoolId != null ? p.schoolId : oldSchoolId).trim();
+  var gradeChanged   = (p.grade   != null) && (newGrade   !== oldGrade);
+  var sectionChanged = (p.section != null) && (newSection !== oldSection);
+  if (gradeChanged || sectionChanged) {
+    var usersSheet  = _sheet(SH.USERS);
+    var userHeaders = usersSheet.getRange(1, 1, 1, usersSheet.getLastColumn()).getValues()[0];
+    var lastRow     = usersSheet.getLastRow();
+    var userIdCol      = userHeaders.indexOf('id')        + 1;
+    var userSchoolCol  = userHeaders.indexOf('schoolId')  + 1;
+    var userClassCol   = userHeaders.indexOf('class')     + 1;
+    var userSectionCol = userHeaders.indexOf('section')   + 1;
+    var userStatusCol  = userHeaders.indexOf('status')    + 1;
+    if (userClassCol > 0 && lastRow > 1) {
+      var allUserRows = usersSheet.getRange(2, 1, lastRow - 1, usersSheet.getLastColumn()).getValues();
+      var now = new Date().toISOString();
+      var updatedAtCol = userHeaders.indexOf('updatedAt') + 1;
+      for (var i = 0; i < allUserRows.length; i++) {
+        var uRow = allUserRows[i];
+        var uStatus   = userStatusCol  > 0 ? String(uRow[userStatusCol  - 1] || '') : '';
+        var uSchoolId = userSchoolCol  > 0 ? String(uRow[userSchoolCol  - 1] || '').trim() : '';
+        var uClass    = userClassCol   > 0 ? String(uRow[userClassCol   - 1] || '').trim() : '';
+        var uSection  = userSectionCol > 0 ? String(uRow[userSectionCol - 1] || '').trim() : '';
+        if (uStatus === 'deleted') continue;
+        if (uSchoolId !== schoolId) continue;
+        var uCombined   = (uClass + (uSection ? ' ' + uSection : '')).trim();
+        var oldCombined = (oldGrade + (oldSection ? ' ' + oldSection : '')).trim();
+        var classMatch  = uClass === oldGrade || uCombined === oldGrade || uClass === oldCombined || uCombined === oldCombined;
+        if (!classMatch) continue;
+        var rowNum = i + 2;
+        if (gradeChanged   && userClassCol   > 0) usersSheet.getRange(rowNum, userClassCol).setValue(newGrade);
+        if (sectionChanged && userSectionCol > 0) usersSheet.getRange(rowNum, userSectionCol).setValue(newSection);
+        if (updatedAtCol > 0) usersSheet.getRange(rowNum, updatedAtCol).setValue(now);
+      }
+    }
+  }
+
   return {ok: true};
+}
+
+function _migrateStudents(p) {
+  if (p.token !== SECRET) return {ok: false, msg: 'غير مصرح'};
+  var fromGrade   = String(p.fromGrade   || '').trim();
+  var fromSection = String(p.fromSection || '').trim();
+  var toGrade     = String(p.toGrade     || '').trim();
+  var toSection   = String(p.toSection   || '').trim();
+  var schoolId    = String(p.schoolId    || '').trim();
+  if (!fromGrade || !toGrade || !schoolId) return {ok: false, msg: 'بيانات ناقصة'};
+
+  var usersSheet  = _sheet(SH.USERS);
+  var userHeaders = usersSheet.getRange(1, 1, 1, usersSheet.getLastColumn()).getValues()[0];
+  var lastRow     = usersSheet.getLastRow();
+  var userSchoolCol  = userHeaders.indexOf('schoolId')  + 1;
+  var userClassCol   = userHeaders.indexOf('class')     + 1;
+  var userSectionCol = userHeaders.indexOf('section')   + 1;
+  var userStatusCol  = userHeaders.indexOf('status')    + 1;
+  var updatedAtCol   = userHeaders.indexOf('updatedAt') + 1;
+  var count = 0;
+
+  if (userClassCol > 0 && lastRow > 1) {
+    var allUserRows = usersSheet.getRange(2, 1, lastRow - 1, usersSheet.getLastColumn()).getValues();
+    var now = new Date().toISOString();
+    var fromCombined = (fromGrade + (fromSection ? ' ' + fromSection : '')).trim();
+    for (var i = 0; i < allUserRows.length; i++) {
+      var uRow     = allUserRows[i];
+      var uStatus  = userStatusCol  > 0 ? String(uRow[userStatusCol  - 1] || '') : '';
+      var uSchool  = userSchoolCol  > 0 ? String(uRow[userSchoolCol  - 1] || '').trim() : '';
+      var uClass   = userClassCol   > 0 ? String(uRow[userClassCol   - 1] || '').trim() : '';
+      var uSection = userSectionCol > 0 ? String(uRow[userSectionCol - 1] || '').trim() : '';
+      if (uStatus === 'deleted') continue;
+      if (uSchool !== schoolId) continue;
+      var uCombined = (uClass + (uSection ? ' ' + uSection : '')).trim();
+      var match = uClass === fromGrade || uCombined === fromGrade || uClass === fromCombined || uCombined === fromCombined;
+      if (!match) continue;
+      var rowNum = i + 2;
+      usersSheet.getRange(rowNum, userClassCol).setValue(toGrade);
+      if (userSectionCol > 0) usersSheet.getRange(rowNum, userSectionCol).setValue(toSection);
+      if (updatedAtCol > 0) usersSheet.getRange(rowNum, updatedAtCol).setValue(now);
+      count++;
+    }
+  }
+  return {ok: true, count: count};
 }
 
 function _adminCreateUser(p) {
@@ -1723,7 +1993,8 @@ function _adminCreateUser(p) {
     requestSource: 'admin', joinedAt: now, reviewedAt: now, updatedAt: now, leftSchool: ''
   };
   _appendObject(SH.USERS, user);
-  return {ok: true, userCode: userCode, user: _safeUser(user)};
+  var assigned = _assignExistingChallengesToStudent(user);
+  return {ok: true, userCode: userCode, user: _safeUser(user), assignedChallenges: assigned.created};
 }
 
 function _adminSetUserStatus(p) {
@@ -1733,7 +2004,9 @@ function _adminSetUserStatus(p) {
   if (p.status    != null) _setCell(SH.USERS, idx, 'status',    String(p.status || '').trim());
   if (p.leftSchool!= null) _setCell(SH.USERS, idx, 'leftSchool', p.leftSchool === 'true' || p.leftSchool === true);
   _setCell(SH.USERS, idx, 'updatedAt', new Date().toISOString());
-  return {ok: true};
+  var user = _rows(SH.USERS).find(function(u) { return u.id === (p.userId || ''); });
+  var assigned = (user && String(user.status || '') === 'active') ? _assignExistingChallengesToStudent(user) : {created: 0};
+  return {ok: true, assignedChallenges: assigned.created};
 }
 
 function _createChallenge(p) {

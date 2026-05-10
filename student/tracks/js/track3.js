@@ -14,10 +14,11 @@ document.addEventListener('DOMContentLoaded', function () {
   var preview     = document.getElementById('upload-preview');
   var submitBtn   = form ? form.querySelector('button[type="submit"]') : null;
   var selectedFile = null;
+  var session = getSession();
 
   if (!form) return;
 
-  populateChallengeOptions();
+  fillAutoFields();
 
   function populateChallengeOptions() {
     var select = document.getElementById('challenge-select') || form.querySelector('[name="challenge"]');
@@ -37,6 +38,92 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ── منطقة رفع الصورة ── */
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('cq_session') || 'null'); }
+    catch (e) { return null; }
+  }
+
+  function setDisplay(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value || '—';
+  }
+
+  function setHidden(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.value = value || '';
+  }
+
+  function showAutoNote(text) {
+    var note = document.getElementById('auto-submit-note');
+    if (!note) return;
+    note.textContent = text || '';
+    note.classList.toggle('show', !!text);
+  }
+
+  function getChallengeFromState() {
+    if (!session || !session.id) return null;
+    var state = [];
+    try { state = JSON.parse(localStorage.getItem('cq_t2_state_' + session.id) || '[]'); } catch(e) {}
+    if (!Array.isArray(state) || !state.length) return null;
+    var candidates = state.filter(function(item) {
+      return item && item.name && (item.status === 'started' || item.status === 'submitted' || item.status === 'approved');
+    });
+    return candidates.length ? candidates[candidates.length - 1] : null;
+  }
+
+  function getChallengeFromUrlOrList() {
+    var params = new URLSearchParams(window.location.search);
+    var key = params.get('challengeKey') || params.get('challenge') || '';
+    var challenges = Array.isArray(window.CQ_CHALLENGES) ? window.CQ_CHALLENGES : [];
+    if (key) {
+      var match = challenges.find(function(ch) {
+        return ch && (ch.key === key || ch.value === key || ch.title === key);
+      });
+      if (match) return { name: match.value || match.title || match.label || key };
+      return { name: key };
+    }
+    var fromState = getChallengeFromState();
+    if (fromState) return { name: fromState.name };
+    return null;
+  }
+
+  function fillSchoolName() {
+    var fallback = (session && (session.schoolName || session.school || session.schoolId)) || '';
+    setDisplay('auto-school-name', fallback);
+    setHidden('school-name-hidden', fallback);
+    if (!session || !session.schoolId || !window.CQ_API || !CQ_API.getSchools) return;
+
+    CQ_API.getSchools().then(function(res) {
+      var schools = res.schools || res.data || [];
+      var school = schools.find(function(s) { return s.id === session.schoolId; });
+      if (!school) return;
+      setDisplay('auto-school-name', school.name || fallback);
+      setHidden('school-name-hidden', school.name || fallback);
+    });
+  }
+
+  function fillAutoFields() {
+    if (!session || session.role !== 'student') {
+      showAutoNote('سجّل الدخول كطالب حتى يتم تعبئة بياناتك تلقائياً.');
+      return;
+    }
+
+    setDisplay('auto-student-name', session.name || '');
+    setHidden('student-name-hidden', session.name || '');
+    fillSchoolName();
+
+    var challenge = getChallengeFromUrlOrList();
+    if (challenge && challenge.name) {
+      setDisplay('auto-challenge-name', challenge.name);
+      setHidden('challenge-hidden', challenge.name);
+      showAutoNote('');
+    } else {
+      setDisplay('auto-challenge-name', 'لم يتم تحديد تحدي');
+      setHidden('challenge-hidden', '');
+      showAutoNote('افتح التحدي من الإشعار أو من خريطة التحديات أولاً حتى نحدد اسم التحدي تلقائياً.');
+    }
+  }
+
   if (uploadArea) {
     uploadArea.addEventListener('click', function () { fileInput && fileInput.click(); });
     uploadArea.addEventListener('dragover', function (e) { e.preventDefault(); uploadArea.classList.add('drag'); });
@@ -77,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var school    = (form.querySelector('[name="school_name"]')  || {}).value || '';
     var challenge = (form.querySelector('[name="challenge"]')    || {}).value || '';
 
-    if (!name.trim() || !school.trim() || !challenge) { alert('يرجى ملء جميع الحقول'); return; }
+    if (!name.trim() || !school.trim() || !challenge.trim()) { alert('تعذر تحديد بيانات الطالب أو المدرسة أو التحدي تلقائياً'); return; }
     if (!selectedFile) { alert('يرجى اختيار صورة الدائرة'); return; }
 
     setLoading(true);

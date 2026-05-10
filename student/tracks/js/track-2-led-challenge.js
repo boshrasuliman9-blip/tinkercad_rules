@@ -624,6 +624,11 @@ document.addEventListener('DOMContentLoaded', function () {
   updateCodingAction();
   refreshWiringSubsteps();
   updateWiringTimerLabel();
+
+  /* ── Auto-start guide when coming from intro page ── */
+  if (new URLSearchParams(window.location.search).get('autostart') === '1' && startChallengeBtn) {
+    window.setTimeout(function() { startChallengeBtn.click(); }, 500);
+  }
 });
 
 /* Top-row tab toggle */

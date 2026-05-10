@@ -140,36 +140,30 @@
           <span class="challenge-modal-pill" id="modal-parts"></span>
           <span class="challenge-modal-pill" id="modal-level"></span>
         </div>
-        <ul class="challenge-modal-list" id="modal-rules"></ul>
-        <div class="challenge-modal-actions">
-          <button type="button" class="btn-soft" id="modal-cancel">إغلاق</button>
-          <a href="#" class="btn-main" id="modal-start">ابدأ التحدي الآن</a>
+        <div class="challenge-start-stack">
+          <div class="challenge-code-section" id="modal-code-section">
+            <label class="challenge-code-label" for="modal-code-input">ادخل كود التحدي</label>
+            <input
+              class="challenge-code-input"
+              id="modal-code-input"
+              type="text"
+              placeholder="اكتب الكود هنا"
+              maxlength="24"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="characters"
+              spellcheck="false"
+            >
+            <div class="challenge-code-msg" id="modal-code-msg"></div>
+          </div>
+          <div class="challenge-modal-actions">
+            <button type="button" class="btn-main" id="modal-start">ابدأ التحدي</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ══ Code entry modal ══ -->
-  <div id="code-modal" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#fff;border-radius:22px;padding:1.8rem;width:min(100%,430px);box-shadow:0 24px 60px rgba(15,23,42,.2);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
-        <div>
-          <div style="font-size:.75rem;font-weight:800;color:#64748b;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;">أدخل رمز التحدي</div>
-          <div style="font-size:1.1rem;font-weight:900;" id="code-modal-title">التحدي</div>
-        </div>
-        <button onclick="closeCodeModal()" style="background:none;border:none;font-size:1.4rem;color:#64748b;cursor:pointer;line-height:1;">✕</button>
-      </div>
-      <p style="font-size:.86rem;color:#64748b;margin-bottom:1rem;line-height:1.7;">المعلم أعطاك رمزاً خاصاً لهذا التحدي. أدخله هنا لبدء الوقت وفتح رابط التحدي.</p>
-      <input id="code-input" type="text" placeholder="مثال: CQ-2026-ABCD"
-        style="font-family:'Tajawal',sans-serif;font-size:1rem;width:100%;padding:12px 14px;border:1.5px solid #dde3ea;border-radius:10px;text-align:center;letter-spacing:3px;outline:none;margin-bottom:.8rem;background:#f8fafc;"
-        onkeydown="if(event.key==='Enter')submitCode()">
-      <div id="code-msg" style="display:none;font-size:.82rem;padding:9px 12px;border-radius:8px;margin-bottom:.8rem;"></div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="submitCode()" style="font-family:'Tajawal',sans-serif;flex:1;padding:12px;background:#f04e23;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:800;cursor:pointer;">بدء التحدي</button>
-        <button onclick="closeCodeModal()" style="font-family:'Tajawal',sans-serif;padding:12px 16px;background:transparent;color:#64748b;border:1.5px solid #dde3ea;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;">إلغاء</button>
-      </div>
-    </div>
-  </div>
 
   <!-- ══ Submit modal ══ -->
   <div id="submit-modal" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;">

@@ -271,14 +271,22 @@ function switchChalTab(tab, btn) {
 }
 
 function populateAssignSelects() {
-  document.getElementById('assign-class-sel').innerHTML = T.classes.map(function(c){
+  var clsSel  = document.getElementById('assign-class-sel');
+  var chalSel = document.getElementById('assign-chal-sel');
+  var prevCls  = clsSel.value;
+  var prevChal = chalSel.value;
+
+  clsSel.innerHTML = T.classes.map(function(c){
     return '<option value="'+c.id+'">'+esc(c.name)+'</option>';
   }).join('');
-  document.getElementById('assign-chal-sel').innerHTML = T.challenges.length
+  chalSel.innerHTML = T.challenges.length
     ? T.challenges.map(function(c){
       return '<option value="'+c.id+'">'+esc(c.name)+'</option>';
     }).join('')
     : '<option value="">لا توجد تحديات منشورة بعد</option>';
+
+  if (prevCls)  clsSel.value  = prevCls;
+  if (prevChal) chalSel.value = prevChal;
   updateChallengeOpenButton();
 }
 
@@ -337,9 +345,31 @@ function doAssignChallenge() {
       expiresAt:expiresAt
     })
     .then(function(res) {
-      if (res.ok) { showMsg('assign-msg','تم تعيين التحدي بنجاح ✓','ok'); loadChallenges(); }
+      if (res.ok) {
+        showMsg('assign-msg','تم تعيين التحدي بنجاح ✓','ok');
+        loadChallenges();
+        var codes = res.codes || [];
+        if (codes.length) showCodesModal(codes, challenge.name || challenge.title || 'التحدي');
+      }
       else showMsg('assign-msg', res.msg || 'حدث خطأ', 'err');
     });
+}
+
+var _lastCodes = [];
+function showCodesModal(codes, challengeName) {
+  _lastCodes = codes;
+  var wrap = document.getElementById('codes-table-wrap');
+  wrap.innerHTML = '<div class="tbl-wrap"><table><thead><tr><th>اسم الطالب</th><th>الكود</th></tr></thead><tbody>'
+    + codes.map(function(c) {
+      return '<tr><td>'+esc(c.studentName)+'</td><td><code style="font-size:.9rem;letter-spacing:.05em">'+esc(c.code)+'</code></td></tr>';
+    }).join('')
+    + '</tbody></table></div>';
+  openModal('modal-codes');
+}
+
+function copyCodesToClipboard() {
+  var text = _lastCodes.map(function(c){ return c.studentName + '\t' + c.code; }).join('\n');
+  navigator.clipboard.writeText(text).then(function(){ alert('تم النسخ ✓'); }).catch(function(){ alert('تعذّر النسخ'); });
 }
 
 function renderAssignmentsTable() {
@@ -355,7 +385,7 @@ function renderAssignmentsTable() {
       + '<td>'+esc(a.className)+'</td>'
       + '<td>'+fmtDate(a.assignedAt)+'</td>'
       + '<td>'+(a.expiresAt ? fmtDate(a.expiresAt) : '—')+'</td>'
-      + '<td>'+openBtn+'<button class="btn btn-xs btn-blue" onclick="viewAssignmentSubs(\''+a.id+'\')">📝 التسليمات</button></td>'
+      + '<td>'+openBtn+'<button class="btn btn-xs btn-orange" onclick="openSendCodesForAssignment(\''+a.id+'\')">إرسال كود</button> <button class="btn btn-xs btn-blue" onclick="viewAssignmentSubs(\''+a.id+'\')">📝 التسليمات</button></td>'
       + '</tr>';
   }).join('');
 }
@@ -503,6 +533,12 @@ function doRejectSubmission() {
 }
 
 /* ── Reopen ── */
+function openSendCodesForAssignment(assignId) {
+  var assign = T.assignments.find(function(a){ return a.id === assignId; });
+  if (assign) delete T.studentsCache[assign.classId];
+  openReopenFor(assignId, null);
+}
+
 function openReopenFor(assignId, studentIds) {
   T._reopenAssignId = assignId;
   T._reopenStudents = studentIds ? studentIds.slice() : [];
@@ -515,6 +551,7 @@ function openReopenFor(assignId, studentIds) {
   function build(list) {
     var el = document.getElementById('reopen-students-list');
     if (!list.length) { el.innerHTML = '<p style="font-size:.85rem;color:var(--gray)">لا يوجد طلاب</p>'; return; }
+    if (!studentIds) T._reopenStudents = list.map(function(s){ return s.id; });
     el.innerHTML = list.map(function(s) {
       var chk = T._reopenStudents.indexOf(s.id) > -1 ? 'checked' : '';
       return '<label style="display:flex;align-items:center;gap:8px;padding:.4rem;border-radius:8px;cursor:pointer;font-size:.86rem;">'
@@ -545,7 +582,13 @@ function doReopenChallenge() {
   var exp = document.getElementById('reopen-expires').value;
   CQ_API.reopenChallenge(T._reopenAssignId, T.session.id, T._reopenStudents, exp)
     .then(function(res) {
-      if (res.ok) { closeModal('modal-reopen'); loadSubmissions(); }
+      if (res.ok) {
+        closeModal('modal-reopen');
+        if (res.codes && res.codes.length) showCodesModal(res.codes, 'التحدي');
+        loadChallenges();
+        var subSel = document.getElementById('sub-assign-sel');
+        if (subSel && subSel.value) loadSubmissions();
+      }
       else showMsg('reopen-msg', res.msg || 'حدث خطأ', 'err');
     });
 }

@@ -420,22 +420,22 @@
   </div>
 </div>
 
-<!-- ════ Modal: إعادة فتح التحدي ════ -->
+<!-- ════ Modal: إرسال كود التحدي ════ -->
 <div class="modal-bg" id="modal-reopen">
   <div class="modal">
     <div class="modal-hd">
-      <span class="modal-title">إعادة فتح التحدي</span>
+      <span class="modal-title">إرسال كود التحدي</span>
       <button class="modal-close" onclick="closeModal('modal-reopen')">✕</button>
     </div>
-    <p style="font-size:.85rem; color:var(--gray); margin-bottom:1rem;">اختر الطلاب الذين تريد إعادة فتح التحدي لهم:</p>
+    <p style="font-size:.85rem; color:var(--gray); margin-bottom:1rem;">اختر الطلاب الذين تريد إرسال كود التحدي لهم. إذا كان الطالب جديداً سيتم إنشاء كود جديد له تلقائياً.</p>
     <div id="reopen-students-list" style="margin-bottom:1rem;"></div>
     <div class="f-field" style="margin-bottom:1rem;">
-      <label>تاريخ انتهاء جديد (اختياري)</label>
+      <label>تاريخ انتهاء الكود (اختياري)</label>
       <input type="datetime-local" id="reopen-expires">
     </div>
     <div class="f-msg" id="reopen-msg"></div>
     <div style="display:flex; gap:8px;">
-      <button class="btn btn-orange" onclick="doReopenChallenge()">إعادة الفتح</button>
+      <button class="btn btn-orange" onclick="doReopenChallenge()">إرسال الكود</button>
       <button class="btn btn-outline" onclick="closeModal('modal-reopen')">إلغاء</button>
     </div>
   </div>
@@ -480,6 +480,22 @@
     <div style="margin-top:1rem; display:flex; gap:8px;">
       <button class="btn btn-blue" onclick="doChangePassword()">حفظ التغييرات</button>
       <button class="btn btn-outline" onclick="closeModal('modal-chgpass')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Modal: أكواد التحدي ════ -->
+<div class="modal-bg" id="modal-codes">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-hd">
+      <span class="modal-title">أكواد التحدي للطلاب</span>
+      <button class="modal-close" onclick="closeModal('modal-codes')">✕</button>
+    </div>
+    <p style="font-size:.85rem;color:var(--gray);margin-bottom:1rem">وزّع هذه الأكواد على طلابك — كل طالب له كود خاص يُدخله لبدء التحدي.</p>
+    <div id="codes-table-wrap"></div>
+    <div style="margin-top:1rem;display:flex;gap:8px">
+      <button class="btn btn-outline" onclick="copyCodesToClipboard()">نسخ الكل</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-codes')">إغلاق</button>
     </div>
   </div>
 </div>

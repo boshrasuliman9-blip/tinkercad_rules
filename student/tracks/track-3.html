@@ -50,37 +50,25 @@
 
       <div style="display:flex;flex-direction:column;gap:1.2rem">
 
-        <!-- Student name -->
-        <div class="form-group">
-          <label class="form-label">اسم الطالب *</label>
-          <input
-            type="text"
-            name="student_name"
-            class="form-input"
-            placeholder="أدخل اسمك الكامل"
-            required
-          >
-        </div>
+        <input type="hidden" name="student_name" id="student-name-hidden">
+        <input type="hidden" name="school_name" id="school-name-hidden">
+        <input type="hidden" name="challenge" id="challenge-hidden">
 
-        <!-- School name -->
-        <div class="form-group">
-          <label class="form-label">اسم المدرسة *</label>
-          <input
-            type="text"
-            name="school_name"
-            class="form-input"
-            placeholder="أدخل اسم مدرستك"
-            required
-          >
+        <div class="auto-submit-grid">
+          <div class="auto-submit-item">
+            <span class="auto-submit-label">اسم الطالب</span>
+            <strong id="auto-student-name">—</strong>
+          </div>
+          <div class="auto-submit-item">
+            <span class="auto-submit-label">اسم المدرسة</span>
+            <strong id="auto-school-name">—</strong>
+          </div>
+          <div class="auto-submit-item">
+            <span class="auto-submit-label">اسم التحدي</span>
+            <strong id="auto-challenge-name">—</strong>
+          </div>
         </div>
-
-        <!-- Challenge -->
-        <div class="form-group">
-          <label class="form-label">اسم التحدي *</label>
-          <select name="challenge" class="form-select" id="challenge-select" required>
-            <option value="" disabled selected>اختر التحدي</option>
-          </select>
-        </div>
+        <div class="auto-submit-note" id="auto-submit-note"></div>
 
         <!-- Photo upload -->
         <div class="form-group">
@@ -125,7 +113,7 @@
 <script src="../../js/main.js"></script>
 <script src="../../js/config.js"></script>
 <script src="../../js/api.js"></script>
-<script src="./js/challenges.js"></script>
+<script src="../../js/challenges.js"></script>
 <script src="./js/track3.js"></script>
 <script src="../../js/notif-bell.js"></script>
 <script src="./js/track-3.js"></script>

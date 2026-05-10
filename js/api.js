@@ -25,7 +25,7 @@ var CQ_API = (function () {
       var timer = setTimeout(function () {
         cleanup();
         resolve({ok: false, msg: 'انتهت مهلة الاتصال'});
-      }, 15000);
+      }, 45000);
 
       window[cbName] = function (data) { cleanup(); resolve(data); };
 
@@ -68,6 +68,9 @@ var CQ_API = (function () {
       try {
         var parsed = JSON.parse(existing);
         if (!parsed.creators) parsed.creators = [];
+        if (!parsed.notifs) parsed.notifs = [];
+        if (!parsed.codes) parsed.codes = [];
+        if (!parsed.assignments) parsed.assignments = [];
         return parsed;
       } catch (e) {}
     }
@@ -122,7 +125,13 @@ var CQ_API = (function () {
       creators: [],
       notifs: [
         {id:'nt-1', userId:'dev-teacher-dashboard', type:'submission', title:'تسليم جديد', body:'آية خليل سلّمت تحدي إضاءة LED', message:'آية خليل سلّمت تحدي إضاءة LED', read:false, readAt:'', createdAt:_daysFromNow(-1)},
-        {id:'nt-2', userId:'dev-teacher-dashboard', type:'new_challenge', title:'تحدي جديد', body:'تحدي Push Button متاح للتعيين', message:'تحدي Push Button متاح للتعيين', read:false, readAt:'', createdAt:_daysFromNow(-2)}
+        {id:'nt-2', userId:'dev-teacher-dashboard', type:'new_challenge', title:'تحدي جديد', body:'تحدي Push Button متاح للتعيين', message:'تحدي Push Button متاح للتعيين', read:false, readAt:'', createdAt:_daysFromNow(-2)},
+        {id:'nt-stu-aya-led', userId:'stu-aya', type:'challenge', title:'تحدي جديد: إضاءة LED', body:'كودك الخاص للتحدي', code:'LEDAYA01', assignmentId:'asg-led-8a', expiresAt:_daysFromNow(3), read:false, readAt:'', createdAt:_daysFromNow(-2)},
+        {id:'nt-stu-omar-led', userId:'stu-omar', type:'challenge', title:'تحدي جديد: إضاءة LED', body:'كودك الخاص للتحدي', code:'LEDOMAR1', assignmentId:'asg-led-8a', expiresAt:_daysFromNow(3), read:false, readAt:'', createdAt:_daysFromNow(-2)},
+        {id:'nt-stu-lina-led', userId:'stu-lina', type:'challenge', title:'تحدي جديد: إضاءة LED', body:'كودك الخاص للتحدي', code:'LEDLINA1', assignmentId:'asg-led-8a', expiresAt:_daysFromNow(3), read:false, readAt:'', createdAt:_daysFromNow(-2)},
+        {id:'nt-stu-mira-led', userId:'stu-mira', type:'challenge', title:'تحدي جديد: إضاءة LED', body:'كودك الخاص للتحدي', code:'LEDMIRA1', assignmentId:'asg-led-8a', expiresAt:_daysFromNow(3), read:false, readAt:'', createdAt:_daysFromNow(-2)},
+        {id:'nt-stu-sara-led', userId:'stu-sara', type:'challenge', title:'تحدي جديد: إضاءة LED', body:'كودك الخاص للتحدي', code:'LEDSARA1', assignmentId:'asg-led-9b', expiresAt:_daysFromNow(1), read:false, readAt:'', createdAt:_daysFromNow(-1)},
+        {id:'nt-stu-kenan-led', userId:'stu-kenan', type:'challenge', title:'تحدي جديد: إضاءة LED', body:'كودك الخاص للتحدي', code:'LEDKENAN', assignmentId:'asg-led-9b', expiresAt:_daysFromNow(1), read:false, readAt:'', createdAt:_daysFromNow(-1)}
       ]
     };
     _mockSave(db);
@@ -136,6 +145,53 @@ var CQ_API = (function () {
   function _mockClassName(db, classId) {
     var cls = db.classes.find(function(c) { return c.id === classId; });
     return cls ? cls.name : '';
+  }
+
+  function _mockStudentMatchesClass(student, cls) {
+    if (!student || !cls) return false;
+    if ((student.schoolId || '') !== (cls.schoolId || '')) return false;
+    function key(value) {
+      return String(value || '')
+        .replace(/[\u0623\u0625\u0622]/g, '\u0627')
+        .replace(/[\u0629]/g, '\u0647')
+        .replace(/\u0627\u0644\u0635\u0641/g, '')
+        .replace(/\u0635\u0641/g, '')
+        .replace(/[\u0640\-\s]+/g, '')
+        .trim();
+    }
+    var grade = String(cls.grade || cls.name || '').trim();
+    var section = String(cls.section || '').trim();
+    var clsName = (grade + (section ? ' ' + section : '')).trim();
+    var sClass = String(student.class || '').trim();
+    var sSection = String(student.section || '').trim();
+    var combined = (sClass + (sSection ? ' ' + sSection : '')).trim();
+    return sClass === cls.id || sClass === cls.name || sClass === clsName || combined === clsName ||
+      combined === cls.name || (key(combined || sClass) && (key(combined || sClass) === key(clsName) || key(combined || sClass) === key(cls.name))) ||
+      (grade && sClass === grade && (!section || sSection === section));
+  }
+
+  function _mockAssignExistingChallengesToStudent(db, student) {
+    if (!student || student.role && student.role !== 'student') return 0;
+    if (student.status && student.status !== 'active') return 0;
+    if (student.leftSchool) return 0;
+    var now = new Date();
+    var classes = db.classes.filter(function(cls) { return _mockStudentMatchesClass(student, cls); });
+    var classIds = classes.map(function(cls) { return cls.id; });
+    var created = 0;
+    db.assignments.filter(function(a) {
+      if (classIds.indexOf(a.classId) < 0) return false;
+      if (a.expiresAt && new Date(a.expiresAt) < now) return false;
+      return true;
+    }).forEach(function(a) {
+      var exists = db.codes.some(function(c) { return c.assignmentId === a.id && c.studentId === student.id; });
+      if (exists) return;
+      var code = ('CQ' + Math.random().toString(36).slice(2, 8)).toUpperCase();
+      var createdAt = new Date().toISOString();
+      db.codes.push({id:_id('code'), assignmentId:a.id, studentId:student.id, studentEmail:student.email || '', studentName:student.name || '', code:code, startedAt:'', submittedAt:'', status:'assigned', teacherNote:'', createdAt:createdAt});
+      db.notifs.push({id:_id('nt'), userId:student.id, type:'challenge', title:'تحدي جديد: ' + (a.challengeName || 'تحدي'), body:'كودك الخاص للتحدي', code:code, assignmentId:a.id, expiresAt:a.expiresAt || '', read:false, readAt:'', createdAt:createdAt});
+      created++;
+    });
+    return created;
   }
 
   function _mockDecorateAssignments(db, teacherId) {
@@ -223,6 +279,8 @@ var CQ_API = (function () {
       if (params.section   != null) updCls.section   = params.section;
       if (params.teacherId != null) updCls.teacherId = params.teacherId;
       if (params.teacherEmail != null) updCls.teacherEmail = params.teacherEmail;
+      if (params.assistantTeacherId != null) updCls.assistantTeacherId = params.assistantTeacherId;
+      if (params.assistantTeacherName != null) updCls.assistantTeacherName = params.assistantTeacherName;
       if (params.status    != null) updCls.status    = params.status;
       _mockSave(db); return {ok:true};
     }
@@ -278,14 +336,19 @@ var CQ_API = (function () {
     if (action === 'assignChallenge') {
       var challenge = db.challenges.find(function(c) { return c.key === params.challengeKey || c.id === params.challengeId; }) || {};
       var clsAssign = db.classes.find(function(c) { return c.id === params.classId; });
-      var assignment = {id:_id('asg'), teacherId:params.teacherId, classId:params.classId, className:clsAssign ? clsAssign.name : '', challengeKey:params.challengeKey || challenge.key, challengeName:params.challengeName || challenge.name || 'تحدي', challengeHref:challenge.href || params.href || '', expiresAt:params.expiresAt || _daysFromNow(7), createdAt:new Date().toISOString()};
+      var assignNow = new Date().toISOString();
+      var assignment = {id:_id('asg'), teacherId:params.teacherId, classId:params.classId, className:clsAssign ? clsAssign.name : '', challengeKey:params.challengeKey || challenge.key, challengeName:params.challengeName || challenge.name || 'تحدي', challengeHref:challenge.href || params.href || '', expiresAt:params.expiresAt || _daysFromNow(7), createdAt:assignNow};
       db.assignments.push(assignment);
       var students = clsAssign ? db.students.filter(function(s) { return s.schoolId === clsAssign.schoolId && s.class === clsAssign.name && !s.leftSchool; }) : [];
-      students.forEach(function(s, i) {
-        db.codes.push({id:_id('code'), assignmentId:assignment.id, studentId:s.id, studentEmail:s.email, studentName:s.name, code:('CQ' + Math.random().toString(36).slice(2, 8)).toUpperCase(), startedAt:'', submittedAt:'', status:'assigned', teacherNote:'', createdAt:assignment.createdAt});
+      var generatedCodes = [];
+      students.forEach(function(s) {
+        var code = ('CQ' + Math.random().toString(36).slice(2, 8)).toUpperCase();
+        db.codes.push({id:_id('code'), assignmentId:assignment.id, studentId:s.id, studentEmail:s.email, studentName:s.name, code:code, startedAt:'', submittedAt:'', status:'assigned', teacherNote:'', createdAt:assignNow});
+        generatedCodes.push({studentId:s.id, studentName:s.name, code:code});
+        db.notifs.push({id:_id('nt'), userId:s.id, type:'challenge', title:'تحدي جديد: ' + assignment.challengeName, body:'كودك الخاص للتحدي', code:code, assignmentId:assignment.id, expiresAt:assignment.expiresAt, read:false, readAt:'', createdAt:assignNow});
       });
       _mockSave(db);
-      return {ok:true, assignmentId:assignment.id, total:students.length};
+      return {ok:true, assignmentId:assignment.id, total:students.length, codes:generatedCodes};
     }
     if (action === 'getSubmissionsByAssignment') {
       var submissions = _mockSubmissions(db, params.assignmentId);
@@ -300,11 +363,59 @@ var CQ_API = (function () {
       _mockSave(db);
       return {ok:true};
     }
-    if (action === 'reopenChallenge') return {ok:true};
-    if (action === 'getTeacherNotifs') return {ok:true, data:db.notifs, notifs:db.notifs};
+    if (action === 'reopenChallenge') {
+      var reopenAssign = db.assignments.find(function(a) { return a.id === params.assignmentId && a.teacherId === params.teacherId; });
+      if (!reopenAssign) return {ok:false, msg:'غير مصرح'};
+      var reopenIds = [];
+      try { reopenIds = JSON.parse(params.studentIds || '[]'); } catch (e) {}
+      if (params.expiresAt) reopenAssign.expiresAt = params.expiresAt;
+      var reopenCodes = [];
+      reopenIds.forEach(function(sid) {
+        var student = db.students.find(function(s) { return s.id === sid; }) || {};
+        var codeRow = db.codes.find(function(c) { return c.assignmentId === reopenAssign.id && c.studentId === sid; });
+        var code = codeRow ? codeRow.code : ('CQ' + Math.random().toString(36).slice(2, 8)).toUpperCase();
+        var nowReopen = new Date().toISOString();
+        if (!codeRow) {
+          db.codes.push({id:_id('code'), assignmentId:reopenAssign.id, studentId:sid, studentEmail:student.email || '', studentName:student.name || '', code:code, startedAt:'', submittedAt:'', status:'assigned', teacherNote:'', createdAt:nowReopen});
+        }
+        db.notifs.push({id:_id('nt'), userId:sid, type:'challenge', title:'تحدي متاح: ' + (reopenAssign.challengeName || 'تحدي'), body:'كودك الخاص للتحدي', code:code, assignmentId:reopenAssign.id, expiresAt:reopenAssign.expiresAt || '', read:false, readAt:'', createdAt:nowReopen});
+        reopenCodes.push({studentId:sid, studentName:student.name || '', code:code});
+      });
+      _mockSave(db);
+      return {ok:true, total:reopenCodes.length, codes:reopenCodes};
+    }
+    if (action === 'getTeacherNotifs') {
+      var teacherNotifs = (db.notifs || []).filter(function(n) { return n.userId === params.teacherId; });
+      return {ok:true, data:teacherNotifs, notifs:teacherNotifs};
+    }
+    if (action === 'getStudentNotifs') {
+      var now = new Date();
+      var studentForNotifs = db.students.find(function(s) { return s.id === params.studentId; });
+      if (studentForNotifs) {
+        _mockAssignExistingChallengesToStudent(db, studentForNotifs);
+        _mockSave(db);
+      }
+      var studentNotifs = (db.notifs || []).filter(function(n) { return n.userId === params.studentId; })
+        .map(function(n) {
+          var assignment = db.assignments.find(function(a) { return a.id === n.assignmentId; }) || {};
+          return Object.assign({}, n, {
+            challengeKey: assignment.challengeKey || '',
+            challengeName: assignment.challengeName || '',
+            href: assignment.challengeHref || '',
+            expired: n.expiresAt ? new Date(n.expiresAt) < now : false,
+            message: n.title || n.body || ''
+          });
+        }).sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+      return {ok:true, data:studentNotifs, notifs:studentNotifs};
+    }
     if (action === 'markNotifRead') {
+      var readNow = new Date().toISOString();
       db.notifs.forEach(function(n) {
-        if (params.all === 'true' || n.id === params.notifId) { n.read = true; n.readAt = new Date().toISOString(); }
+        if (params.all === 'true') {
+          if (!params.userId || n.userId === params.userId) { n.read = true; n.readAt = readNow; }
+        } else if (n.id === params.notifId) {
+          n.read = true; n.readAt = readNow;
+        }
       });
       _mockSave(db);
       return {ok:true};
@@ -319,6 +430,42 @@ var CQ_API = (function () {
     if (action === 'getWinners') {
       var winners = _mockWinners(db, params.schoolId || '');
       return {ok:true, local:winners.local, global:winners.global};
+    }
+    if (action === 'validateCode') {
+      var normalizedCode = String(params.code || '').trim().toUpperCase();
+      var foundCode = db.codes.find(function(c) {
+        return String(c.code || '').trim().toUpperCase() === normalizedCode && c.studentId === params.studentId;
+      });
+      if (!foundCode) return {ok:false, msg:'الكود غير صحيح أو لا ينتمي لحسابك'};
+      var foundAssignment = db.assignments.find(function(a) { return a.id === foundCode.assignmentId; });
+      if (!foundAssignment) return {ok:false, msg:'التحدي غير موجود'};
+      if (foundAssignment.expiresAt && new Date(foundAssignment.expiresAt) < new Date()) {
+        return {ok:false, expired:true, msg:'انتهت صلاحية الكود'};
+      }
+      return {
+        ok:true,
+        codeId:foundCode.id,
+        challengeKey:foundAssignment.challengeKey || '',
+        challengeName:foundAssignment.challengeName || '',
+        href:foundAssignment.challengeHref || '',
+        expiresAt:foundAssignment.expiresAt || ''
+      };
+    }
+    if (action === 'startChallenge') {
+      var startCode = db.codes.find(function(c) { return c.id === params.codeId && c.studentId === params.studentId; });
+      if (!startCode) return {ok:false, msg:'غير موجود'};
+      if (!startCode.startedAt) startCode.startedAt = new Date().toISOString();
+      if (startCode.status === 'assigned') startCode.status = 'started';
+      _mockSave(db);
+      return {ok:true, startedAt:startCode.startedAt};
+    }
+    if (action === 'submitChallengeCode') {
+      var submitCode = db.codes.find(function(c) { return c.id === params.codeId && c.studentId === params.studentId; });
+      if (!submitCode) return {ok:false, msg:'غير موجود'};
+      submitCode.submittedAt = new Date().toISOString();
+      submitCode.status = 'submitted';
+      _mockSave(db);
+      return {ok:true, submittedAt:submitCode.submittedAt};
     }
     if (action === 'changePassword') return {ok:true};
     if (action === 'adminCreateUser') {
@@ -337,8 +484,9 @@ var CQ_API = (function () {
       if (role === 'teacher') db.teachers.push(newUser);
       else if (role === 'creator') db.creators.push(newUser);
       else db.students.push(newUser);
+      var assignedCount = role === 'student' ? _mockAssignExistingChallengesToStudent(db, newUser) : 0;
       _mockSave(db);
-      return {ok:true, userCode: code, user: newUser};
+      return {ok:true, userCode: code, user: newUser, assignedChallenges: assignedCount};
     }
     if (action === 'getTeachers') {
       return {ok:true, data:db.teachers||[], teachers:db.teachers||[]};
@@ -357,6 +505,9 @@ var CQ_API = (function () {
         var user = list.find(function(u) { return u.id === params.userId; });
         if (!user) return false;
         user.status = params.status || user.status;
+        if (user.role === 'student' || user.studentCode) {
+          _mockAssignExistingChallengesToStudent(db, user);
+        }
         return true;
       });
       _mockSave(db);
@@ -371,6 +522,9 @@ var CQ_API = (function () {
         });
         if (params.className != null) user.class = params.className;
         if (params.leftSchool != null) user.leftSchool = params.leftSchool === true || params.leftSchool === 'true';
+        if (user.role === 'student' || user.studentCode) {
+          _mockAssignExistingChallengesToStudent(db, user);
+        }
         return true;
       });
       _mockSave(db);
@@ -412,6 +566,8 @@ var CQ_API = (function () {
       if (!db.courses) return {ok:true};
       var updCrs = db.courses.find(function(c){ return c.id === params.courseId; });
       if (updCrs && params.trainerId != null) { updCrs.trainerId = params.trainerId; updCrs.trainerName = params.trainerName||''; }
+      if (updCrs && params.assistantTrainerId != null) updCrs.assistantTrainerId = params.assistantTrainerId;
+      if (updCrs && params.assistantTrainerName != null) updCrs.assistantTrainerName = params.assistantTrainerName;
       if (updCrs && params.name != null) updCrs.name = params.name;
       if (updCrs && params.startTime != null) updCrs.startTime = params.startTime;
       if (updCrs && params.endTime != null) updCrs.endTime = params.endTime;
@@ -567,11 +723,14 @@ var CQ_API = (function () {
     getClasses: function (teacherId, token) {
       return _call({action: 'getClasses', teacherId: teacherId || '', token: token || ''});
     },
-    createClass: function (teacherId, teacherEmail, name, schoolId, section) {
-      return _call({action: 'createClass', teacherId: teacherId, teacherEmail: teacherEmail, name: name, schoolId: schoolId, section: section || ''});
+    createClass: function (teacherId, teacherEmail, name, schoolId, section, token) {
+      return _call({action: 'createClass', teacherId: teacherId, teacherEmail: teacherEmail, name: name, schoolId: schoolId, section: section || '', token: token || ''});
     },
     updateClass: function (classId, teacherId, data, token) {
       return _call(Object.assign({action: 'updateClass', classId: classId, teacherId: teacherId, token: token || ''}, data));
+    },
+    migrateStudents: function (fromGrade, fromSection, toGrade, toSection, schoolId, token) {
+      return _call({action: 'migrateStudents', fromGrade: fromGrade, fromSection: fromSection, toGrade: toGrade, toSection: toSection, schoolId: schoolId, token: token || ''});
     },
     deleteClass: function (classId, teacherId, token) {
       return _call({action: 'deleteClass', classId: classId, teacherId: teacherId, token: token || ''});

@@ -1,1 +1,50 @@
 
+.auto-submit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.auto-submit-item {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.auto-submit-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: .76rem;
+  font-weight: 800;
+  color: var(--gray);
+}
+
+.auto-submit-item strong {
+  display: block;
+  color: var(--dark);
+  font-size: .94rem;
+  font-weight: 900;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.auto-submit-note {
+  display: none;
+  margin-top: -4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.auto-submit-note.show { display: block; }
+
+@media (max-width: 760px) {
+  .auto-submit-grid { grid-template-columns: 1fr; }
+}

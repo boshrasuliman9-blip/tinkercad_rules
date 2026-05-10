@@ -16,7 +16,206 @@ var A = {
   notifs:      [],
   trash:       [],
   _editChalId: null,
+  colFilters:  {},
 };
+
+/* ── Column Filter (Excel-style) ── */
+var _cfMeta = {
+  teachers: {
+    school: {
+      getValues: function() {
+        return [{val:'',label:'الكل'}].concat(A.schools.map(function(s){ return {val:s.id, label:s.name}; }));
+      },
+      match: function(t, val) { return !val || t.schoolId === val; }
+    },
+    status: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'active',label:'نشط'},{val:'pending',label:'معلق'},{val:'rejected',label:'مرفوض'}];
+      },
+      match: function(t, val) { return !val || t.status === val; }
+    }
+  },
+  students: {
+    grade: {
+      getValues: function() {
+        var seen = {}, vals = [];
+        A.students.forEach(function(s){ var g=s.class||''; if(g && !seen[g]){ seen[g]=1; vals.push(g); } });
+        vals.sort(function(a,b){ return a.localeCompare(b,'ar'); });
+        return [{val:'',label:'الكل'}].concat(vals.map(function(v){ return {val:v,label:v}; }));
+      },
+      match: function(s, val) { return !val || (s.class||'') === val; }
+    },
+    school: {
+      getValues: function() {
+        return [{val:'',label:'الكل'}].concat(A.schools.map(function(s){ return {val:s.id, label:s.name}; }));
+      },
+      match: function(s, val) { return !val || s.schoolId === val; }
+    },
+    status: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'active',label:'نشط'},{val:'pending',label:'معلق'}];
+      },
+      match: function(s, val) { return !val || s.status === val; }
+    }
+  },
+  classes: {
+    grade: {
+      getValues: function() {
+        var seen = {}, vals = [];
+        A.classes.forEach(function(c){ var g=c.grade||c.name||''; if(g && !seen[g]){ seen[g]=1; vals.push(g); } });
+        vals.sort(function(a,b){ return a.localeCompare(b,'ar'); });
+        return [{val:'',label:'الكل'}].concat(vals.map(function(v){ return {val:v,label:v}; }));
+      }
+    },
+    school: {
+      getValues: function() {
+        return [{val:'',label:'الكل'}].concat(A.schools.map(function(s){ return {val:s.id, label:s.name}; }));
+      }
+    },
+    teacher: {
+      getValues: function() {
+        var seen = {}, vals = [];
+        A.teachers.forEach(function(t){ if(t.name && !seen[t.name]){ seen[t.name]=1; vals.push({val:t.name, label:t.name}); } });
+        vals.sort(function(a,b){ return a.label.localeCompare(b.label,'ar'); });
+        return [{val:'',label:'الكل'}].concat(vals);
+      }
+    },
+    status: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'active',label:'نشط'},{val:'inactive',label:'معطل'}];
+      }
+    }
+  },
+  schools: {
+    type: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'school',label:'مدرسة'},{val:'center',label:'مركز'}];
+      },
+      match: function(s, val) { return !val || (s.type||'school') === val; }
+    },
+    status: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'active',label:'نشط'},{val:'inactive',label:'معطّل'}];
+      },
+      match: function(s, val) { return !val || (s.status||'active') === val; }
+    }
+  },
+  challenges: {
+    track: {
+      getValues: function() {
+        var seen = {}, vals = [];
+        A.challenges.forEach(function(c){ var t=String(c.track||''); if(t && !seen[t]){ seen[t]=1; vals.push({val:t,label:'المسار '+t}); } });
+        vals.sort(function(a,b){ return Number(a.val)-Number(b.val); });
+        return [{val:'',label:'الكل'}].concat(vals);
+      },
+      match: function(c, val) { return !val || String(c.track||'') === val; }
+    },
+    difficulty: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'easy',label:'سهل'},{val:'medium',label:'متوسط'},{val:'hard',label:'صعب'}];
+      },
+      match: function(c, val) { return !val || (c.difficulty||'medium') === val; }
+    }
+  },
+  creators: {
+    status: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'active',label:'نشط'},{val:'pending',label:'معلق'},{val:'rejected',label:'مرفوض'}];
+      },
+      match: function(c, val) { return !val || c.status === val; }
+    }
+  },
+  reqChallenges: {
+    school: {
+      getValues: function() {
+        var seen = {}, vals = [];
+        (A.submissions||[]).forEach(function(s){ var sc=s.school||''; if(sc && !seen[sc]){ seen[sc]=1; vals.push({val:sc,label:sc}); } });
+        return [{val:'',label:'الكل'}].concat(vals);
+      },
+      match: function(s, val) { return !val || (s.school||'') === val; }
+    },
+    challenge: {
+      getValues: function() {
+        var seen = {}, vals = [];
+        (A.submissions||[]).forEach(function(s){ var ch=s.challenge||''; if(ch && !seen[ch]){ seen[ch]=1; vals.push({val:ch,label:ch}); } });
+        return [{val:'',label:'الكل'}].concat(vals);
+      },
+      match: function(s, val) { return !val || (s.challenge||'') === val; }
+    }
+  },
+  courses: {
+    school: {
+      getValues: function() {
+        var centers = A.schools.filter(function(s){ return s.type === 'center'; });
+        return [{val:'',label:'الكل'}].concat(centers.map(function(s){ return {val:s.id,label:s.name}; }));
+      }
+    },
+    status: {
+      getValues: function() {
+        return [{val:'',label:'الكل'},{val:'active',label:'نشط'},{val:'inactive',label:'معطّل'}];
+      }
+    }
+  }
+};
+
+function _cfQ(s) { return String(s == null ? '' : s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+function _getCfDrop() {
+  var el = document.getElementById('_cf-drop');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_cf-drop';
+    el.className = 'col-filter-dropdown';
+    document.body.appendChild(el);
+    document.addEventListener('click', function(e) {
+      if (!el.contains(e.target) && !e.target.classList.contains('cfb')) {
+        el.style.display = 'none';
+        el._btn = null;
+      }
+    });
+  }
+  return el;
+}
+
+function openColFilter(btn, tbl, col) {
+  var drop = _getCfDrop();
+  if (drop._btn === btn && drop.style.display !== 'none') {
+    drop.style.display = 'none'; drop._btn = null; return;
+  }
+  drop._btn = btn;
+  var meta = (_cfMeta[tbl] || {})[col];
+  if (!meta) return;
+  var cur = ((A.colFilters[tbl] || {})[col]) || '';
+  drop.innerHTML = meta.getValues().map(function(v) {
+    var sel = cur === v.val;
+    return '<div class="col-filter-item' + (sel ? ' selected' : '') +
+      '" onclick="applyColFilter(\'' + _cfQ(tbl) + '\',\'' + _cfQ(col) + '\',\'' + _cfQ(v.val) + '\')">' +
+      (sel ? '✓ ' : '') + esc(v.label) + '</div>';
+  }).join('');
+  var r = btn.getBoundingClientRect();
+  drop.style.top  = (r.bottom + 4) + 'px';
+  drop.style.right = (window.innerWidth - r.right) + 'px';
+  drop.style.left  = 'auto';
+  drop.style.display = 'block';
+}
+
+function applyColFilter(tbl, col, val) {
+  if (!A.colFilters[tbl]) A.colFilters[tbl] = {};
+  A.colFilters[tbl][col] = val;
+  var drop = document.getElementById('_cf-drop');
+  if (drop) { drop.style.display = 'none'; drop._btn = null; }
+  document.querySelectorAll('.cfb[data-tbl="' + tbl + '"][data-col="' + col + '"]').forEach(function(b) {
+    b.classList.toggle('active', !!val);
+  });
+  if      (tbl === 'teachers')      renderTeachersTable(document.getElementById('teacher-search').value.trim());
+  else if (tbl === 'students')      renderStudentsTable();
+  else if (tbl === 'classes')       window.renderClassesDirectory && window.renderClassesDirectory();
+  else if (tbl === 'schools')       renderSchoolsTable(document.getElementById('school-search').value.trim());
+  else if (tbl === 'challenges')    renderChallengesTables();
+  else if (tbl === 'creators')      renderCreatorsTable(document.getElementById('creator-search').value.trim());
+  else if (tbl === 'reqChallenges') renderRequestsTables();
+  else if (tbl === 'courses')       window.renderClassesDirectory && window.renderClassesDirectory();
+}
 
 /* ── Helpers ── */
 function esc(s) {
@@ -32,8 +231,26 @@ function showMsg(id, txt, type) {
   var el = document.getElementById(id);
   if (el) { el.textContent = txt; el.className = 'f-msg ' + type; }
 }
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var openModals = document.querySelectorAll('.modal-bg.open');
+  if (openModals.length > 0) {
+    var maxZ = 100;
+    openModals.forEach(function(m) {
+      var z = parseInt(m.style.zIndex || '100', 10);
+      if (z > maxZ) maxZ = z;
+    });
+    el.style.zIndex = (maxZ + 100) + '';
+  }
+  el.classList.add('open');
+}
+function closeModal(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  el.style.zIndex = '';
+}
 function hashText(s) {
   /* Simple deterministic hash for localStorage mock — NOT for real auth */
   if (!s) return '';
@@ -251,13 +468,225 @@ function updateStats() {
     A.schools.length + ' مدرسة | ' + A.teachers.length + ' معلم | ' + A.students.length + ' طالب';
 }
 
+/* ── Action Menu ── */
+var _amBtn = null;
+window._amReg = {};
+window.amReg = function(key, data) { window._amReg[key] = data; };
+
+document.addEventListener('click', function(e) {
+  var m = document.getElementById('action-menu-dropdown');
+  if (!m || !m.classList.contains('open')) return;
+  if (!m.contains(e.target) && e.target !== _amBtn && !(_amBtn && _amBtn.contains(e.target))) {
+    closeActionMenu();
+  }
+});
+
+function toggleActionMenu(btn, type, id, status) {
+  var m = document.getElementById('action-menu-dropdown');
+  if (!m) return;
+  if (m.classList.contains('open') && _amBtn === btn) { closeActionMenu(); return; }
+  closeActionMenu();
+  _amBtn = btn;
+  m.innerHTML = _buildMenuItems(type, id, status);
+  btn.classList.add('is-open');
+  m.style.visibility = 'hidden';
+  m.classList.add('open');
+  var mh = m.offsetHeight;
+  m.classList.remove('open');
+  m.style.visibility = '';
+  var r = btn.getBoundingClientRect();
+  var w = 185;
+  var left = r.right - w;
+  var top = r.bottom + 6;
+  if (left < 4) left = 4;
+  if (top + mh + 8 > window.innerHeight) top = r.top - mh - 6;
+  if (top < 4) top = 4;
+  m.style.left = left + 'px';
+  m.style.top = top + 'px';
+  m.classList.add('open');
+}
+
+function closeActionMenu() {
+  var m = document.getElementById('action-menu-dropdown');
+  if (m) m.classList.remove('open');
+  if (_amBtn) _amBtn.classList.remove('is-open');
+  _amBtn = null;
+}
+
+function _mi(cls, oc, svg, label) {
+  return '<li><button class="action-menu-item ' + cls + '" onclick="' + oc + '">' + svg + label + '</button></li>';
+}
+
+function _splitAction(primaryLabel, primaryOnclick, menuType, id, status, ariaLabel) {
+  return '<div class="split-action">' +
+    '<button class="split-action-primary" type="button" onclick="' + primaryOnclick + '">' + primaryLabel + '</button>' +
+    '<button class="split-action-menu" type="button" title="الأوامر" aria-label="' + ariaLabel + '" aria-haspopup="menu" onclick="toggleActionMenu(this,\'' + menuType + '\',\'' + id + '\',\'' + (status || '') + '\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
+  '</div>';
+}
+
+function _buildMenuItems(type, id, status) {
+  if (type === 'reg') {
+    var d = window._amReg && window._amReg[id];
+    return d ? _buildMenuFromReg(d) : '';
+  }
+  var h = '';
+  var edit = _svgEdit(), trash = _svgTrash(), check = _svgCheck(), block = _svgBlock(), star = _svgStar(), eyeOff = _svgEyeOff();
+  if (type === 'school' || type === 'school-more') {
+    if (type === 'school') {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditSchool(\'' + id + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list">' + (status === 'inactive'
+      ? _mi('success', 'closeActionMenu();doToggleSchool(\'' + id + '\',\'active\')', check, 'تفعيل')
+      : _mi('danger',  'closeActionMenu();doToggleSchool(\'' + id + '\',\'inactive\')', block, 'تعطيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteSchool(\'' + id + '\')', trash, 'حذف') + '</ul>';
+  } else if (type === 'teacher' || type === 'teacher-more') {
+    if (type === 'teacher') {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditTeacher(\'' + id + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list">' + (status === 'active'
+      ? _mi('danger',  'closeActionMenu();doToggleUserStatus(\'' + id + '\',\'inactive\',\'teacher\')', block, 'تعطيل')
+      : _mi('success', 'closeActionMenu();doToggleUserStatus(\'' + id + '\',\'active\',\'teacher\')', check, 'تفعيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteTeacher(\'' + id + '\')', trash, 'حذف') + '</ul>';
+  } else if (type === 'student' || type === 'student-more') {
+    if (type === 'student') {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditStudent(\'' + id + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list">' + (status === 'active'
+      ? _mi('danger',  'closeActionMenu();doToggleUserStatus(\'' + id + '\',\'inactive\',\'student\')', block, 'تعطيل')
+      : _mi('success', 'closeActionMenu();doToggleUserStatus(\'' + id + '\',\'active\',\'student\')', check, 'تفعيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteStudent(\'' + id + '\')', trash, 'حذف') + '</ul>';
+  } else if (type === 'creator' || type === 'creator-more') {
+    if (type === 'creator') {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditCreator(\'' + id + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list">' + (status === 'active'
+      ? _mi('danger',  'closeActionMenu();doToggleUserStatus(\'' + id + '\',\'inactive\',\'creator\')', block, 'تعطيل')
+      : _mi('success', 'closeActionMenu();doToggleUserStatus(\'' + id + '\',\'active\',\'creator\')', check, 'تفعيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteCreator(\'' + id + '\')', trash, 'حذف') + '</ul>';
+  } else if (type === 'challenge-pub' || type === 'challenge-pub-more') {
+    if (type === 'challenge-pub') {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditChallenge(\'' + id + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list purple-group">' + _mi('', 'closeActionMenu();doUnpublishChallenge(\'' + id + '\')', eyeOff, 'إلغاء النشر') + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteChallenge(\'' + id + '\')', trash, 'حذف') + '</ul>';
+  } else if (type === 'challenge-draft' || type === 'challenge-draft-more') {
+    if (type === 'challenge-draft') {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditChallenge(\'' + id + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list purple-group">' + _mi('', 'closeActionMenu();doPublishChallenge(\'' + id + '\')', star, 'نشر') + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteChallenge(\'' + id + '\')', trash, 'حذف') + '</ul>';
+  }
+  return h;
+}
+
+function _svgEdit() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>';
+}
+function _svgTrash() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+}
+function _svgCheck() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+}
+function _svgBlock() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+}
+function _svgStar() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+}
+function _svgEyeOff() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+}
+function _svgUser() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>';
+}
+function _svgUserPlus() {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/></svg>';
+}
+
+function _buildMenuFromReg(d) {
+  var h = '';
+  var edit = _svgEdit(), trash = _svgTrash(), check = _svgCheck(), block = _svgBlock(), star = _svgStar(), user = _svgUser(), userPlus = _svgUserPlus();
+
+  if (d.subtype === 'class') {
+    var oc_edit = d.classId
+      ? 'closeActionMenu();openEditClass(\'' + d.classId + '\')'
+      : 'closeActionMenu();openEditVirtualClass(\'' + d.schoolId + '\',\'' + d.grade + '\',\'' + d.section + '\')';
+    var oc_student = 'closeActionMenu();openAddStudentForClass(\'' + d.schoolId + '\',\'' + d.grade + '\',\'' + d.section + '\')';
+    var oc_toggle = d.status === 'inactive'
+      ? (d.classId ? 'closeActionMenu();doToggleClassStatus(\'' + d.classId + '\',\'active\')' : 'closeActionMenu();doToggleVirtualClassStatus(\'' + d.schoolId + '\',\'' + d.grade + '\',\'' + d.section + '\',\'active\')')
+      : (d.classId ? 'closeActionMenu();doToggleClassStatus(\'' + d.classId + '\',\'inactive\')' : 'closeActionMenu();doToggleVirtualClassStatus(\'' + d.schoolId + '\',\'' + d.grade + '\',\'' + d.section + '\',\'inactive\')');
+    var oc_delete = d.classId
+      ? 'closeActionMenu();doDeleteClassData(\'' + d.classId + '\',\'' + d.schoolId + '\',\'' + d.grade + '\',\'' + d.section + '\')'
+      : 'closeActionMenu();doDeleteVirtualClassData(\'' + d.schoolId + '\',\'' + d.grade + '\',\'' + d.section + '\')';
+
+    if (!d.hideEdit) h += '<ul class="action-menu-list">' + _mi('', oc_edit, edit, 'تعديل') + '</ul>';
+    if (d.classId && d.teacherId) {
+      if (!d.hideEdit) h += '<div class="action-menu-sep"></div>';
+      h += '<ul class="action-menu-list purple-group">' + _mi('', 'closeActionMenu();openAssignTeacherToClass(\'' + d.classId + '\',\'' + d.label + '\')', user, 'تغيير المعلم') + '</ul>';
+    }
+    if (h) h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list purple-group">' + _mi('', oc_student, userPlus, 'إضافة طالب') + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + (d.status === 'inactive' ? _mi('success', oc_toggle, check, 'تفعيل') : _mi('danger', oc_toggle, block, 'تعطيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', oc_delete, trash, 'حذف') + '</ul>';
+
+  } else if (d.subtype === 'school-dir') {
+    var addLabel = d.isCenter ? 'إضافة دورة' : 'إضافة صف';
+    var addFn = d.isCenter ? 'openAddCourseForSchool' : 'openAddClassForSchool';
+    if (!d.hideEdit) {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditSchool(\'' + d.schoolId + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list purple-group">' + _mi('', 'closeActionMenu();' + addFn + '(\'' + d.schoolId + '\')', star, addLabel) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + (d.status === 'inactive'
+      ? _mi('success', 'closeActionMenu();doToggleSchoolStatus(\'' + d.schoolId + '\')', check, 'تفعيل')
+      : _mi('danger',  'closeActionMenu();doToggleSchoolStatus(\'' + d.schoolId + '\')', block, 'تعطيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteSchool(\'' + d.schoolId + '\')', trash, 'حذف') + '</ul>';
+
+  } else if (d.subtype === 'course') {
+    var trainerLabel = d.hasTrainer ? 'تغيير المدرب' : 'تعيين المدرب';
+    if (!d.hideEdit) {
+      h += '<ul class="action-menu-list">' + _mi('', 'closeActionMenu();openEditCourse(\'' + d.courseId + '\')', edit, 'تعديل') + '</ul>';
+      h += '<div class="action-menu-sep"></div>';
+    }
+    h += '<ul class="action-menu-list purple-group">' + _mi('', 'closeActionMenu();openAssignTrainerToCourse(\'' + d.courseId + '\',\'' + d.courseName + '\')', user, trainerLabel) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list purple-group">' + _mi('', 'closeActionMenu();openAddStudentForCourse(\'' + d.schoolId + '\',\'' + d.courseName + '\')', userPlus, 'إضافة طالب') + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + (d.status === 'inactive' ? _mi('success', 'closeActionMenu();doToggleCourseStatus(\'' + d.courseId + '\',\'active\')', check, 'تفعيل') : _mi('danger', 'closeActionMenu();doToggleCourseStatus(\'' + d.courseId + '\',\'inactive\')', block, 'تعطيل')) + '</ul>';
+    h += '<div class="action-menu-sep"></div>';
+    h += '<ul class="action-menu-list">' + _mi('danger', 'closeActionMenu();doDeleteCourse(\'' + d.courseId + '\')', trash, 'حذف') + '</ul>';
+  }
+  return h;
+}
+
 /* ── Render Schools ── */
 function renderSchoolsTable(filter) {
   var tbody = document.getElementById('schools-tbody');
   if (!tbody) return;
-  var list = filter ? A.schools.filter(function(s){
-    return (s.name||'').includes(filter) || (s.city||'').includes(filter);
-  }) : A.schools;
+  var cf = A.colFilters.schools || {};
+  var list = A.schools.filter(function(s){
+    var matchText   = !filter || (s.name||'').includes(filter) || (s.city||'').includes(filter);
+    var matchType   = _cfMeta.schools.type.match(s,   cf.type   || '');
+    var matchStatus = _cfMeta.schools.status.match(s,  cf.status || '');
+    return matchText && matchType && matchStatus;
+  });
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">🏫</div>لا توجد مدارس بعد</div></td></tr>';
     return;
@@ -265,22 +694,15 @@ function renderSchoolsTable(filter) {
   tbody.innerHTML = list.map(function(s) {
     var teacherCount = A.teachers.filter(function(t){ return t.schoolId === s.id || (t.schools||[]).includes(s.id); }).length;
     var studentCount = A.students.filter(function(st){ return st.schoolId === s.id; }).length;
-    var statusLabel = s.status === 'inactive'
-      ? '<span class="badge badge-pending">معطّل</span>'
-      : '<span class="badge badge-active">نشط</span>';
+    var isActive = s.status !== 'inactive';
+    var statusBadge = '<button class="badge ' + (isActive ? 'badge-active' : 'badge-pending') + ' badge-toggle" onclick="doToggleSchool(\'' + s.id + '\',\'' + (isActive ? 'inactive' : 'active') + '\')" title="' + (isActive ? 'تعطيل' : 'تفعيل') + '">' + (isActive ? 'نشط ▾' : 'معطّل ▾') + '</button>';
     return '<tr>' +
-      '<td><strong>' + esc(s.name) + '</strong></td>' +
-      '<td>' + esc(s.city||'—') + '</td>' +
+      '<td><strong>' + esc(s.name) + '</strong><div style="font-size:.75rem;color:var(--gray)">' + esc(s.city||'') + '</div></td>' +
       '<td><span class="badge badge-blue">' + (s.type === 'center' ? 'مركز' : 'مدرسة') + '</span></td>' +
+      '<td>' + statusBadge + '</td>' +
       '<td>' + teacherCount + '</td>' +
       '<td>' + studentCount + '</td>' +
-      '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-        '<button class="btn btn-xs btn-outline" onclick="openEditSchool(\'' + s.id + '\')">' + statusLabel.replace(/<[^>]+>/g,'') + ' تعديل</button>' +
-        (s.status === 'inactive'
-          ? '<button class="btn btn-xs btn-green" onclick="doToggleSchool(\'' + s.id + '\',\'active\')">تفعيل</button>'
-          : '<button class="btn btn-xs btn-danger" onclick="doToggleSchool(\'' + s.id + '\',\'inactive\')">تعطيل</button>') +
-        '<button class="btn btn-xs btn-danger" onclick="doDeleteSchool(\'' + s.id + '\')"title="حذف">حذف</button>' +
-      '</td>' +
+      '<td class="row-actions-cell">' + _splitAction('تعديل', 'openEditSchool(\'' + s.id + '\')', 'school-more', s.id, s.status || 'active', 'أوامر المدرسة') + '</td>' +
     '</tr>';
   }).join('');
 }
@@ -301,9 +723,13 @@ function populateSchoolSelects() {
 function renderTeachersTable(filter) {
   var tbody = document.getElementById('teachers-tbody');
   if (!tbody) return;
-  var list = filter ? A.teachers.filter(function(t){
-    return (t.name||'').includes(filter) || (t.teacherCode||'').includes(filter);
-  }) : A.teachers;
+  var cf = A.colFilters.teachers || {};
+  var list = A.teachers.filter(function(t){
+    var matchText   = !filter      || (t.name||'').includes(filter) || (t.teacherCode||'').includes(filter);
+    var matchSchool = _cfMeta.teachers.school.match(t, cf.school || '');
+    var matchStatus = _cfMeta.teachers.status.match(t, cf.status || '');
+    return matchText && matchSchool && matchStatus;
+  });
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">👤</div>لا يوجد معلمون بعد</div></td></tr>';
     return;
@@ -311,21 +737,15 @@ function renderTeachersTable(filter) {
   tbody.innerHTML = list.map(function(t) {
     var school = A.schools.find(function(s){ return s.id === t.schoolId; });
     var isActive = t.status === 'active';
-    var statusBadge = isActive
-      ? '<span class="badge badge-active">نشط</span>'
-      : '<span class="badge badge-pending">معلق</span>';
+    var nextStatus = isActive ? 'pending' : 'active';
+    var statusBadge = '<button class="badge ' + (isActive ? 'badge-active' : 'badge-pending') + ' badge-toggle" onclick="doToggleUserStatus(\'' + t.id + '\',\'' + nextStatus + '\',\'teacher\')" title="' + (isActive ? 'إيقاف الحساب' : 'تفعيل الحساب') + '">' + (isActive ? 'نشط ▾' : 'معلق ▾') + '</button>';
     return '<tr>' +
       '<td><strong>' + esc(t.name) + '</strong></td>' +
       '<td><code>' + esc(t.teacherCode||'—') + '</code></td>' +
       '<td>' + esc(t.email||'—') + '</td>' +
       '<td>' + esc(school ? school.name : '—') + '</td>' +
       '<td>' + statusBadge + '</td>' +
-      '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-        (isActive
-          ? '<button class="btn btn-xs btn-danger" onclick="doToggleUserStatus(\'' + t.id + '\',\'inactive\',\'teacher\')"> تعطيل</button>'
-          : '<button class="btn btn-xs btn-green" onclick="doToggleUserStatus(\'' + t.id + '\',\'active\',\'teacher\')"> تفعيل</button>') +
-        '<button class="btn btn-xs btn-danger" onclick="doDeleteTeacher(\'' + t.id + '\')">حذف</button>' +
-      '</td>' +
+      '<td class="row-actions-cell">' + _splitAction('تعديل', 'openEditTeacher(\'' + t.id + '\')', 'teacher-more', t.id, t.status || 'pending', 'أوامر المعلم') + '</td>' +
     '</tr>';
   }).join('');
 }
@@ -347,12 +767,15 @@ function populateStudentSchoolFilter() {
 function renderStudentsTable() {
   var tbody = document.getElementById('students-tbody');
   if (!tbody) return;
-  var schoolFilter = (document.getElementById('student-school-filter')||{}).value || '';
-  var textFilter   = (document.getElementById('student-search')||{}).value || '';
+  var cf          = A.colFilters.students || {};
+  var schoolDrop  = (document.getElementById('student-school-filter')||{}).value || '';
+  var textFilter  = (document.getElementById('student-search')||{}).value || '';
   var list = A.students.filter(function(s){
-    var matchSchool = !schoolFilter || s.schoolId === schoolFilter;
-    var matchText   = !textFilter || (s.name||'').includes(textFilter) || (s.studentCode||'').includes(textFilter);
-    return matchSchool && matchText;
+    var matchSchool  = _cfMeta.students.school.match(s, cf.school || schoolDrop);
+    var matchGrade   = _cfMeta.students.grade.match(s,  cf.grade  || '');
+    var matchStatus  = _cfMeta.students.status.match(s, cf.status || '');
+    var matchText    = !textFilter || (s.name||'').includes(textFilter) || (s.studentCode||'').includes(textFilter);
+    return matchSchool && matchGrade && matchStatus && matchText;
   });
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🎓</div>لا يوجد طلاب</div></td></tr>';
@@ -361,9 +784,8 @@ function renderStudentsTable() {
   tbody.innerHTML = list.map(function(s) {
     var school = A.schools.find(function(sc){ return sc.id === s.schoolId; });
     var isActive = s.status === 'active';
-    var statusBadge = isActive
-      ? '<span class="badge badge-active">نشط</span>'
-      : '<span class="badge badge-pending">معلق</span>';
+    var nextStatus = isActive ? 'pending' : 'active';
+    var statusBadge = '<button class="badge ' + (isActive ? 'badge-active' : 'badge-pending') + ' badge-toggle" onclick="doToggleUserStatus(\'' + s.id + '\',\'' + nextStatus + '\',\'student\')" title="' + (isActive ? 'إيقاف الحساب' : 'تفعيل الحساب') + '">' + (isActive ? 'نشط ▾' : 'معلق ▾') + '</button>';
     return '<tr>' +
       '<td><strong>' + esc(s.name) + '</strong></td>' +
       '<td><code>' + esc(s.studentCode||'—') + '</code></td>' +
@@ -371,12 +793,7 @@ function renderStudentsTable() {
       '<td>' + esc(s.class||s.className||'—') + '</td>' +
       '<td>' + esc(school ? school.name : '—') + '</td>' +
       '<td>' + statusBadge + '</td>' +
-      '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-        (isActive
-          ? '<button class="btn btn-xs btn-danger" onclick="doToggleUserStatus(\'' + s.id + '\',\'inactive\',\'student\')"> تعطيل</button>'
-          : '<button class="btn btn-xs btn-green" onclick="doToggleUserStatus(\'' + s.id + '\',\'active\',\'student\')"> تفعيل</button>') +
-        '<button class="btn btn-xs btn-danger" onclick="doDeleteStudent(\'' + s.id + '\')">حذف</button>' +
-      '</td>' +
+      '<td class="row-actions-cell">' + _splitAction('تعديل', 'openEditStudent(\'' + s.id + '\')', 'student-more', s.id, s.status || 'pending', 'أوامر الطالب') + '</td>' +
     '</tr>';
   }).join('');
 }
@@ -385,8 +802,17 @@ function filterStudents() { renderStudentsTable(); }
 
 /* ── Render Challenges ── */
 function renderChallengesTables() {
-  var published = A.challenges.filter(function(c){ return c.status === 'published'; });
-  var drafts    = A.challenges.filter(function(c){ return c.status !== 'published'; });
+  var cf = A.colFilters.challenges || {};
+  var published = A.challenges.filter(function(c){
+    return c.status === 'published' &&
+      _cfMeta.challenges.track.match(c,      cf.track      || '') &&
+      _cfMeta.challenges.difficulty.match(c, cf.difficulty || '');
+  });
+  var drafts = A.challenges.filter(function(c){
+    return c.status !== 'published' &&
+      _cfMeta.challenges.track.match(c,      cf.track      || '') &&
+      _cfMeta.challenges.difficulty.match(c, cf.difficulty || '');
+  });
 
   var pubTbody = document.getElementById('challenges-published-tbody');
   if (pubTbody) {
@@ -398,11 +824,7 @@ function renderChallengesTables() {
         '<td>' + difficultyLabel(c.difficulty) + '</td>' +
         '<td>' + fmtDate(c.publishedAt) + '</td>' +
         '<td>' + (c.assignedCount||0) + '</td>' +
-        '<td style="display:flex;gap:4px;">' +
-          '<button class="btn btn-xs btn-outline" onclick="openEditChallenge(\'' + c.id + '\')">تعديل</button>' +
-          '<button class="btn btn-xs btn-danger" onclick="doUnpublishChallenge(\'' + c.id + '\')">إلغاء النشر</button>' +
-          '<button class="btn btn-xs btn-danger-outline" onclick="doDeleteChallenge(\'' + c.id + '\')">حذف</button>' +
-        '</td>' +
+        '<td class="row-actions-cell">' + _splitAction('تعديل', 'openEditChallenge(\'' + c.id + '\')', 'challenge-pub-more', c.id, 'published', 'أوامر التحدي') + '</td>' +
       '</tr>';
     }).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">⚡</div>لا توجد تحديات منشورة</div></td></tr>';
   }
@@ -416,11 +838,7 @@ function renderChallengesTables() {
         '<td>المسار ' + esc(c.track||'—') + '</td>' +
         '<td>' + difficultyLabel(c.difficulty) + '</td>' +
         '<td>' + fmtDate(c.updatedAt||c.createdAt) + '</td>' +
-        '<td style="display:flex;gap:4px;">' +
-          '<button class="btn btn-xs btn-outline" onclick="openEditChallenge(\'' + c.id + '\')">تعديل</button>' +
-          '<button class="btn btn-xs btn-green" onclick="doPublishChallenge(\'' + c.id + '\')">نشر</button>' +
-          '<button class="btn btn-xs btn-danger" onclick="doDeleteChallenge(\'' + c.id + '\')">حذف</button>' +
-        '</td>' +
+        '<td class="row-actions-cell">' + _splitAction('تعديل', 'openEditChallenge(\'' + c.id + '\')', 'challenge-draft-more', c.id, 'draft', 'أوامر التحدي') + '</td>' +
       '</tr>';
     }).join('') : '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📝</div>لا توجد مسودات</div></td></tr>';
   }
@@ -436,26 +854,25 @@ function difficultyLabel(d) {
 function renderCreatorsTable(filter) {
   var tbody = document.getElementById('creators-tbody');
   if (!tbody) return;
-  var list = filter ? A.creators.filter(function(c){ return (c.name||'').includes(filter); }) : A.creators;
+  var cf = A.colFilters.creators || {};
+  var list = A.creators.filter(function(c){
+    var matchText   = !filter || (c.name||'').includes(filter);
+    var matchStatus = _cfMeta.creators.status.match(c, cf.status || '');
+    return matchText && matchStatus;
+  });
   if (!list.length) {
     tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="empty-icon">✨</div>لا يوجد مبتكرون بعد</div></td></tr>';
     return;
   }
   tbody.innerHTML = list.map(function(c) {
     var isActive = c.status === 'active';
-    var statusBadge = isActive
-      ? '<span class="badge badge-active">نشط</span>'
-      : '<span class="badge badge-pending">معلق</span>';
+    var nextStatus = isActive ? 'pending' : 'active';
+    var statusBadge = '<button class="badge ' + (isActive ? 'badge-active' : 'badge-pending') + ' badge-toggle" onclick="doToggleUserStatus(\'' + c.id + '\',\'' + nextStatus + '\',\'creator\')" title="' + (isActive ? 'إيقاف' : 'تفعيل') + '">' + (isActive ? 'نشط ▾' : 'معلق ▾') + '</button>';
     return '<tr>' +
       '<td><strong>' + esc(c.name) + '</strong></td>' +
       '<td>' + esc(c.email||'—') + '</td>' +
       '<td>' + statusBadge + '</td>' +
-      '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-        (isActive
-          ? '<button class="btn btn-xs btn-danger" onclick="doToggleUserStatus(\'' + c.id + '\',\'inactive\',\'creator\')"> تعطيل</button>'
-          : '<button class="btn btn-xs btn-green" onclick="doToggleUserStatus(\'' + c.id + '\',\'active\',\'creator\')"> تفعيل</button>') +
-        '<button class="btn btn-xs btn-danger" onclick="doDeleteCreator(\'' + c.id + '\')">حذف</button>' +
-      '</td>' +
+      '<td class="row-actions-cell">' + _splitAction('تعديل', 'openEditCreator(\'' + c.id + '\')', 'creator-more', c.id, c.status || 'pending', 'أوامر المبتكر') + '</td>' +
     '</tr>';
   }).join('');
 }
@@ -719,18 +1136,54 @@ function doAddStudent() {
   });
 }
 
-function openAddCreator() { openModal('modal-addcreator'); showMsg('creator-msg','',''); }
+function openAddCreator() {
+  A._editCreatorId = null;
+  document.getElementById('creator-name').value = '';
+  document.getElementById('creator-email').value = '';
+  document.getElementById('creator-pass').value = '';
+  var titleEl = document.getElementById('creator-modal-title');
+  if (titleEl) titleEl.textContent = 'إضافة مبتكر';
+  var btnEl = document.getElementById('creator-submit-btn');
+  if (btnEl) btnEl.textContent = 'إضافة';
+  openModal('modal-addcreator');
+  showMsg('creator-msg','','');
+}
+
+function openEditCreator(id) {
+  var c = A.creators.find(function(x){ return x.id === id; });
+  if (!c) return;
+  A._editCreatorId = id;
+  document.getElementById('creator-name').value = c.name || '';
+  document.getElementById('creator-email').value = c.email || '';
+  document.getElementById('creator-pass').value = '';
+  var titleEl = document.getElementById('creator-modal-title');
+  if (titleEl) titleEl.textContent = 'تعديل مبتكر';
+  var btnEl = document.getElementById('creator-submit-btn');
+  if (btnEl) btnEl.textContent = 'حفظ التعديلات';
+  openModal('modal-addcreator');
+  showMsg('creator-msg','','');
+}
+
 function doAddCreator() {
   var name  = document.getElementById('creator-name').value.trim();
   var email = document.getElementById('creator-email').value.trim();
   var pass  = document.getElementById('creator-pass').value;
-  if (!name || !email) { showMsg('creator-msg','يرجى إدخال الاسم والبريد الإلكتروني','err'); return; }
-  CQ_API.adminCreateUser({name:name, email:email, passwordHash: hashText ? hashText(pass) : pass, role:'creator'}, A.token).then(function(res) {
+  var editId = A._editCreatorId || null;
+  if (!name || !email || (!editId && !pass)) { showMsg('creator-msg','يرجى إدخال الاسم والبريد الإلكتروني' + (editId ? '' : ' وكلمة المرور'),'err'); return; }
+  var promise = editId
+    ? CQ_API.adminUpdateUser(editId, {name:name, email:email}, A.token)
+    : CQ_API.adminCreateUser({name:name, email:email, passwordHash: hashText ? hashText(pass) : pass, role:'creator'}, A.token);
+  promise.then(function(res) {
     if (res.success || res.ok) {
+      A._editCreatorId = null;
       closeModal('modal-addcreator');
       var newUser = res.user || { id: res.userId || ('tmp-' + Date.now()), name: name, email: email, role: 'creator', status: 'active' };
       A.creators = A.creators || [];
-      if (!A.creators.find(function(c) { return c.email === newUser.email; })) {
+      var existing = editId ? A.creators.find(function(c) { return c.id === editId; }) : null;
+      if (existing) {
+        existing.name = name;
+        existing.email = email;
+      } else if (!A.creators.find(function(c) { return c.email === newUser.email; })) {
         A.creators.push(newUser);
       }
       renderCreatorsTable();
@@ -752,7 +1205,11 @@ function renderRequestsTables() {
   var pendingTeachers  = A.teachers.filter(function(t){ return t.status === 'pending'; });
   var pendingStudents  = A.students.filter(function(s){ return s.status === 'pending' && s.role !== 'creator'; });
   var pendingCreators  = A.creators.filter(function(c){ return c.status === 'pending'; });
-  var pendingSubs      = A.submissions || [];
+  var cfReq = A.colFilters.reqChallenges || {};
+  var pendingSubs = (A.submissions || []).filter(function(sub){
+    return _cfMeta.reqChallenges.school.match(sub,     cfReq.school    || '') &&
+           _cfMeta.reqChallenges.challenge.match(sub,  cfReq.challenge || '');
+  });
 
   var total = pendingTeachers.length + pendingStudents.length + pendingCreators.length + pendingSubs.length;
 
@@ -791,7 +1248,7 @@ function renderRequestsTables() {
         '<td>' + esc(u.email||'—') + '</td>' +
         '<td>' + esc(u.phone||'—') + '</td>' +
         '<td>' + fmtDate(u.joinedAt) + '</td>' +
-        '<td style="display:flex;gap:6px;">' +
+        '<td style="display:flex;gap:6px;align-items:center">' +
           '<button class="btn btn-xs btn-green" onclick="' + approveFunc + '(\'' + u.id + '\')">✓ قبول</button>' +
           '<button class="btn btn-xs btn-danger" onclick="' + rejectFunc  + '(\'' + u.id + '\')">✕ رفض</button>' +
         '</td>' +
@@ -817,7 +1274,7 @@ function renderRequestsTables() {
         '<td>' + esc(sub.challenge||'—') + '</td>' +
         '<td>' + (sub.imageUrl ? '<a href="' + esc(sub.imageUrl) + '" target="_blank" style="color:var(--accent)">عرض الصورة</a>' : '—') + '</td>' +
         '<td>' + fmtDate(sub.date) + '</td>' +
-        '<td style="display:flex;gap:6px;">' +
+        '<td style="display:flex;gap:6px;align-items:center">' +
           '<button class="btn btn-xs btn-green" onclick="doApproveSubmission(\'' + sub.id + '\')">✓ قبول</button>' +
           '<button class="btn btn-xs btn-danger" onclick="doRejectSubmission(\'' + sub.id + '\')">✕ رفض</button>' +
         '</td>' +
@@ -991,6 +1448,9 @@ function moveToTrash(item, type) {
   if (type === 'challenge') A.challenges = A.challenges.filter(function(x){ return x.id !== item.id; });
   if (type === 'creator')   A.creators   = A.creators.filter(function(x){ return x.id !== item.id; });
   if (type === 'course')    A.courses    = (A.courses||[]).filter(function(x){ return x.id !== item.id; });
+  if (['teacher','student','creator'].indexOf(type) !== -1) {
+    CQ_API.adminSetUserStatus(item.id, {status:'inactive'}, A.token).catch(function(){});
+  }
   updateStats();
   _showToast('تم النقل إلى سلة المهملات');
 }
@@ -1046,7 +1506,7 @@ function renderTrashSection() {
       return;
     }
     container.innerHTML =
-      '<div class="panel"><div class="tbl-wrap"><table>' +
+      '<div class="panel"><div class="tbl-wrap"><table class="data-table table-trash">' +
       '<thead><tr><th>النوع</th><th>الاسم</th><th>التفاصيل</th><th>تاريخ الحذف</th><th>إجراءات</th></tr></thead>' +
       '<tbody>' + items.map(function(e) {
         var d = e.data;
@@ -1083,6 +1543,9 @@ function doRestoreTrash(trashId) {
   if (entry.type === 'challenge') { A.challenges.push(d); renderChallengesTables(); renderOvChallenges(); }
   if (entry.type === 'creator')   { A.creators.push(d);   renderCreatorsTable(); }
   if (entry.type === 'course')    { A.courses = A.courses || []; A.courses.push(d); if (typeof window.renderClassesDirectory === 'function') window.renderClassesDirectory(); }
+  if (['teacher','student','creator'].indexOf(entry.type) !== -1) {
+    CQ_API.adminSetUserStatus(d.id, {status:'active'}, A.token).catch(function(){});
+  }
   A.trash.splice(idx, 1);
   saveTrash();
   updateStats();

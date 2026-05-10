@@ -71,6 +71,30 @@
     return String(value || '').trim().replace(/\s+/g, ' ');
   }
 
+  function firstFilled() {
+    for (var i = 0; i < arguments.length; i++) {
+      var value = arguments[i];
+      if (value != null && String(value).trim()) return String(value).trim();
+    }
+    return '';
+  }
+
+  function assistantNameFor(record, role) {
+    record = record || {};
+    var state = getState();
+    var id = role === 'trainer'
+      ? firstFilled(record.assistantTrainerId, record.trainerAssistantId, record.coTrainerId, record.assistantId)
+      : firstFilled(record.assistantTeacherId, record.teacherAssistantId, record.coTeacherId, record.assistantId);
+    if (id && id !== 'admin-unassigned') {
+      var teacher = (state.teachers || []).find(function (t) { return t.id === id; });
+      if (teacher) return teacher.name || teacher.email || '';
+    }
+    var name = role === 'trainer'
+      ? firstFilled(record.assistantTrainerName, record.trainerAssistantName, record.coTrainerName, record.assistantName)
+      : firstFilled(record.assistantTeacherName, record.teacherAssistantName, record.coTeacherName, record.assistantName);
+    return name && name !== id ? name : '';
+  }
+
   function normalizeRelatedText(value) {
     return String(value || '')
       .trim()
@@ -266,15 +290,135 @@
   function populateStudentClassInputs() {
     var gradeOpts = VALID_GRADES.map(function (g) { return '<option value="' + g + '">' + g + '</option>'; }).join('');
     var sectionOpts = VALID_SECTIONS.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join('');
-    ['student-class', 'addclass-grade'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.innerHTML = gradeOpts;
-    });
-    ['student-section', 'addclass-section'].forEach(function (id) {
+    var studentClass = document.getElementById('student-class');
+    if (studentClass) {
+      studentClass.innerHTML = '<option value="">\u0627\u062e\u062a\u0631 \u0627\u0644\u0645\u062f\u0631\u0633\u0629 \u0623\u0648\u0644\u0627\u064b</option>';
+      studentClass.disabled = true;
+    }
+    var addGrade = document.getElementById('addclass-grade');
+    if (addGrade) addGrade.innerHTML = gradeOpts;
+    var editGrade = document.getElementById('edit-class-inline-grade');
+    if (editGrade) editGrade.innerHTML = gradeOpts;
+    ['student-section', 'addclass-section', 'edit-class-inline-section'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.innerHTML = sectionOpts;
     });
   }
+
+  function studentClassOptionsForSchool(schoolId) {
+    var school = (window.A.schools || []).find(function (s) { return s.id === schoolId; }) || {};
+    var isSelectedCenter = String(school.type || '').toLowerCase() === 'center';
+    var rows = isSelectedCenter
+      ? (window.A.courses || []).filter(function (course) {
+          return course.schoolId === schoolId && String(course.status || course.courseStatus || 'active') !== 'deleted';
+        }).map(function (course) {
+          return { value: course.name || '', label: course.name || '', section: '\u062f\u0648\u0631\u0629' };
+        })
+      : getSchoolClassesOrCourses(schoolId).map(function (row) {
+          return { value: row.name || '', label: row.section ? (row.name + ' - ' + row.section) : row.name, section: row.section || '' };
+        });
+
+    var seen = {};
+    return rows.filter(function (row) {
+      var key = [normalizeRelatedText(row.value), normalizeRelatedSection(row.section)].join('::');
+      if (!row.value || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  window.onStudentSchoolChange = function () {
+    var schoolSel = document.getElementById('student-school-sel');
+    var clsSel = document.getElementById('student-class');
+    var secSel = document.getElementById('student-section');
+    var schoolId = schoolSel ? schoolSel.value : '';
+    if (!clsSel) return;
+    if (!schoolId) {
+      clsSel.innerHTML = '<option value="">\u0627\u062e\u062a\u0631 \u0627\u0644\u0645\u062f\u0631\u0633\u0629 \u0623\u0648\u0644\u0627\u064b</option>';
+      clsSel.disabled = true;
+      if (secSel) secSel.value = '';
+      return;
+    }
+    var options = studentClassOptionsForSchool(schoolId);
+    clsSel.disabled = !options.length;
+    clsSel.innerHTML = options.length
+      ? '<option value="">-- \u0627\u062e\u062a\u0631 \u0627\u0644\u0635\u0641 --</option>' + options.map(function (row) {
+          return '<option value="' + window.esc(row.value) + '" data-section="' + window.esc(row.section || '') + '">' + window.esc(row.label || row.value) + '</option>';
+        }).join('')
+      : '<option value="">\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0641\u0648\u0641 \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u0645\u062f\u0631\u0633\u0629</option>';
+    if (secSel) secSel.value = '';
+  };
+
+  window.onStudentClassChange = function () {
+    var clsSel = document.getElementById('student-class');
+    var secSel = document.getElementById('student-section');
+    if (!clsSel || !secSel) return;
+    var opt = clsSel.options[clsSel.selectedIndex];
+    var section = opt ? opt.getAttribute('data-section') || '' : '';
+    if (!section && window.A && window.A._manageClassStudentsTarget && window.A._manageClassStudentsTarget.className === clsSel.value) {
+      section = window.A._manageClassStudentsTarget.section || '';
+    }
+    if (section) ensureSelectOption('student-section', section, section);
+    secSel.value = section;
+  };
+
+  function activeStudentSchoolOptions() {
+    return (window.A.schools || []).filter(function (school) {
+      return String(school.status || 'active') !== 'deleted' && String(school.status || 'active') !== 'inactive';
+    }).sort(function (a, b) {
+      return String(a.name || '').localeCompare(String(b.name || ''), 'ar');
+    });
+  }
+
+  function schoolKindLabel(school) {
+    return String((school && school.type) || '').toLowerCase() === 'center' ? '\u0645\u0631\u0643\u0632' : '\u0645\u062f\u0631\u0633\u0629';
+  }
+
+  function getTeacherPlaces(teacherId) {
+    var byId = {};
+    function addSchool(schoolId, detail) {
+      if (!schoolId) return;
+      var school = (window.A.schools || []).find(function (s) { return s.id === schoolId; });
+      if (!school || String(school.status || 'active') === 'deleted') return;
+      if (!byId[school.id]) byId[school.id] = { school: school, details: [] };
+      if (detail && byId[school.id].details.indexOf(detail) === -1) byId[school.id].details.push(detail);
+    }
+
+    var teacher = (window.A.teachers || []).find(function (t) { return t.id === teacherId; }) || {};
+    addSchool(teacher.schoolId, '\u0645\u0633\u062c\u0644');
+    (teacher.schools || []).forEach(function (schoolId) { addSchool(schoolId, '\u0645\u0631\u062a\u0628\u0637'); });
+
+    (window.A.classes || []).forEach(function (cls) {
+      if (cls.teacherId !== teacherId || String(cls.status || 'active') === 'deleted') return;
+      addSchool(cls.schoolId, cls.grade || cls.name || '\u0635\u0641');
+    });
+    (window.A.courses || []).forEach(function (course) {
+      if ((course.trainerId || course.teacherId) !== teacherId || String(course.status || course.courseStatus || 'active') === 'deleted') return;
+      addSchool(course.schoolId, course.name || '\u062f\u0648\u0631\u0629');
+    });
+
+    return Object.keys(byId).map(function (id) { return byId[id]; }).sort(function (a, b) {
+      return String(a.school.name || '').localeCompare(String(b.school.name || ''), 'ar');
+    });
+  }
+
+  window.openTeacherPlaces = function (teacherId) {
+    var teacher = (window.A.teachers || []).find(function (t) { return t.id === teacherId; }) || {};
+    var rows = getTeacherPlaces(teacherId);
+    var titleEl = document.getElementById('school-related-title');
+    var listEl = document.getElementById('school-related-list');
+    if (!listEl) return;
+    if (titleEl) titleEl.textContent = '\u0623\u0645\u0627\u0643\u0646 \u062a\u062f\u0631\u064a\u0633 ' + (teacher.name || '');
+    listEl.innerHTML = rows.length ? rows.map(function (row) {
+      var school = row.school;
+      return '<div class="related-item">' +
+        '<div><strong>' + window.esc(school.name || '\u2014') + '</strong>' +
+        '<div>' + window.esc(schoolKindLabel(school) + (row.details.length ? ' - ' + row.details.join('\u060c ') : '')) + '</div></div>' +
+        '<span class="badge badge-blue">' + window.esc(school.city || '') + '</span>' +
+      '</div>';
+    }).join('') : '<div class="empty"><div class="empty-icon">\ud83c\udfeb</div>\u0644\u0627 \u064a\u0648\u062c\u062f \u0623\u0645\u0627\u0643\u0646 \u0645\u0631\u062a\u0628\u0637\u0629</div>';
+    window.openModal('modal-school-related');
+  };
 
   function ensureSelectOption(selectId, value, label) {
     var sel = document.getElementById(selectId);
@@ -321,6 +465,8 @@
   }
 
   function renderClassesDirectory() {
+    window._amReg = {};
+    var _amIdx = 0;
     var state = getState();
     var wrap = document.getElementById('classes-directory');
     if (!wrap) return;
@@ -386,9 +532,15 @@
     function mergeClassRow(target, source) {
       if (!target.id && source.id) target.id = source.id;
       if ((!target.teacherId || target.teacherId === 'admin-unassigned') && source.teacherId) target.teacherId = source.teacherId;
+      if (!assistantNameFor(target, 'teacher') && assistantNameFor(source, 'teacher')) {
+        target.assistantTeacherId = source.assistantTeacherId || source.teacherAssistantId || source.coTeacherId || source.assistantId || '';
+        target.assistantTeacherName = assistantNameFor(source, 'teacher');
+      }
       if (target.status !== 'inactive' && source.status === 'inactive') target.status = 'inactive';
       target.activeCount += source.activeCount || 0;
       target.pendingCount += source.pendingCount || 0;
+      target.centerActiveCount += source.centerActiveCount || 0;
+      target.centerPendingCount += source.centerPendingCount || 0;
       return target;
     }
 
@@ -418,9 +570,13 @@
         section: section || '-',
         label: displayClassPart(label || grade),
         teacherId: cls.teacherId || '',
+        assistantTeacherId: cls.assistantTeacherId || cls.teacherAssistantId || cls.coTeacherId || cls.assistantId || '',
+        assistantTeacherName: assistantNameFor(cls, 'teacher'),
         status: cls.status || 'active',
         activeCount: 0,
-        pendingCount: 0
+        pendingCount: 0,
+        centerActiveCount: 0,
+        centerPendingCount: 0
       };
       classMap[key] = classMap[key] ? mergeClassRow(classMap[key], row) : row;
     });
@@ -447,7 +603,9 @@
           label: label || grade,
           status: 'active',
           activeCount: 0,
-          pendingCount: 0
+          pendingCount: 0,
+          centerActiveCount: 0,
+          centerPendingCount: 0
         };
       }
 
@@ -455,12 +613,20 @@
       else classMap[key].pendingCount += 1;
     });
 
+    var cf = ((window.A || {}).colFilters || {}).classes || {};
     var classRows = Object.keys(classMap).map(function (key) { return classMap[key]; }).filter(function (row) {
       if (isHiddenClassRow(row)) return false;
       var matchesSchool = !schoolFilter || row.schoolId === schoolFilter;
       var hay = [row.schoolName, row.grade, row.section, row.label].join(' ');
       var matchesText = !textFilter || hay.indexOf(textFilter) !== -1;
-      return matchesSchool && matchesText;
+      var cfGrade   = !cf.grade  || (row.grade || row.label || '') === cf.grade;
+      var cfSchool  = !cf.school || row.schoolId === cf.school;
+      var cfStatus  = !cf.status || (row.status || 'active') === cf.status;
+      var cfTeacher = !cf.teacher || (function() {
+        var t = (state.teachers || []).find(function(x){ return x.id === row.teacherId; });
+        return t && t.name === cf.teacher;
+      })();
+      return matchesSchool && matchesText && cfGrade && cfSchool && cfStatus && cfTeacher;
     }).sort(function (a, b) {
       if (a.schoolName !== b.schoolName) return a.schoolName.localeCompare(b.schoolName, 'ar');
       return a.label.localeCompare(b.label, 'ar');
@@ -482,8 +648,11 @@
 
     var classRowsHtml = classRows.length ? classRows.map(function (row) {
       var teacher = (state.teachers || []).find(function (t) { return t.id === row.teacherId; });
-      var teacherName = teacher ? teacher.name : (row.teacherId && row.teacherId !== 'admin-unassigned' ? row.teacherId : '\u063a\u064a\u0631 \u0645\u062d\u062f\u062f');
+      var teacherName = teacher ? teacher.name : null;
+      var assistantTeacherName = assistantNameFor(row, 'teacher');
       var totalStudents = row.activeCount + row.pendingCount;
+      var totalCenter = (row.centerActiveCount || 0) + (row.centerPendingCount || 0);
+      var totalSchool = row.activeCount + row.pendingCount;
       var rowStatus = row.status || 'active';
       var statusBadge = rowStatus === 'inactive'
         ? '<span class="badge badge-inactive">\u0645\u0639\u0637\u0644</span>'
@@ -493,46 +662,40 @@
       var safeLabel = window.esc(String(row.label || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' '));
       var safeGrade = window.esc(String(row.grade || row.label || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' '));
       var safeSection = window.esc(String(row.section || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' '));
-      var assignAction;
-      if (!row.id) {
-        assignAction = '<button class="btn btn-xs btn-outline action-chip" disabled>\u0631\u0628\u0637</button>';
-      } else if (row.teacherId && row.teacherId !== 'admin-unassigned') {
-        assignAction = '<button class="btn btn-xs btn-blue action-chip" onclick="openAssignTeacherToClass(\'' + row.id + '\',\'' + safeLabel + '\')">\u0627\u0644\u0645\u0639\u0644\u0645</button>';
-      } else {
-        assignAction = '<button class="btn btn-xs btn-green action-chip" onclick="openAssignTeacherToClass(\'' + row.id + '\',\'' + safeLabel + '\')">\u0627\u0644\u0645\u0639\u0644\u0645</button>';
-      }
-      var statusAction = rowStatus === 'inactive'
-        ? (row.id
-          ? '<button class="btn btn-xs btn-green action-chip" onclick="doToggleClassStatus(\'' + row.id + '\',\'active\')">\u062a\u0641\u0639\u064a\u0644</button>'
-          : '<button class="btn btn-xs btn-green action-chip" onclick="doToggleVirtualClassStatus(\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\',\'active\')">\u062a\u0641\u0639\u064a\u0644</button>')
-        : (row.id
-          ? '<button class="btn btn-xs btn-danger action-chip" onclick="doToggleClassStatus(\'' + row.id + '\',\'inactive\')">\u062a\u0639\u0637\u064a\u0644</button>'
-          : '<button class="btn btn-xs btn-danger action-chip" onclick="doToggleVirtualClassStatus(\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\',\'inactive\')">\u062a\u0639\u0637\u064a\u0644</button>');
-      var editAction = row.id
-        ? '<button class="btn btn-xs btn-outline action-chip" onclick="openEditClass(\'' + row.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>'
-        : '<button class="btn btn-xs btn-outline action-chip" onclick="openEditVirtualClass(\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')">\u062a\u0639\u062f\u064a\u0644</button>';
-      var deleteAction = row.id
-        ? '<button class="btn btn-xs btn-danger-outline action-chip" onclick="doDeleteClassData(\'' + row.id + '\',\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')">\u062d\u0630\u0641</button>'
-        : '<button class="btn btn-xs btn-danger-outline action-chip" onclick="doDeleteVirtualClassData(\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')">\u062d\u0630\u0641</button>';
-      var studentAction = '<button class="btn btn-xs btn-blue action-chip" onclick="openAddStudentForClass(\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')">\u0637\u0627\u0644\u0628</button>';
+      var amClassKey = 'c' + (++_amIdx);
+      window.amReg(amClassKey, {
+        subtype: 'class',
+        classId: row.id || '',
+        schoolId: row.schoolId,
+        grade: safeGrade,
+        section: safeSection,
+        status: rowStatus,
+        teacherId: (row.teacherId && row.teacherId !== 'admin-unassigned') ? row.teacherId : '',
+        label: safeLabel,
+        hideEdit: true
+      });
+      var classEditAction = row.id
+        ? 'openEditClass(\'' + row.id + '\')'
+        : 'openEditVirtualClass(\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')';
 
       return '<tr>' +
-        '<td><strong class="class-table-title">' + window.esc(row.label) + '</strong><div class="class-table-sub">' + window.esc(row.grade || '\u2014') + '</div></td>' +
-        '<td>' + window.esc(row.schoolName || '\u2014') + '</td>' +
+        '<td><strong class="class-table-title">' + window.esc(row.label) + '</strong></td>' +
         '<td><span class="badge badge-blue">' + window.esc(row.section || '\u2014') + '</span></td>' +
-        '<td>' + window.esc(teacherName) + '</td>' +
-        '<td class="class-student-count"><strong>' + totalStudents + '</strong><span>' + row.activeCount + ' \u0646\u0634\u0637</span></td>' +
+        '<td>' + window.esc(row.schoolName || '\u2014') + '</td>' +
+        '<td>' + (teacherName ? window.esc(teacherName) : (row.id ? '<button class="assign-teacher-quick-btn" onclick="openAssignTeacherToClass(\'' + row.id + '\',\'' + safeLabel + '\')">+ حدد المعلم</button>' : '<span class="no-teacher-label">غير متاح</span>')) + '</td>' +
+        '<td>' + (assistantTeacherName
+          ? window.esc(assistantTeacherName)
+          : (row.id && teacherName ? '<button class="assign-teacher-quick-btn" type="button" onclick="openAssignClassAssistant(\'' + row.id + '\',\'' + safeLabel + '\')">+ حدد مساعد المعلم</button>' : '<button class="assign-teacher-quick-btn" type="button" disabled title="حدد المعلم أولاً">حدد المعلم أولاً</button>')) + '</td>' +
+        '<td class="class-student-count"><button class="class-student-count-btn" type="button" onclick="openClassStudents(\'class\',\'' + row.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')"><strong>' + totalSchool + '</strong><span>' + row.activeCount + ' \u0646\u0634\u0637</span></button></td>' +
         '<td>' + statusBadge + '</td>' +
-        '<td><div class="class-actions">' +
-          editAction +
-          assignAction +
-          studentAction +
-          statusAction +
-          deleteAction +
+        '<td class="row-actions-cell"><div class="split-action">' +
+          '<button class="split-action-primary" type="button" onclick="' + classEditAction + '">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="split-action-menu" type="button" title="\u0627\u0644\u0623\u0648\u0627\u0645\u0631" aria-label="\u0623\u0648\u0627\u0645\u0631 \u0627\u0644\u0635\u0641" aria-haspopup="menu" onclick="toggleActionMenu(this,\'reg\',\'' + amClassKey + '\',\'\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
         '</div></td>' +
       '</tr>';
-    }).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">\ud83c\udfeb</div>\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0641\u0648\u0641 \u0645\u062f\u0627\u0631\u0633 \u0645\u0637\u0627\u0628\u0642\u0629</div></td></tr>';
+    }).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83c\udfeb</div>\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0641\u0648\u0641 \u0645\u062f\u0627\u0631\u0633 \u0645\u0637\u0627\u0628\u0642\u0629</div></td></tr>';
 
+    var cfCourses = ((window.A || {}).colFilters || {}).courses || {};
     var courseRows = (state.courses || []).filter(function (course) {
       var schoolId = course.schoolId || '';
       if (!isSchoolActive(schoolId)) return false;
@@ -540,8 +703,10 @@
       if (!isCenter(school)) return false;
       var matchesSchool = !schoolFilter || schoolId === schoolFilter;
       var hay = [school ? school.name : '', course.name || '', course.trainerName || '', course.startTime || '', course.endTime || '', course.weeks || ''].join(' ');
-      var matchesText = !textFilter || hay.indexOf(textFilter) !== -1;
-      return matchesSchool && matchesText;
+      var matchesText   = !textFilter || hay.indexOf(textFilter) !== -1;
+      var cfSchool  = !cfCourses.school || schoolId === cfCourses.school;
+      var cfStatus  = !cfCourses.status || (course.courseStatus || course.activeStatus || 'active') === cfCourses.status;
+      return matchesSchool && matchesText && cfSchool && cfStatus;
     }).sort(function (a, b) {
       var as = schoolById(a.schoolId);
       var bs = schoolById(b.schoolId);
@@ -550,53 +715,117 @@
       if (an !== bn) return an.localeCompare(bn, 'ar');
       return String(a.name || '').localeCompare(String(b.name || ''), 'ar');
     });
+    var renderedCourseRows = {};
+    courseRows = courseRows.filter(function (course) {
+      var key = [
+        String(course.schoolId || '').trim(),
+        normalizeRelatedText(course.name || ''),
+        String(course.startTime || '').trim(),
+        String(course.endTime || '').trim(),
+        String(course.weeks || '').trim()
+      ].join('::');
+      if (renderedCourseRows[key]) {
+        var existing = renderedCourseRows[key];
+        if (!existing.trainerId && course.trainerId) existing.trainerId = course.trainerId;
+        if (!existing.trainerName && course.trainerName) existing.trainerName = course.trainerName;
+        if (!assistantNameFor(existing, 'trainer') && assistantNameFor(course, 'trainer')) {
+          existing.assistantTrainerId = course.assistantTrainerId || course.trainerAssistantId || course.coTrainerId || course.assistantId || '';
+          existing.assistantTrainerName = assistantNameFor(course, 'trainer');
+        }
+        if (existing.courseStatus !== 'inactive' && (course.courseStatus === 'inactive' || course.activeStatus === 'inactive')) existing.courseStatus = 'inactive';
+        if (!existing.id && course.id) existing.id = course.id;
+        return false;
+      }
+      renderedCourseRows[key] = course;
+      return true;
+    });
 
     var courseRowsHtml = courseRows.length ? courseRows.map(function (course) {
       var center = schoolById(course.schoolId);
-      var trainerName = course.trainerName || '\u063a\u064a\u0631 \u0645\u062d\u062f\u062f';
+      var trainerName = course.trainerName || '';
+      var assistantTrainerName = assistantNameFor(course, 'trainer');
       var time = fmtTime(course.startTime) + ' - ' + fmtTime(course.endTime);
       var courseStatus = course.courseStatus || course.activeStatus || 'active';
       var courseStudents = (state.students || []).filter(function (student) {
         return (student.schoolId || '') === (course.schoolId || '') && String(student.class || '') === String(course.name || '');
       });
-      var courseActiveStudents = courseStudents.filter(function (student) { return student.status === 'active'; }).length;
+      var centerCourseStudents = courseStudents.filter(function (student) {
+        var sc = schoolById(student.schoolId || '');
+        return isCenter(sc);
+      });
+      var schoolCourseStudents = courseStudents.filter(function (student) {
+        var sc = schoolById(student.schoolId || '');
+        return !isCenter(sc);
+      });
+      var centerCourseActive = centerCourseStudents.filter(function (student) { return student.status === 'active'; }).length;
+      var schoolCourseActive = schoolCourseStudents.filter(function (student) { return student.status === 'active'; }).length;
+      var courseActiveStudents = centerCourseActive + schoolCourseActive;
       var trainerActionLabel = course.trainerId ? '\u062a\u063a\u064a\u064a\u0631 \u0627\u0644\u0645\u062f\u0631\u0628' : '\u0631\u0628\u0637 \u0627\u0644\u0645\u062f\u0631\u0628';
       var trainerActionClass = course.trainerId ? 'btn-blue' : 'btn-purple';
       var safeCourseName = window.esc(String(course.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' '));
       var courseStatusAction = courseStatus === 'inactive'
         ? '<button class="btn btn-xs btn-green action-chip" onclick="doToggleCourseStatus(\'' + course.id + '\',\'active\')">\u062a\u0641\u0639\u064a\u0644</button>'
         : '<button class="btn btn-xs btn-danger action-chip" onclick="doToggleCourseStatus(\'' + course.id + '\',\'inactive\')">\u062a\u0639\u0637\u064a\u0644</button>';
+      var amCourseKey = 'c' + (++_amIdx);
+      window.amReg(amCourseKey, {
+        subtype: 'course',
+        courseId: course.id,
+        schoolId: course.schoolId,
+        courseName: safeCourseName,
+        status: courseStatus,
+        hasTrainer: !!course.trainerId,
+        hideEdit: true
+      });
+
       return '<tr>' +
         '<td><strong class="class-table-title">' + window.esc(course.name || '\u2014') + '</strong><div class="class-table-sub">\u062f\u0648\u0631\u0629 \u0645\u0631\u0643\u0632</div></td>' +
         '<td>' + window.esc(center ? center.name : '\u2014') + '</td>' +
         '<td><span class="badge badge-purple">' + window.esc(time) + '</span></td>' +
         '<td>' + window.esc(course.weeks || '\u2014') + '</td>' +
-        '<td>' + window.esc(trainerName) + '</td>' +
-        '<td class="class-student-count"><strong>' + courseStudents.length + '</strong><span>' + courseActiveStudents + ' \u0646\u0634\u0637</span></td>' +
+        '<td>' + (trainerName ? window.esc(trainerName) : '<button class="assign-teacher-quick-btn" onclick="openAssignTrainerToCourse(\'' + course.id + '\',\'' + safeCourseName + '\')">+ \u062d\u062f\u062f \u0645\u062f\u0631\u0628</button>') + '</td>' +
+        '<td>' + (assistantTrainerName
+          ? '<button class="assign-teacher-quick-btn" type="button" onclick="openAssignCourseAssistant(\'' + course.id + '\',\'' + safeCourseName + '\')">' + window.esc(assistantTrainerName) + '</button>'
+          : (trainerName ? '<button class="assign-teacher-quick-btn" type="button" onclick="openAssignCourseAssistant(\'' + course.id + '\',\'' + safeCourseName + '\')">+ حدد مساعد المدرب</button>' : '<button class="assign-teacher-quick-btn" type="button" disabled title="حدد المدرب أولاً">حدد المدرب</button>')) + '</td>' +
+        '<td class="class-student-count"><button class="class-student-count-btn" type="button" onclick="openClassStudents(\'course\',\'' + course.schoolId + '\',\'' + safeCourseName + '\',\'\')"><strong>' + courseStudents.length + '</strong><span>' + courseActiveStudents + ' \u0646\u0634\u0637</span></button></td>' +
         '<td>' + (courseStatus === 'inactive' ? '<span class="badge badge-inactive">\u0645\u0639\u0637\u0644</span>' : '<span class="badge badge-active">\u0646\u0634\u0637</span>') + '</td>' +
-        '<td><div class="class-actions">' +
-          '<button class="btn btn-xs btn-outline action-chip" onclick="openEditCourse(\'' + course.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
-          '<button class="btn btn-xs ' + trainerActionClass + ' action-chip" onclick="openAssignTrainerToCourse(\'' + course.id + '\',\'' + safeCourseName + '\')">\u0627\u0644\u0645\u062f\u0631\u0628</button>' +
-          '<button class="btn btn-xs btn-blue action-chip" onclick="openAddStudentForCourse(\'' + course.schoolId + '\',\'' + safeCourseName + '\')">\u0637\u0627\u0644\u0628</button>' +
-          courseStatusAction +
-          '<button class="btn btn-xs btn-danger-outline action-chip" onclick="doDeleteCourse(\'' + course.id + '\')">\u062d\u0630\u0641</button>' +
+        '<td class="row-actions-cell"><div class="split-action">' +
+          '<button class="split-action-primary" type="button" onclick="openEditCourse(\'' + course.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="split-action-menu" type="button" title="\u0627\u0644\u0623\u0648\u0627\u0645\u0631" aria-label="\u0623\u0648\u0627\u0645\u0631 \u0627\u0644\u062f\u0648\u0631\u0629" aria-haspopup="menu" onclick="toggleActionMenu(this,\'reg\',\'' + amCourseKey + '\',\'\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
         '</div></td>' +
       '</tr>';
-    }).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83e\udde9</div>\u0644\u0627 \u062a\u0648\u062c\u062f \u062f\u0648\u0631\u0627\u062a \u0645\u0631\u0627\u0643\u0632 \u0645\u0637\u0627\u0628\u0642\u0629</div></td></tr>';
+    }).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">\ud83e\udde9</div>\u0644\u0627 \u062a\u0648\u062c\u062f \u062f\u0648\u0631\u0627\u062a \u0645\u0631\u0627\u0643\u0632 \u0645\u0637\u0627\u0628\u0642\u0629</div></td></tr>';
 
     wrap.innerHTML =
       '<div id="classes-tab-classes" class="classes-directory-tab"' + classesDisplay + '>' +
         '<div class="tbl-wrap classes-table-wrap">' +
-          '<table class="classes-table">' +
-            '<thead><tr><th>\u0627\u0644\u0635\u0641</th><th>\u0627\u0644\u0645\u062f\u0631\u0633\u0629</th><th>\u0627\u0644\u0634\u0639\u0628\u0629</th><th>\u0627\u0644\u0645\u0639\u0644\u0645</th><th>\u0627\u0644\u0637\u0644\u0627\u0628</th><th>\u0627\u0644\u062d\u0627\u0644\u0629</th><th>\u0625\u062c\u0631\u0627\u0621\u0627\u062a</th></tr></thead>' +
+          '<table class="data-table classes-table">' +
+            '<thead><tr>' +
+            '<th><span class="th-fw">\u0627\u0644\u0635\u0641 <button class="cfb" data-tbl="classes" data-col="grade" onclick="openColFilter(this,\'classes\',\'grade\')" title="\u0641\u0644\u062a\u0631">&#9662;</button></span></th>' +
+            '<th>\u0627\u0644\u0634\u0639\u0628\u0629</th>' +
+            '<th><span class="th-fw">\u0627\u0644\u0645\u062f\u0631\u0633\u0629 <button class="cfb" data-tbl="classes" data-col="school" onclick="openColFilter(this,\'classes\',\'school\')" title="\u0641\u0644\u062a\u0631">&#9662;</button></span></th>' +
+            '<th><span class="th-fw">\u0627\u0644\u0645\u0639\u0644\u0645 <button class="cfb" data-tbl="classes" data-col="teacher" onclick="openColFilter(this,\'classes\',\'teacher\')" title="\u0641\u0644\u062a\u0631">&#9662;</button></span></th>' +
+            '<th>\u0645\u0633\u0627\u0639\u062f \u0627\u0644\u0645\u0639\u0644\u0645</th><th>\u0627\u0644\u0637\u0644\u0627\u0628</th>' +
+            '<th><span class="th-fw">\u0627\u0644\u062d\u0627\u0644\u0629 <button class="cfb" data-tbl="classes" data-col="status" onclick="openColFilter(this,\'classes\',\'status\')" title="\u0641\u0644\u062a\u0631">&#9662;</button></span></th>' +
+            '<th>\u0625\u062c\u0631\u0627\u0621\u0627\u062a</th>' +
+            '</tr></thead>' +
             '<tbody>' + classRowsHtml + '</tbody>' +
           '</table>' +
         '</div>' +
       '</div>' +
       '<div id="classes-tab-courses" class="classes-directory-tab"' + coursesDisplay + '>' +
         '<div class="tbl-wrap classes-table-wrap">' +
-          '<table class="classes-table">' +
-            '<thead><tr><th>\u0627\u0644\u062f\u0648\u0631\u0629</th><th>\u0627\u0644\u0645\u0631\u0643\u0632</th><th>\u0627\u0644\u0648\u0642\u062a</th><th>\u0627\u0644\u0623\u0633\u0627\u0628\u064a\u0639</th><th>\u0627\u0644\u0645\u062f\u0631\u0628</th><th>\u0627\u0644\u0637\u0644\u0627\u0628</th><th>\u0627\u0644\u062d\u0627\u0644\u0629</th><th>\u0625\u062c\u0631\u0627\u0621\u0627\u062a</th></tr></thead>' +
+          '<table class="data-table classes-table table-courses">' +
+            '<thead><tr>' +
+            '<th>\u0627\u0644\u062f\u0648\u0631\u0629</th>' +
+            '<th><span class="th-fw">\u0627\u0644\u0645\u0631\u0643\u0632 <button class="cfb" data-tbl="courses" data-col="school" onclick="openColFilter(this,\'courses\',\'school\')" title="\u0641\u0644\u062a\u0631">&#9662;</button></span></th>' +
+            '<th>\u0627\u0644\u0648\u0642\u062a</th>' +
+            '<th>\u0627\u0644\u0623\u0633\u0627\u0628\u064a\u0639</th>' +
+            '<th>\u0627\u0644\u0645\u062f\u0631\u0628</th>' +
+            '<th>\u0645\u0633\u0627\u0639\u062f \u0627\u0644\u0645\u062f\u0631\u0628</th>' +
+            '<th>\u0627\u0644\u0637\u0644\u0627\u0628</th>' +
+            '<th><span class="th-fw">\u0627\u0644\u062d\u0627\u0644\u0629 <button class="cfb" data-tbl="courses" data-col="status" onclick="openColFilter(this,\'courses\',\'status\')" title="\u0641\u0644\u062a\u0631">&#9662;</button></span></th>' +
+            '<th>\u0625\u062c\u0631\u0627\u0621\u0627\u062a</th>' +
+            '</tr></thead>' +
             '<tbody>' + courseRowsHtml + '</tbody>' +
           '</table>' +
         '</div>' +
@@ -620,7 +849,7 @@
 
   window.loadClassesForDirectoryFilter = function () {
     var wrap = document.getElementById('classes-directory');
-    var loadingHtml = '<div class="tbl-wrap classes-table-wrap"><table class="classes-table"><tbody><tr><td colspan="7"><div class="empty"><div class="empty-icon">...</div>\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0635\u0641\u0648\u0641 \u0648\u0627\u0644\u062f\u0648\u0631\u0627\u062a</div></td></tr></tbody></table></div>';
+    var loadingHtml = '<div class="tbl-wrap classes-table-wrap"><table class="data-table classes-table"><tbody><tr><td colspan="9"><div class="empty"><div class="empty-icon">...</div>\u062c\u0627\u0631\u064a \u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u0635\u0641\u0648\u0641 \u0648\u0627\u0644\u062f\u0648\u0631\u0627\u062a</div></td></tr></tbody></table></div>';
     if (wrap) wrap.innerHTML = loadingHtml;
     var ids = ['admin-unassigned'].concat((window.A.teachers || []).map(function (t) { return t.id; }).filter(Boolean));
     Promise.all(ids.map(function (id) {
@@ -818,9 +1047,13 @@
     if (!tbody) return;
     var savedStatuses = {};
     try { savedStatuses = JSON.parse(localStorage.getItem('cq_school_status_overrides') || '{}'); } catch (e) {}
-    var list = filter ? window.A.schools.filter(function (s) {
-      return (s.name || '').includes(filter) || (s.city || '').includes(filter);
-    }) : window.A.schools;
+    var cf = ((window.A.colFilters || {}).schools) || {};
+    var list = window.A.schools.filter(function (s) {
+      var matchText   = !filter || (s.name || '').includes(filter) || (s.city || '').includes(filter);
+      var matchType   = !cf.type   || (s.type   || 'school') === cf.type;
+      var matchStatus = !cf.status || (s.status || 'active') === cf.status;
+      return matchText && matchType && matchStatus;
+    });
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏫</div>لا توجد مدارس بعد</div></td></tr>';
       return;
@@ -829,11 +1062,16 @@
       var teacherCount = getSchoolTeachers(s.id).length;
       var studentCount = getSchoolStudents(s.id).length;
       var classCount = getSchoolClassesOrCourses(s.id).length;
-      var extraBtn = s.type === 'center'
-        ? '<button class="btn btn-xs btn-purple" onclick="openAddCourseForSchool(\'' + s.id + '\')">إضافة دورة</button>'
-        : '<button class="btn btn-xs btn-blue" onclick="openAddClassForSchool(\'' + s.id + '\')">إضافة صف</button>';
       var status = savedStatuses[s.id] || s.status || 'active';
       var isActive = status !== 'inactive';
+      var amSchoolKey = 'sd-' + s.id;
+      window.amReg(amSchoolKey, {
+        subtype: 'school-dir',
+        schoolId: s.id,
+        isCenter: s.type === 'center',
+        status: status,
+        hideEdit: true
+      });
       return '<tr' + (isActive ? '' : ' style="opacity:.6"') + '>' +
         '<td><strong>' + window.esc(s.name) + '</strong><div style="font-size:.75rem;color:#888">' + window.esc(s.city || '') + '</div></td>' +
         '<td><span class="badge badge-blue">' + (s.type === 'center' ? 'مركز' : 'مدرسة') + '</span></td>' +
@@ -841,16 +1079,10 @@
         '<td style="text-align:center"><button class="count-link" onclick="openSchoolRelated(\'' + s.id + '\',\'teachers\')">' + teacherCount + '</button></td>' +
         '<td style="text-align:center"><button class="count-link" onclick="openSchoolRelated(\'' + s.id + '\',\'students\')">' + studentCount + '</button></td>' +
         '<td style="text-align:center"><button class="count-link" onclick="openSchoolRelated(\'' + s.id + '\',\'classes\')">' + classCount + '</button></td>' +
-        '<td>' +
-          '<div class="school-actions">' +
-            '<button class="btn btn-xs btn-outline school-action-edit" onclick="openEditSchool(\'' + s.id + '\')">تعديل</button>' +
-            extraBtn +
-            (isActive
-              ? '<button class="btn btn-xs btn-danger" onclick="doToggleSchoolStatus(\'' + s.id + '\')">تعطيل</button>'
-              : '<button class="btn btn-xs btn-green" onclick="doToggleSchoolStatus(\'' + s.id + '\')">تفعيل</button>') +
-            '<button class="btn btn-xs btn-danger-outline" onclick="doDeleteSchool(\'' + s.id + '\')">حذف</button>' +
-          '</div>' +
-        '</td>' +
+        '<td class="row-actions-cell"><div class="split-action">' +
+          '<button class="split-action-primary" type="button" onclick="openEditSchool(\'' + s.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="split-action-menu" type="button" title="\u0627\u0644\u0623\u0648\u0627\u0645\u0631" aria-label="\u0623\u0648\u0627\u0645\u0631 \u0627\u0644\u0645\u062f\u0631\u0633\u0629" aria-haspopup="menu" onclick="toggleActionMenu(this,\'reg\',\'' + amSchoolKey + '\',\'\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
+        '</div></td>' +
       '</tr>';
     }).join('');
   };
@@ -900,7 +1132,7 @@
   function getSchoolStudents(schoolId) {
     var school = schoolByIdGlobal(schoolId);
     var isCenter = String((school && school.type) || '').toLowerCase() === 'center';
-    var addedRows = getSchoolClassesOrCourses(schoolId);
+    var addedRows = isCenter ? getSchoolClassesOrCourses(schoolId) : [];
     return uniqueRows((window.A.students || []).filter(function (s) {
       if (s.status === 'deleted' || !belongsToSchool(s, school)) return false;
       if (isCenter) {
@@ -909,17 +1141,137 @@
           return normalizeRelatedText(row.name) === courseName;
         });
       }
-      var parts = splitRelatedClassParts(s.class || s.className || '', s.section || '');
-      return addedRows.some(function (row) {
-        return normalizeRelatedText(row.name) === normalizeRelatedText(parts.grade) &&
-          normalizeRelatedSection(row.section || '') === normalizeRelatedSection(parts.section || '');
-      });
+      return true;
     }), function (s) {
       return s.id || normalizeRelatedText(s.email || s.name || '');
     }).sort(function (a, b) {
       return String(a.name || '').localeCompare(String(b.name || ''), 'ar');
     });
   }
+
+  function getTargetStudents(target) {
+    target = target || {};
+    var schoolId = String(target.schoolId || '');
+    var className = String(target.className || '');
+    var section = String(target.section || '');
+    var isCourse = target.kind === 'course';
+    return (window.A.students || []).filter(function (student) {
+      if (student.role && student.role !== 'student') return false;
+      if (student.status === 'deleted' || student.leftSchool === true || String(student.leftSchool || '') === 'true') return false;
+      if (String(student.schoolId || '') !== schoolId) return false;
+      var studentClass = student.class || student.className || '';
+      if (isCourse) return normalizeRelatedText(studentClass) === normalizeRelatedText(className);
+      var parts = splitRelatedClassParts(studentClass, student.section || '');
+      return normalizeRelatedText(parts.grade) === normalizeRelatedText(className) &&
+        normalizeRelatedSection(parts.section || '') === normalizeRelatedSection(section || '');
+    }).sort(function (a, b) {
+      return String(a.name || '').localeCompare(String(b.name || ''), 'ar');
+    });
+  }
+
+  function renderManagedClassStudents() {
+    var target = window.A._manageClassStudentsTarget || {};
+    var listEl = document.getElementById('class-students-list');
+    var titleEl = document.getElementById('class-students-title');
+    var metaEl = document.getElementById('class-students-meta');
+    if (!listEl) return;
+
+    var school = (window.A.schools || []).find(function (s) { return s.id === target.schoolId; }) || {};
+    var students = getTargetStudents(target);
+    if (titleEl) titleEl.textContent = (target.kind === 'course' ? '\u0637\u0644\u0627\u0628 \u0627\u0644\u062f\u0648\u0631\u0629' : '\u0637\u0644\u0627\u0628 \u0627\u0644\u0635\u0641');
+    if (metaEl) {
+      metaEl.innerHTML =
+        '<strong>' + window.esc(target.className || '\u2014') + '</strong>' +
+        (target.section && target.kind !== 'course' ? ' <span class="badge badge-blue">' + window.esc(target.section) + '</span>' : '') +
+        '<span>' + window.esc(school.name || '\u2014') + '</span>' +
+        '<span>' + students.length + ' \u0637\u0627\u0644\u0628</span>';
+    }
+
+    listEl.innerHTML = students.length ? students.map(function (student) {
+      var sub = [student.email || student.studentCode || '', student.status === 'inactive' ? '\u0645\u0639\u0637\u0644' : ''].filter(Boolean).join(' - ');
+      return '<div class="class-student-row">' +
+        '<div class="class-student-main">' +
+          '<strong>' + window.esc(student.name || student.email || '\u2014') + '</strong>' +
+          '<span>' + window.esc(sub || '\u2014') + '</span>' +
+        '</div>' +
+        '<div class="class-student-actions">' +
+          '<button class="btn btn-xs btn-outline" onclick="openEditStudent(\'' + student.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="btn btn-xs btn-danger-outline" onclick="doRemoveStudentFromClass(\'' + student.id + '\')">\u0625\u0632\u0627\u0644\u0629</button>' +
+        '</div>' +
+      '</div>';
+    }).join('') : '<div class="empty"><div class="empty-icon">\ud83c\udf93</div>\u0644\u0627 \u064a\u0648\u062c\u062f \u0637\u0644\u0627\u0628 \u0641\u064a \u0647\u0630\u0627 \u0627\u0644\u0635\u0641</div>';
+  }
+
+  function refreshManagedClassStudents() {
+    var modal = document.getElementById('modal-class-students');
+    if (modal && modal.classList.contains('open')) renderManagedClassStudents();
+  }
+
+  window.openClassStudents = function (kind, schoolId, className, section) {
+    window.A._manageClassStudentsTarget = {
+      kind: kind || 'class',
+      schoolId: schoolId || '',
+      className: className || '',
+      section: section || ''
+    };
+    renderManagedClassStudents();
+    window.openModal('modal-class-students');
+  };
+
+  window.openAddStudentForManagedClass = function () {
+    var target = window.A._manageClassStudentsTarget || {};
+    if (!target.schoolId || !target.className) return;
+    openExistingStudentPicker(target);
+  };
+
+  function setSelectValue(sel, value) {
+    if (!sel) return;
+    value = String(value || '');
+    if (value) sel.disabled = false;
+    var found = Array.prototype.some.call(sel.options || [], function (opt) {
+      return opt.value === value;
+    });
+    if (value && !found) {
+      var opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value;
+      sel.appendChild(opt);
+    }
+    sel.value = value;
+  }
+
+  window.openCreateStudentForManagedClass = function () {
+    var target = window.A._manageClassStudentsTarget || {};
+    if (!target.schoolId || !target.className) return;
+    window.openAddStudent();
+    setSelectValue(document.getElementById('student-school-sel'), target.schoolId);
+    window.onStudentSchoolChange();
+    setSelectValue(document.getElementById('student-class'), target.className);
+    window.onStudentClassChange();
+    setSelectValue(document.getElementById('student-section'), target.section || (target.kind === 'course' ? '\u062f\u0648\u0631\u0629' : ''));
+  };
+
+  window.doRemoveStudentFromClass = function (studentId) {
+    var student = (window.A.students || []).find(function (s) { return s.id === studentId; });
+    if (!student) return;
+    if (!confirm('\u0625\u0632\u0627\u0644\u0629 \u0647\u0630\u0627 \u0627\u0644\u0637\u0627\u0644\u0628 \u0645\u0646 \u0627\u0644\u0635\u0641\u061f')) return;
+    window.CQ_API.adminUpdateUser(studentId, {
+      class: '',
+      section: ''
+    }, window.A.token).then(function (res) {
+      if (res && (res.ok || res.success)) {
+        student.class = '';
+        student.className = '';
+        student.section = '';
+        window.renderStudentsTable();
+        renderClassesDirectory();
+        renderManagedClassStudents();
+        if (typeof window.loadStudents === 'function') window.loadStudents();
+      } else {
+        alert((res && (res.message || res.msg)) || '\u062d\u062f\u062b \u062e\u0637\u0623');
+      }
+    }).catch(function () { alert('\u062a\u0639\u0630\u0631 \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645'); });
+  };
 
   function getSchoolClassesOrCoursesLegacy(schoolId) {
     var school = (window.A.schools || []).find(function (s) { return s.id === schoolId; }) || {};
@@ -1063,6 +1415,55 @@
   }
 
   /* ── عرض صفوف مدرسة ── */
+  window.mgclsToggleDropdown = function (btn) {
+    var td = btn.closest('td');
+    var template = td ? td.querySelector('.mgcls-dropdown') : null;
+    if (!template) return;
+
+    var existing = document.getElementById('mgcls-floating-dropdown');
+    var isOwn = existing && existing.dataset.owner === btn._mgclsId;
+
+    /* أغلق أي قائمة مفتوحة */
+    if (existing) { existing.remove(); }
+    if (isOwn) return;
+
+    /* أنشئ معرّف فريد للزر */
+    if (!btn._mgclsId) btn._mgclsId = 'mgcls_' + Date.now();
+
+    /* اصنع نسخة عائمة وألحقها بـ body */
+    var floating = document.createElement('div');
+    floating.id = 'mgcls-floating-dropdown';
+    floating.dataset.owner = btn._mgclsId;
+    floating.className = 'mgcls-dropdown';
+    floating.innerHTML = template.innerHTML;
+    floating.style.display = '';
+    document.body.appendChild(floating);
+
+    /* حدّد موقعه بناءً على مكان الزر */
+    var rect = btn.getBoundingClientRect();
+    floating.style.position = 'fixed';
+    floating.style.zIndex   = '9999';
+    var dropW = floating.offsetWidth;
+    var left  = rect.right - dropW;
+    var top   = rect.bottom + 4;
+    /* إذا خرج من أسفل الشاشة، اعكسه للأعلى */
+    if (top + floating.offsetHeight > window.innerHeight - 8) {
+      top = rect.top - floating.offsetHeight - 4;
+    }
+    floating.style.left = Math.max(8, left) + 'px';
+    floating.style.top  = top + 'px';
+  };
+
+  if (!window._mgclsOutsideHandler) {
+    window._mgclsOutsideHandler = true;
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.split-action-menu') && !e.target.closest('#mgcls-floating-dropdown')) {
+        var d = document.getElementById('mgcls-floating-dropdown');
+        if (d) d.remove();
+      }
+    });
+  }
+
   function _renderMgClsList(schoolId) {
     var el = document.getElementById('mgcls-list');
     if (!el) return;
@@ -1084,6 +1485,7 @@
       }
       if ((!classMap[key].teacherId || classMap[key].teacherId === 'admin-unassigned') && c.teacherId) {
         classMap[key].teacherId = c.teacherId;
+        if (c.id) classMap[key].id = c.id;
       }
       if (classMap[key].status !== 'inactive' && c.status === 'inactive') {
         classMap[key].status = 'inactive';
@@ -1096,31 +1498,80 @@
       el.innerHTML = '<div style="color:#888;font-size:.85rem;padding:.5rem 0">لا توجد صفوف بعد</div>';
       return;
     }
-    el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:.85rem">' +
-      '<thead><tr style="background:var(--bg,#f3f7fb)">' +
-      '<th style="padding:6px 8px;text-align:right">الصف</th>' +
-      '<th style="padding:6px 8px;text-align:right">الشعبة</th>' +
-      '<th style="padding:6px 8px;text-align:right">المعلم</th>' +
-      '<th style="padding:6px 8px"></th>' +
+    el.innerHTML = '<div class="tbl-wrap mgcls-tbl-wrap">' +
+      '<table class="data-table mgcls-table">' +
+      '<thead><tr>' +
+      '<th>الصف</th>' +
+      '<th>الشعبة</th>' +
+      '<th>المعلم</th>' +
+      '<th>مساعد المعلم</th>' +
+      '<th class="class-student-count">الطلاب</th>' +
+      '<th>الحالة</th>' +
+      '<th>إجراءات</th>' +
       '</tr></thead><tbody>' +
       classes.map(function (c) {
         var teacher = (window.A.teachers || []).find(function (t) { return t.id === c.teacherId; });
-        var teacherName = teacher ? teacher.name : '<span style="color:#aaa">غير محدد</span>';
-        return '<tr style="border-bottom:1px solid var(--border,#e5e7eb)">' +
-          '<td style="padding:6px 8px">' + window.esc(c.grade || c.name || '') + '</td>' +
-          '<td style="padding:6px 8px">' + window.esc(c.section || '—') + '</td>' +
-          '<td style="padding:6px 8px">' + teacherName + '</td>' +
-          '<td style="padding:6px 8px;display:flex;gap:4px">' +
-            '<button class="btn btn-xs btn-outline" onclick="openEditClass(\'' + c.id + '\')">تعديل</button>' +
-            '<button class="btn btn-xs btn-green" onclick="openAssignTeacherToClass(\'' + c.id + '\',\'' + window.esc(c.grade || c.name || '') + ' ' + window.esc(c.section || '') + '\')">ربط معلم</button>' +
-            '<button class="btn btn-xs btn-blue" onclick="openAddStudentForClass(\'' + c.schoolId + '\',\'' + window.esc(c.grade || c.name || '') + '\',\'' + window.esc(c.section || '') + '\')">إضافة طالب</button>' +
-            (c.status === 'inactive'
-              ? '<button class="btn btn-xs btn-green" onclick="doToggleClassStatus(\'' + c.id + '\',\'active\')">تفعيل</button>'
-              : '<button class="btn btn-xs btn-danger" onclick="doToggleClassStatus(\'' + c.id + '\',\'inactive\')">تعطيل</button>') +
+        var hasTeacher = !!(teacher);
+        var assistantName = assistantNameFor(c, 'teacher');
+        var hasAssistant = !!(assistantName);
+        var safeLabel   = window.esc((c.grade || c.name || '') + ' ' + (c.section || '')).trim();
+        var safeGrade   = window.esc(c.grade || c.name || '');
+        var safeSection = window.esc(c.section || '');
+        var classStudents = (window.A.students || []).filter(function (s) {
+          if (s.status === 'deleted' || s.leftSchool === true || String(s.leftSchool || '') === 'true') return false;
+          if ((s.schoolId || '') !== c.schoolId) return false;
+          var parts = splitRelatedClassParts(s.class || s.className || '', s.section || '');
+          return normalizeRelatedText(parts.grade) === normalizeRelatedText(c.grade || c.name || '') &&
+            normalizeRelatedSection(parts.section || '') === normalizeRelatedSection(c.section || '');
+        });
+        var activeStudents = classStudents.filter(function (s) { return s.status === 'active'; }).length;
+        var totalStudents  = classStudents.length;
+        var isInactive = c.status === 'inactive';
+        var statusBadge = isInactive
+          ? '<span class="badge badge-inactive">معطل</span>'
+          : '<span class="badge badge-active">نشط</span>';
+        var classEditAction = c.id
+          ? 'openEditClass(\'' + c.id + '\')'
+          : 'openEditVirtualClass(\'' + c.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')';
+        var teacherCell = hasTeacher
+          ? window.esc(teacher.name)
+          : (c.id
+            ? '<button class="assign-teacher-quick-btn" onclick="openAssignTeacherToClass(\'' + c.id + '\',\'' + safeLabel + '\')">+ ربط معلم</button>'
+            : '<span class="no-teacher-label">غير متاح</span>');
+        var assistantCell = hasAssistant
+          ? window.esc(assistantName)
+          : (hasTeacher && c.id
+            ? '<button class="assign-teacher-quick-btn" onclick="openAssignClassAssistant(\'' + c.id + '\',\'' + safeLabel + '\')">+ إضافة مساعد</button>'
+            : '<span class="no-teacher-label">—</span>');
+        var dropdownItems =
+          '<button class="mgcls-drop-item" onclick="openAddStudentForClass(\'' + c.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')">إضافة طالب</button>';
+        if (c.id && hasTeacher)
+          dropdownItems += '<button class="mgcls-drop-item" onclick="openAssignTeacherToClass(\'' + c.id + '\',\'' + safeLabel + '\')">تغيير المعلم</button>';
+        if (c.id && hasTeacher && hasAssistant)
+          dropdownItems += '<button class="mgcls-drop-item" onclick="openAssignClassAssistant(\'' + c.id + '\',\'' + safeLabel + '\')">تغيير مساعد المعلم</button>';
+        else if (c.id && hasTeacher)
+          dropdownItems += '<button class="mgcls-drop-item" onclick="openAssignClassAssistant(\'' + c.id + '\',\'' + safeLabel + '\')">إضافة مساعد معلم</button>';
+        if (c.id)
+          dropdownItems += isInactive
+            ? '<button class="mgcls-drop-item mgcls-drop-green" onclick="doToggleClassStatus(\'' + c.id + '\',\'active\')">تفعيل الصف</button>'
+            : '<button class="mgcls-drop-item mgcls-drop-red" onclick="doToggleClassStatus(\'' + c.id + '\',\'inactive\')">تعطيل الصف</button>';
+        return '<tr>' +
+          '<td><strong class="class-table-title">' + window.esc(c.grade || c.name || '') + '</strong></td>' +
+          '<td><span class="badge badge-blue">' + window.esc(c.section || '—') + '</span></td>' +
+          '<td>' + teacherCell + '</td>' +
+          '<td>' + assistantCell + '</td>' +
+          '<td class="class-student-count"><button class="class-student-count-btn" type="button" onclick="openClassStudents(\'class\',\'' + c.schoolId + '\',\'' + safeGrade + '\',\'' + safeSection + '\')"><strong>' + totalStudents + '</strong><span>' + activeStudents + ' نشط</span></button></td>' +
+          '<td>' + statusBadge + '</td>' +
+          '<td class="row-actions-cell" style="position:relative">' +
+            '<div class="split-action">' +
+              '<button class="split-action-primary" onclick="' + classEditAction + '">تعديل</button>' +
+              '<button class="split-action-menu" onclick="window.mgclsToggleDropdown(this)" title="المزيد"><svg viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
+            '</div>' +
+            '<div class="mgcls-dropdown" style="display:none">' + dropdownItems + '</div>' +
           '</td>' +
         '</tr>';
       }).join('') +
-      '</tbody></table>';
+      '</tbody></table></div>';
   }
 
   window.doDeleteClass = function (classId) {
@@ -1292,7 +1743,7 @@
           '<td style="padding:6px 8px"><strong>' + window.esc(c.name) + '</strong></td>' +
           '<td style="padding:6px 8px;font-size:.8rem">' + timeLabel + '</td>' +
           '<td style="padding:6px 8px">' + trainerName + '</td>' +
-          '<td style="padding:6px 8px;display:flex;gap:4px;flex-wrap:wrap">' +
+          '<td style="padding:6px 8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">' +
             '<button class="btn btn-xs btn-outline" onclick="openEditCourse(\'' + c.id + '\')">تعديل</button>' +
             '<button class="btn btn-xs btn-purple" onclick="openAssignTrainerToCourse(\'' + c.id + '\',\'' + window.esc(c.name) + '\')">ربط مدرب</button>' +
             '<button class="btn btn-xs btn-blue" onclick="openAddStudentForCourse(\'' + c.schoolId + '\',\'' + window.esc(c.name) + '\')">إضافة طالب</button>' +
@@ -1303,6 +1754,11 @@
         '</tr>';
       }).join('') +
       '</tbody></table>';
+  }
+
+  function _setMgClsList(show) {
+    var el = document.getElementById('mgcls-list');
+    if (el) el.style.display = show ? '' : 'none';
   }
 
   window.openAddClassForSchool = function (schoolId) {
@@ -1320,6 +1776,7 @@
     var sectionEl = document.getElementById('addclass-section');
     if (sectionEl) sectionEl.value = '';
     window.showMsg('addclass-msg', '', '');
+    _setMgClsList(true);
     _renderMgClsList(schoolId);
     window.openModal('modal-manage-classes');
   };
@@ -1329,35 +1786,119 @@
     if (!cls) return;
     window.A._editClassId = classId;
     window.A._addClassSchoolId = cls.schoolId || '';
-    var school = window.A.schools.find(function (s) { return s.id === cls.schoolId; });
-    var nameEl = document.getElementById('mgcls-school-name');
-    if (nameEl) nameEl.textContent = school ? school.name : '';
-    var titleEl = document.getElementById('addclass-form-title');
+    var titleEl = document.getElementById('edit-class-inline-title');
     if (titleEl) titleEl.textContent = 'تعديل الصف';
-    var btnEl = document.getElementById('addclass-submit-btn');
-    if (btnEl) btnEl.textContent = 'حفظ التعديل';
-    ensureSelectOption('addclass-grade', cls.grade || cls.name || '');
-    ensureSelectOption('addclass-section', cls.section || '');
-    window.showMsg('addclass-msg', '', '');
-    _renderMgClsList(cls.schoolId);
-    window.openModal('modal-manage-classes');
+    ensureSelectOption('edit-class-inline-grade', cls.grade || cls.name || '');
+    ensureSelectOption('edit-class-inline-section', cls.section || '');
+    window.showMsg('edit-class-inline-msg', '', '');
+    window.openModal('modal-edit-class-inline');
+  };
+
+  window.closeEditClassInline = function () {
+    window.closeModal('modal-edit-class-inline');
+  };
+
+  window.doSaveEditClassInline = function () {
+    var gradeEl   = document.getElementById('edit-class-inline-grade');
+    var sectionEl = document.getElementById('edit-class-inline-section');
+    var grade   = gradeEl   ? gradeEl.value   : '';
+    var section = sectionEl ? sectionEl.value : '';
+    if (!grade) { window.showMsg('edit-class-inline-msg', 'يرجى اختيار الصف', 'err'); return; }
+    var editId   = window.A._editClassId;
+    var schoolId = window.A._addClassSchoolId;
+
+    function onSuccess() {
+      window.showMsg('edit-class-inline-msg', 'تم حفظ التعديل', 'ok');
+      _renderMgClsList(schoolId);
+      renderClassesDirectory();
+      setTimeout(window.closeEditClassInline, 700);
+    }
+    function onError(res) {
+      window.showMsg('edit-class-inline-msg', (res && (res.message || res.msg)) || 'حدث خطأ', 'err');
+    }
+
+    if (!editId) {
+      var origGrade   = window.A._virtualClassOriginalGrade   || '';
+      var origSection = window.A._virtualClassOriginalSection || '';
+      // Check if target class already exists — if so, migrate students instead of creating duplicate
+      var normGrade   = grade.trim().toLowerCase().replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي');
+      var normSection = (section || '').trim().toLowerCase().replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي');
+      var existingCls = (window.A.classes || []).find(function (c) {
+        if ((c.schoolId || '') !== schoolId) return false;
+        var cg = (c.grade || c.name || '').trim().toLowerCase().replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي');
+        var cs = (c.section || '').trim().toLowerCase().replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي');
+        return cg === normGrade && cs === normSection;
+      });
+      if (existingCls && origGrade) {
+        // Migrate students from the virtual class into the existing class
+        window.CQ_API.migrateStudents(origGrade, origSection, existingCls.grade || grade, existingCls.section || section || '', schoolId, window.A.token)
+          .then(function (res) {
+            if (res && (res.ok || res.success)) {
+              var toGr = existingCls.grade || grade;
+              var toSe = existingCls.section || section || '';
+              var fromCombined = (origGrade + (origSection ? ' ' + origSection : '')).trim();
+              (window.A.students || []).forEach(function (st) {
+                if (st.schoolId !== schoolId) return;
+                var uCombined = (st.class + (st.section ? ' ' + st.section : '')).trim();
+                if (st.class === origGrade || uCombined === origGrade || st.class === fromCombined || uCombined === fromCombined) {
+                  st.class = toGr; st.section = toSe;
+                }
+              });
+              onSuccess();
+            } else { onError(res); }
+          }).catch(function () { window.showMsg('edit-class-inline-msg', 'تعذر الاتصال بالخادم', 'err'); });
+      } else {
+        // Virtual class — no DB record yet; create it
+        window.CQ_API.adminCreateClass({
+          grade: grade, name: grade, section: section || '', schoolId: schoolId
+        }, window.A.token).then(function (res) {
+          if (res && (res.ok || res.success)) {
+            var created = res.data || res.class || res.createdClass || res.classItem || null;
+            if (created && created.id) {
+              created.grade    = created.grade    || grade;
+              created.name     = created.name     || (grade + (section ? ' ' + section : '')).trim();
+              created.section  = created.section  || section || '';
+              created.schoolId = created.schoolId || schoolId;
+              window.A.classes = window.A.classes || [];
+              window.A.classes.push(created);
+            }
+            onSuccess();
+          } else { onError(res); }
+        }).catch(function () { window.showMsg('edit-class-inline-msg', 'تعذر الاتصال بالخادم', 'err'); });
+      }
+    } else {
+      var cls = (window.A.classes || []).find(function (c) { return c.id === editId; });
+      var teacherId = cls ? (cls.teacherId || 'admin-unassigned') : 'admin-unassigned';
+      var oldGrade   = cls ? (cls.grade   || cls.name || '') : '';
+      var oldSection = cls ? (cls.section || '') : '';
+      window.CQ_API.updateClass(editId, teacherId, { grade: grade, section: section }, window.A.token)
+        .then(function (res) {
+          if (res && (res.ok || res.success)) {
+            if (cls) { cls.grade = grade; cls.name = grade; cls.section = section; }
+            var oldCombined = (oldGrade + (oldSection ? ' ' + oldSection : '')).trim();
+            (window.A.students || []).forEach(function (st) {
+              if (st.schoolId !== schoolId) return;
+              var uCombined = ((st.class || '') + (st.section ? ' ' + st.section : '')).trim();
+              var match = st.class === oldGrade || uCombined === oldGrade || st.class === oldCombined || uCombined === oldCombined;
+              if (match) { st.class = grade; st.section = section; }
+            });
+            onSuccess();
+          } else { onError(res); }
+        }).catch(function () { window.showMsg('edit-class-inline-msg', 'تعذر الاتصال بالخادم', 'err'); });
+    }
   };
 
   window.openEditVirtualClass = function (schoolId, grade, section) {
     window.A._editClassId = null;
     window.A._addClassSchoolId = schoolId || '';
-    var school = window.A.schools.find(function (s) { return s.id === schoolId; });
-    var nameEl = document.getElementById('mgcls-school-name');
-    if (nameEl) nameEl.textContent = school ? school.name : '';
-    var titleEl = document.getElementById('addclass-form-title');
+    window.A._virtualClassOriginalGrade   = grade   || '';
+    window.A._virtualClassOriginalSection = section || '';
+    var titleEl = document.getElementById('edit-class-inline-title');
     if (titleEl) titleEl.textContent = 'تعديل الصف';
-    var btnEl = document.getElementById('addclass-submit-btn');
-    if (btnEl) btnEl.textContent = 'حفظ التعديل';
-    ensureSelectOption('addclass-grade', grade || '');
-    ensureSelectOption('addclass-section', section || '');
-    window.showMsg('addclass-msg', 'سيتم حفظ هذا الصف كسجل رسمي عند الضغط على حفظ التعديل', 'ok');
-    _renderMgClsList(schoolId);
-    window.openModal('modal-manage-classes');
+    ensureSelectOption('edit-class-inline-grade', grade || '');
+    ensureSelectOption('edit-class-inline-section', section || '');
+    window.showMsg('edit-class-inline-msg', 'سيتم حفظ هذا الصف كسجل رسمي عند الضغط على حفظ التعديل', 'ok');
+    window.openModal('modal-edit-class-inline');
   };
 
   window.doToggleVirtualClassStatus = function (schoolId, grade, section, newStatus) {
@@ -1473,7 +2014,7 @@
         saveCreated(res);
         return;
       }
-      window.CQ_API.createClass('admin-unassigned', '', grade, schoolId, section).then(saveCreated);
+      window.CQ_API.createClass('admin-unassigned', '', grade, schoolId, section, window.A.token).then(saveCreated);
     }).catch(function () { window.showMsg('addclass-msg', 'تعذر الاتصال بالخادم', 'err'); });
   };
 
@@ -1483,12 +2024,15 @@
     if (labelEl) labelEl.textContent = 'الصف: ' + (classLabel || '');
     var sel = document.getElementById('acteacher-sel');
     if (sel) {
-      var teachers = (window.A.teachers || []).filter(function (t) { return t.status === 'active' || t.status === 'pending'; });
+      var cls = (window.A.classes || []).find(function (c) { return c.id === classId; });
+      var assistantId = cls ? firstFilled(cls.assistantTeacherId, cls.teacherAssistantId, cls.coTeacherId, cls.assistantId) : '';
+      var teachers = (window.A.teachers || []).filter(function (t) {
+        return (t.status === 'active' || t.status === 'pending') && (!assistantId || t.id !== assistantId);
+      });
       sel.innerHTML = '<option value="">-- اختر معلماً --</option>' +
         teachers.map(function (t) {
           return '<option value="' + t.id + '">' + window.esc(t.name) + '</option>';
         }).join('');
-      var cls = (window.A.classes || []).find(function (c) { return c.id === classId; });
       if (cls && cls.teacherId) sel.value = cls.teacherId;
     }
     window.showMsg('acteacher-msg', '', '');
@@ -1505,9 +2049,15 @@
     var cls = (window.A.classes || []).find(function (c) { return c.id === classId; });
     var shouldMoveUnassigned = cls && cls.teacherId === 'admin-unassigned';
     var oldClassId = cls ? cls.id : classId;
-    var savePromise = cls && (cls._localOnly || shouldMoveUnassigned)
-      ? window.CQ_API.createClass(teacherId, teacherEmail, cls.grade || cls.name || '', cls.schoolId || window.A._addClassSchoolId || '', cls.section || '')
-      : window.CQ_API.updateClass(classId, teacherId, {teacherEmail: teacherEmail}, window.A.token);
+    var assistantId = cls ? firstFilled(cls.assistantTeacherId, cls.teacherAssistantId, cls.coTeacherId, cls.assistantId) : '';
+    var updateData = {teacherEmail: teacherEmail};
+    if (assistantId && assistantId === teacherId) {
+      updateData.assistantTeacherId = '';
+      updateData.assistantTeacherName = '';
+    }
+    var savePromise = cls && cls._localOnly
+      ? window.CQ_API.createClass(teacherId, teacherEmail, cls.grade || cls.name || '', cls.schoolId || window.A._addClassSchoolId || '', cls.section || '', window.A.token)
+      : window.CQ_API.updateClass(classId, teacherId, updateData, window.A.token);
 
     savePromise.then(function (res) {
       if (res && (res.ok || res.success)) {
@@ -1523,9 +2073,13 @@
           }
           cls.teacherId = teacherId;
           cls.teacherEmail = teacherEmail;
+          if (assistantId && assistantId === teacherId) {
+            cls.assistantTeacherId = '';
+            cls.assistantTeacherName = '';
+          }
         }
-        if (shouldMoveUnassigned && oldClassId && oldClassId !== (cls && cls.id)) {
-          window.CQ_API.deleteClass(oldClassId, 'admin-unassigned').then(function () {}).catch(function () {});
+        if (cls && cls._localOnly && shouldMoveUnassigned && oldClassId && oldClassId !== (cls && cls.id)) {
+          window.CQ_API.deleteClass(oldClassId, 'admin-unassigned', window.A.token).then(function () {}).catch(function () {});
         }
         window.showMsg('acteacher-msg', 'تم ربط المعلم', 'ok');
         _renderMgClsList(window.A._addClassSchoolId);
@@ -1543,6 +2097,114 @@
         window.showMsg('acteacher-msg', (res && (res.message || res.msg)) || 'حدث خطأ', 'err');
       }
     }).catch(function () { window.showMsg('acteacher-msg', 'تعذر الاتصال بالخادم', 'err'); });
+  };
+
+  function teacherOptionList(excludeId) {
+    return (window.A.teachers || []).filter(function (t) {
+      return (t.status === 'active' || t.status === 'pending') && t.id !== excludeId;
+    });
+  }
+
+  window.openAssignClassAssistant = function (classId, classLabel) {
+    var cls = (window.A.classes || []).find(function (c) { return c.id === classId; });
+    if (!cls) return;
+    if (!cls.teacherId || cls.teacherId === 'admin-unassigned') {
+      window.showMsg('assistant-msg', 'حدد المعلم أولاً', 'err');
+      return;
+    }
+    var teachers = teacherOptionList(cls.teacherId || '');
+    window.A._assignAssistant = { type: 'class', id: classId };
+    var titleEl = document.getElementById('assistant-modal-title');
+    var labelEl = document.getElementById('assistant-target-label');
+    var selectLabel = document.getElementById('assistant-select-label');
+    var sel = document.getElementById('assistant-sel');
+    if (titleEl) titleEl.textContent = 'تعيين مساعد معلم';
+    if (labelEl) labelEl.textContent = 'الصف: ' + (classLabel || '');
+    if (selectLabel) selectLabel.textContent = 'اختر مساعد المعلم';
+    if (sel) {
+      sel.innerHTML = '<option value="">-- اختر مساعد المعلم --</option>' + teachers.map(function (t) {
+        return '<option value="' + t.id + '">' + window.esc(t.name) + '</option>';
+      }).join('');
+      sel.value = firstFilled(cls.assistantTeacherId, cls.teacherAssistantId, cls.coTeacherId, cls.assistantId);
+    }
+    window.showMsg('assistant-msg', teachers.length ? '' : 'لا يوجد معلمون متاحون كمساعدين لهذا الصف', teachers.length ? '' : 'err');
+    window.openModal('modal-assign-assistant');
+  };
+
+  window.openAssignCourseAssistant = function (courseId, courseName) {
+    var course = (window.A.courses || []).find(function (c) { return c.id === courseId; });
+    if (!course) return;
+    if (!course.trainerId && !course.teacherId) {
+      window.showMsg('assistant-msg', 'حدد المدرب أولاً', 'err');
+      return;
+    }
+    var teachers = teacherOptionList(course.trainerId || course.teacherId || '');
+    window.A._assignAssistant = { type: 'course', id: courseId };
+    var titleEl = document.getElementById('assistant-modal-title');
+    var labelEl = document.getElementById('assistant-target-label');
+    var selectLabel = document.getElementById('assistant-select-label');
+    var sel = document.getElementById('assistant-sel');
+    if (titleEl) titleEl.textContent = 'تعيين مساعد مدرب';
+    if (labelEl) labelEl.textContent = 'الدورة: ' + (courseName || '');
+    if (selectLabel) selectLabel.textContent = 'اختر مساعد المدرب';
+    if (sel) {
+      sel.innerHTML = '<option value="">-- اختر مساعد المدرب --</option>' + teachers.map(function (t) {
+        return '<option value="' + t.id + '">' + window.esc(t.name) + '</option>';
+      }).join('');
+      sel.value = firstFilled(course.assistantTrainerId, course.trainerAssistantId, course.coTrainerId, course.assistantId);
+    }
+    window.showMsg('assistant-msg', teachers.length ? '' : 'لا يوجد معلمون متاحون كمساعدين لهذه الدورة', teachers.length ? '' : 'err');
+    window.openModal('modal-assign-assistant');
+  };
+
+  window.doAssignAssistant = function () {
+    var target = window.A._assignAssistant || {};
+    var sel = document.getElementById('assistant-sel');
+    var assistantId = sel ? sel.value : '';
+    if (!assistantId) { window.showMsg('assistant-msg', 'يرجى اختيار المساعد', 'err'); return; }
+    var assistant = (window.A.teachers || []).find(function (t) { return t.id === assistantId; });
+    var assistantName = assistant ? (assistant.name || '') : '';
+
+    if (target.type === 'class') {
+      var cls = (window.A.classes || []).find(function (c) { return c.id === target.id; });
+      if (!cls) return;
+      if (assistantId === cls.teacherId) { window.showMsg('assistant-msg', 'لا يمكن اختيار معلم المادة كمساعد', 'err'); return; }
+      window.CQ_API.updateClass(target.id, cls.teacherId || 'admin-unassigned', {
+        assistantTeacherId: assistantId,
+        assistantTeacherName: assistantName
+      }, window.A.token).then(function (res) {
+        if (res && (res.ok || res.success)) {
+          cls.assistantTeacherId = assistantId;
+          cls.assistantTeacherName = assistantName;
+          window.showMsg('assistant-msg', 'تم تعيين مساعد المعلم', 'ok');
+          renderClassesDirectory();
+          setTimeout(function () { window.closeModal('modal-assign-assistant'); }, 700);
+        } else {
+          window.showMsg('assistant-msg', (res && (res.message || res.msg)) || 'حدث خطأ', 'err');
+        }
+      }).catch(function () { window.showMsg('assistant-msg', 'تعذر الاتصال بالخادم', 'err'); });
+      return;
+    }
+
+    if (target.type === 'course') {
+      var course = (window.A.courses || []).find(function (c) { return c.id === target.id; });
+      if (!course) return;
+      if (assistantId === (course.trainerId || course.teacherId)) { window.showMsg('assistant-msg', 'لا يمكن اختيار المدرب الأساسي كمساعد', 'err'); return; }
+      window.CQ_API.updateCourse(target.id, {
+        assistantTrainerId: assistantId,
+        assistantTrainerName: assistantName
+      }, window.A.token).then(function (res) {
+        if (res && (res.ok || res.success)) {
+          course.assistantTrainerId = assistantId;
+          course.assistantTrainerName = assistantName;
+          window.showMsg('assistant-msg', 'تم تعيين مساعد المدرب', 'ok');
+          renderClassesDirectory();
+          setTimeout(function () { window.closeModal('modal-assign-assistant'); }, 700);
+        } else {
+          window.showMsg('assistant-msg', (res && (res.message || res.msg)) || 'حدث خطأ', 'err');
+        }
+      }).catch(function () { window.showMsg('assistant-msg', 'تعذر الاتصال بالخادم', 'err'); });
+    }
   };
 
   window.openAddCourseForSchool = function (schoolId) {
@@ -1667,12 +2329,15 @@
     if (labelEl) labelEl.textContent = 'الدورة: ' + (courseName || '');
     var sel = document.getElementById('actrainer-sel');
     if (sel) {
-      var teachers = (window.A.teachers || []).filter(function (t) { return t.status === 'active' || t.status === 'pending'; });
+      var crs = (window.A.courses || []).find(function (c) { return c.id === courseId; });
+      var assistantId = crs ? firstFilled(crs.assistantTrainerId, crs.trainerAssistantId, crs.coTrainerId, crs.assistantId) : '';
+      var teachers = (window.A.teachers || []).filter(function (t) {
+        return (t.status === 'active' || t.status === 'pending') && (!assistantId || t.id !== assistantId);
+      });
       sel.innerHTML = '<option value="">-- اختر مدرباً --</option>' +
         teachers.map(function (t) {
           return '<option value="' + t.id + '">' + window.esc(t.name) + '</option>';
         }).join('');
-      var crs = (window.A.courses || []).find(function (c) { return c.id === courseId; });
       if (crs && crs.trainerId) sel.value = crs.trainerId;
     }
     window.showMsg('actrainer-msg', '', '');
@@ -1684,10 +2349,24 @@
     var sel = document.getElementById('actrainer-sel');
     var trainerId = sel ? sel.value : '';
     var trainerName = sel && sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].textContent : '';
-    window.CQ_API.updateCourse(courseId, { trainerId: trainerId, trainerName: trainerName }, window.A.token).then(function (res) {
+    var crsBefore = (window.A.courses || []).find(function (c) { return c.id === courseId; });
+    var assistantId = crsBefore ? firstFilled(crsBefore.assistantTrainerId, crsBefore.trainerAssistantId, crsBefore.coTrainerId, crsBefore.assistantId) : '';
+    var updateData = { trainerId: trainerId, trainerName: trainerName };
+    if (assistantId && assistantId === trainerId) {
+      updateData.assistantTrainerId = '';
+      updateData.assistantTrainerName = '';
+    }
+    window.CQ_API.updateCourse(courseId, updateData, window.A.token).then(function (res) {
       if (res && (res.ok || res.success)) {
         var crs = (window.A.courses || []).find(function (c) { return c.id === courseId; });
-        if (crs) { crs.trainerId = trainerId; crs.trainerName = trainerName; }
+        if (crs) {
+          crs.trainerId = trainerId;
+          crs.trainerName = trainerName;
+          if (assistantId && assistantId === trainerId) {
+            crs.assistantTrainerId = '';
+            crs.assistantTrainerName = '';
+          }
+        }
         window.showMsg('actrainer-msg', 'تم ربط المدرب', 'ok');
         _renderMgCrsList(window.A._addCourseSchoolId);
         renderClassesDirectory();
@@ -1815,28 +2494,29 @@
   window.renderTeachersTable = function (filter) {
     var tbody = document.getElementById('teachers-tbody');
     if (!tbody) return;
-    var list = filter ? window.A.teachers.filter(function (t) {
-      return (t.name || '').includes(filter) || (t.teacherCode || '').includes(filter);
-    }) : window.A.teachers;
+    var cf = ((window.A.colFilters || {}).teachers) || {};
+    var list = window.A.teachers.filter(function (t) {
+      var matchText   = !filter || (t.name || '').includes(filter) || (t.teacherCode || '').includes(filter);
+      var matchSchool = !cf.school || t.schoolId === cf.school;
+      var matchStatus = !cf.status || (t.status || 'active') === cf.status;
+      return matchText && matchSchool && matchStatus;
+    });
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">\ud83d\udc64</div>\u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u0639\u0644\u0645\u0648\u0646 \u0628\u0639\u062f</div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (t) {
-      var school = window.A.schools.find(function (s) { return s.id === t.schoolId; });
+      var places = getTeacherPlaces(t.id);
       return '<tr>' +
         '<td><strong>' + window.esc(t.name) + '</strong></td>' +
         '<td><code>' + window.esc(t.teacherCode || '\u2014') + '</code></td>' +
         '<td>' + window.esc(t.email || '\u2014') + '</td>' +
-        '<td>' + window.esc(school ? school.name : '\u2014') + '</td>' +
+        '<td><button class="count-link" onclick="openTeacherPlaces(\'' + t.id + '\')">' + places.length + '</button></td>' +
         '<td>' + badgeStatus(userStatus(t)) + '</td>' +
-        '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-          '<button class="btn btn-xs btn-outline" onclick="openEditTeacher(\'' + t.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
-          (userStatus(t) === 'inactive'
-            ? '<button class="btn btn-xs btn-green" onclick="doToggleUserStatus(\'' + t.id + '\',\'active\',\'teacher\')">\u062a\u0641\u0639\u064a\u0644</button>'
-            : '<button class="btn btn-xs btn-danger" onclick="doToggleUserStatus(\'' + t.id + '\',\'inactive\',\'teacher\')">\u062a\u0639\u0637\u064a\u0644</button>') +
-          '<button class="btn btn-xs btn-danger-outline" onclick="doDeleteTeacher(\'' + t.id + '\')">\u062d\u0630\u0641</button>' +
-        '</td>' +
+        '<td class="row-actions-cell"><div class="split-action">' +
+          '<button class="split-action-primary" type="button" onclick="openEditTeacher(\'' + t.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="split-action-menu" type="button" title="\u0627\u0644\u0623\u0648\u0627\u0645\u0631" aria-label="\u0623\u0648\u0627\u0645\u0631 \u0627\u0644\u0645\u0639\u0644\u0645" aria-haspopup="menu" onclick="toggleActionMenu(this,\'teacher-more\',\'' + t.id + '\',\'' + userStatus(t) + '\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
+        '</div></td>' +
       '</tr>';
     }).join('');
   };
@@ -1846,31 +2526,42 @@
     if (!tbody) return;
     var schoolFilter = (document.getElementById('student-school-filter') || {}).value || '';
     var textFilter = (document.getElementById('student-search') || {}).value || '';
+    var cf = ((window.A.colFilters || {}).students) || {};
     var list = window.A.students.filter(function (s) {
-      var matchSchool = !schoolFilter || s.schoolId === schoolFilter;
-      var matchText = !textFilter || (s.name || '').includes(textFilter) || (s.studentCode || '').includes(textFilter);
-      return matchSchool && matchText;
+      var school = window.A.schools.find(function (sc) { return sc.id === s.schoolId; });
+      var sType = school && String((school.type || '')).toLowerCase() === 'center' ? 'center' : 'school';
+      var matchSchoolDrop = !schoolFilter || s.schoolId === schoolFilter;
+      var matchText   = !textFilter || (s.name || '').includes(textFilter) || (s.studentCode || '').includes(textFilter);
+      var matchGrade  = !cf.grade  || (s.class || '') === cf.grade;
+      var matchSchool = !cf.school || s.schoolId === cf.school;
+      var matchType   = !cf.type   || sType === cf.type;
+      var matchStatus = !cf.status || (s.status || 'pending') === cf.status;
+      return matchSchoolDrop && matchText && matchGrade && matchSchool && matchType && matchStatus;
     });
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">\ud83c\udf93</div>\u0644\u0627 \u064a\u0648\u062c\u062f \u0637\u0644\u0627\u0628</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83c\udf93</div>\u0644\u0627 \u064a\u0648\u062c\u062f \u0637\u0644\u0627\u0628</div></td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (s) {
       var school = window.A.schools.find(function (sc) { return sc.id === s.schoolId; });
+      var isCenter = school && String((school.type || '')).toLowerCase() === 'center';
+      var typeBadge = isCenter
+        ? '<span class="badge badge-purple">\u0645\u0631\u0643\u0632</span>'
+        : '<span class="badge badge-blue">\u0645\u062f\u0631\u0633\u0629</span>';
       return '<tr>' +
         '<td><strong>' + window.esc(s.name) + '</strong></td>' +
         '<td><code>' + window.esc(s.studentCode || '\u2014') + '</code></td>' +
         '<td>' + window.esc(s.email || '\u2014') + '</td>' +
-        '<td>' + window.esc(s.className || s.class || '\u2014') + '</td>' +
-        '<td>' + window.esc(school ? school.name : '\u2014') + '</td>' +
+        '<td>' + ((s.className || s.class)
+          ? window.esc(s.className || s.class)
+          : '<button class="assign-teacher-quick-btn" ' + (school ? '' : 'disabled title="\u0639\u064a\u0646 \u0627\u0644\u0645\u062f\u0631\u0633\u0629 \u0623\u0648\u0644\u0627\u064b"') + ' onclick="openAssignStudentClass(\'' + s.id + '\')">+ \u0639\u064a\u0646 \u0627\u0644\u0635\u0641</button>') + '</td>' +
+        '<td>' + (school ? window.esc(school.name) : '<button class="assign-teacher-quick-btn" onclick="openAssignStudentSchool(\'' + s.id + '\')">+ \u0639\u064a\u0646 \u0627\u0644\u0645\u062f\u0631\u0633\u0629</button>') + '</td>' +
+        '<td>' + typeBadge + '</td>' +
         '<td>' + badgeStatus(userStatus(s)) + '</td>' +
-        '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-          '<button class="btn btn-xs btn-outline" onclick="openEditStudent(\'' + s.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
-          (userStatus(s) === 'inactive'
-            ? '<button class="btn btn-xs btn-green" onclick="doToggleUserStatus(\'' + s.id + '\',\'active\',\'student\')">\u062a\u0641\u0639\u064a\u0644</button>'
-            : '<button class="btn btn-xs btn-danger" onclick="doToggleUserStatus(\'' + s.id + '\',\'inactive\',\'student\')">\u062a\u0639\u0637\u064a\u0644</button>') +
-          '<button class="btn btn-xs btn-danger-outline" onclick="doDeleteStudent(\'' + s.id + '\')">\u062d\u0630\u0641</button>' +
-        '</td>' +
+        '<td class="row-actions-cell"><div class="split-action">' +
+          '<button class="split-action-primary" type="button" onclick="openEditStudent(\'' + s.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="split-action-menu" type="button" title="\u0627\u0644\u0623\u0648\u0627\u0645\u0631" aria-label="\u0623\u0648\u0627\u0645\u0631 \u0627\u0644\u0637\u0627\u0644\u0628" aria-haspopup="menu" onclick="toggleActionMenu(this,\'student-more\',\'' + s.id + '\',\'' + userStatus(s) + '\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
+        '</div></td>' +
       '</tr>';
     }).join('');
   };
@@ -1884,9 +2575,12 @@
   window.renderCreatorsTable = function (filter) {
     var tbody = document.getElementById('creators-tbody');
     if (!tbody) return;
-    var list = filter ? window.A.creators.filter(function (c) {
-      return (c.name || '').includes(filter);
-    }) : window.A.creators;
+    var cf = ((window.A.colFilters || {}).creators) || {};
+    var list = window.A.creators.filter(function (c) {
+      var matchText   = !filter || (c.name || '').includes(filter);
+      var matchStatus = !cf.status || (c.status || 'pending') === cf.status;
+      return matchText && matchStatus;
+    });
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="4"><div class="empty"><div class="empty-icon">\u2728</div>\u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u0628\u062a\u0643\u0631\u0648\u0646 \u0628\u0639\u062f</div></td></tr>';
       return;
@@ -1896,12 +2590,10 @@
         '<td><strong>' + window.esc(c.name) + '</strong></td>' +
         '<td>' + window.esc(c.email || '\u2014') + '</td>' +
         '<td>' + badgeStatus(userStatus(c)) + '</td>' +
-        '<td style="display:flex;gap:4px;flex-wrap:wrap">' +
-          (userStatus(c) === 'inactive'
-            ? '<button class="btn btn-xs btn-green" onclick="doToggleUserStatus(\'' + c.id + '\',\'active\',\'creator\')">\u062a\u0641\u0639\u064a\u0644</button>'
-            : '<button class="btn btn-xs btn-danger" onclick="doToggleUserStatus(\'' + c.id + '\',\'inactive\',\'creator\')">\u062a\u0639\u0637\u064a\u0644</button>') +
-          '<button class="btn btn-xs btn-danger-outline" onclick="doDeleteCreator(\'' + c.id + '\')">\u062d\u0630\u0641</button>' +
-        '</td>' +
+        '<td class="row-actions-cell"><div class="split-action">' +
+          '<button class="split-action-primary" type="button" onclick="openEditCreator(\'' + c.id + '\')">\u062a\u0639\u062f\u064a\u0644</button>' +
+          '<button class="split-action-menu" type="button" title="\u0627\u0644\u0623\u0648\u0627\u0645\u0631" aria-label="\u0623\u0648\u0627\u0645\u0631 \u0627\u0644\u0645\u0628\u062a\u0643\u0631" aria-haspopup="menu" onclick="toggleActionMenu(this,\'creator-more\',\'' + c.id + '\',\'' + userStatus(c) + '\')"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5.5 7.5 10 12l4.5-4.5"/></svg></button>' +
+        '</div></td>' +
       '</tr>';
     }).join('');
   };
@@ -2057,16 +2749,120 @@
     document.getElementById('student-pass').value = '';
     var schoolSel = document.getElementById('student-school-sel');
     if (schoolSel) schoolSel.disabled = false;
+    if (schoolSel) schoolSel.value = '';
     var clsSel = document.getElementById('student-class');
-    if (clsSel) clsSel.disabled = false;
     var secSel = document.getElementById('student-section');
     if (secSel) secSel.disabled = false;
+    window.onStudentSchoolChange();
     var titleEl = document.getElementById('student-modal-title');
     if (titleEl) titleEl.textContent = '\u0625\u0636\u0627\u0641\u0629 \u0637\u0627\u0644\u0628 \u062c\u062f\u064a\u062f';
     var btnEl = document.getElementById('student-submit-btn');
     if (btnEl) btnEl.textContent = '\u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0637\u0627\u0644\u0628';
     window.showMsg('student-msg', '', '');
     window.openModal('modal-addstudent');
+  };
+
+  window.openAssignStudentSchool = function (id) {
+    var student = (window.A.students || []).find(function (s) { return s.id === id; });
+    if (!student) return;
+    var schools = activeStudentSchoolOptions();
+    if (!schools.length) {
+      alert('\u0644\u0627 \u062a\u0648\u062c\u062f \u0645\u062f\u0627\u0631\u0633 \u0623\u0648 \u0645\u0631\u0627\u0643\u0632 \u0645\u062a\u0627\u062d\u0629');
+      return;
+    }
+    window.A._assignStudentTarget = { mode: 'school', studentId: id };
+    var titleEl = document.getElementById('assign-student-target-title');
+    var labelEl = document.getElementById('assign-student-target-label');
+    var sel = document.getElementById('assign-student-target-sel');
+    if (titleEl) titleEl.textContent = '\u062a\u0639\u064a\u064a\u0646 \u0627\u0644\u0645\u062f\u0631\u0633\u0629/\u0627\u0644\u0645\u0631\u0643\u0632';
+    if (labelEl) labelEl.textContent = '\u0627\u062e\u062a\u0631 \u0627\u0644\u0645\u062f\u0631\u0633\u0629/\u0627\u0644\u0645\u0631\u0643\u0632';
+    if (sel) {
+      sel.innerHTML = '<option value="">-- \u0627\u062e\u062a\u0631 --</option>' + schools.map(function (school) {
+        return '<option value="' + window.esc(school.id) + '">' + window.esc(school.name + ' (' + schoolKindLabel(school) + ')') + '</option>';
+      }).join('');
+    }
+    window.showMsg('assign-student-target-msg', '', '');
+    window.openModal('modal-assign-student-target');
+  };
+
+  function saveAssignedStudentSchool(student, schoolId) {
+    window.CQ_API.adminUpdateUser(student.id, { schoolId: schoolId, class: '', section: '' }, window.A.token).then(function (res) {
+      if (res && (res.ok || res.success)) {
+        student.schoolId = schoolId;
+        student.class = '';
+        student.className = '';
+        student.section = '';
+        window.closeModal('modal-assign-student-target');
+        window.renderStudentsTable();
+        renderClassesDirectory();
+      } else {
+        window.showMsg('assign-student-target-msg', (res && (res.message || res.msg)) || '??? ???', 'err');
+      }
+    }).catch(function () { window.showMsg('assign-student-target-msg', '\u062a\u0639\u0630\u0631 \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645', 'err'); });
+  }
+
+  window.openAssignStudentClass = function (id) {
+    var student = (window.A.students || []).find(function (s) { return s.id === id; });
+    if (!student) return;
+    if (!student.schoolId) {
+      alert('\u0639\u064a\u0646 \u0627\u0644\u0645\u062f\u0631\u0633\u0629 \u0623\u0648\u0644\u0627\u064b');
+      return;
+    }
+    var options = studentClassOptionsForSchool(student.schoolId);
+    if (!options.length) {
+      alert('\u0644\u0627 \u062a\u0648\u062c\u062f \u0635\u0641\u0648\u0641/\u062f\u0648\u0631\u0627\u062a \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u0648\u062c\u0647\u0629');
+      return;
+    }
+    window.A._assignStudentTarget = { mode: 'class', studentId: id, options: options };
+    var school = (window.A.schools || []).find(function (s) { return s.id === student.schoolId; }) || {};
+    var titleEl = document.getElementById('assign-student-target-title');
+    var labelEl = document.getElementById('assign-student-target-label');
+    var sel = document.getElementById('assign-student-target-sel');
+    if (titleEl) titleEl.textContent = '\u062a\u0639\u064a\u064a\u0646 \u0627\u0644\u0635\u0641/\u0627\u0644\u062f\u0648\u0631\u0629';
+    if (labelEl) labelEl.textContent = '\u0627\u062e\u062a\u0631 \u0645\u0646 ' + (school.name || '\u0627\u0644\u0648\u062c\u0647\u0629');
+    if (sel) {
+      sel.innerHTML = '<option value="">-- \u0627\u062e\u062a\u0631 --</option>' + options.map(function (row, idx) {
+        return '<option value="' + idx + '">' + window.esc(row.label || row.value) + '</option>';
+      }).join('');
+    }
+    window.showMsg('assign-student-target-msg', '', '');
+    window.openModal('modal-assign-student-target');
+  };
+
+  function saveAssignedStudentClass(student, row) {
+    window.CQ_API.adminUpdateUser(student.id, { class: row.value, section: row.section || '' }, window.A.token).then(function (res) {
+      if (res && (res.ok || res.success)) {
+        student.class = row.value;
+        student.className = row.value;
+        student.section = row.section || '';
+        window.closeModal('modal-assign-student-target');
+        window.renderStudentsTable();
+        renderClassesDirectory();
+      } else {
+        window.showMsg('assign-student-target-msg', (res && (res.message || res.msg)) || '??? ???', 'err');
+      }
+    }).catch(function () { window.showMsg('assign-student-target-msg', '\u062a\u0639\u0630\u0631 \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645', 'err'); });
+  }
+
+  window.doAssignStudentTarget = function () {
+    var target = window.A._assignStudentTarget || {};
+    var student = (window.A.students || []).find(function (s) { return s.id === target.studentId; });
+    var sel = document.getElementById('assign-student-target-sel');
+    var value = sel ? sel.value : '';
+    if (!student || !value) {
+      window.showMsg('assign-student-target-msg', '\u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u062e\u062a\u064a\u0627\u0631', 'err');
+      return;
+    }
+    if (target.mode === 'school') {
+      saveAssignedStudentSchool(student, value);
+      return;
+    }
+    var row = (target.options || [])[parseInt(value, 10)];
+    if (!row) {
+      window.showMsg('assign-student-target-msg', '\u0627\u062e\u062a\u064a\u0627\u0631 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d', 'err');
+      return;
+    }
+    saveAssignedStudentClass(student, row);
   };
 
   function openExistingStudentPicker(opts) {
@@ -2154,6 +2950,7 @@
         window.closeModal('modal-assign-existing-student');
         window.renderStudentsTable();
         renderClassesDirectory();
+        refreshManagedClassStudents();
         if (typeof window.loadStudents === 'function') window.loadStudents();
       } else {
         window.showMsg('existing-student-msg', (res && (res.message || res.msg)) || '\u062d\u062f\u062b \u062e\u0637\u0623', 'err');
@@ -2175,16 +2972,20 @@
     if (schoolSel) schoolSel.value = s.schoolId || '';
     var clsSel = document.getElementById('student-class');
     if (clsSel) clsSel.disabled = false;
-    if (clsSel) clsSel.value = s.class || s.className || '';
+    window.onStudentSchoolChange();
+    if (clsSel) setSelectValue(clsSel, s.class || s.className || '');
+    window.onStudentClassChange();
     var secSel = document.getElementById('student-section');
     if (secSel) secSel.disabled = false;
-    if (secSel) secSel.value = s.section || '';
+    if (secSel) setSelectValue(secSel, s.section || '');
     document.getElementById('student-pass').value = '';
     var titleEl = document.getElementById('student-modal-title');
     if (titleEl) titleEl.textContent = '\u062a\u0639\u062f\u064a\u0644 \u0637\u0627\u0644\u0628';
     var btnEl = document.getElementById('student-submit-btn');
     if (btnEl) btnEl.textContent = '\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a';
     window.showMsg('student-msg', '', '');
+    var studentModalBg = document.getElementById('modal-addstudent');
+    if (studentModalBg) studentModalBg.style.zIndex = '200';
     window.openModal('modal-addstudent');
   };
 
@@ -2197,6 +2998,7 @@
     var pass    = document.getElementById('student-pass').value;
     var editId  = window.A._editStudentId || null;
     if (!name || !email) { window.showMsg('student-msg', '\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a', 'err'); return; }
+    if (school && !cls) { window.showMsg('student-msg', '\u064a\u0631\u062c\u0649 \u0627\u062e\u062a\u064a\u0627\u0631 \u0635\u0641 \u0645\u0646 \u0647\u0630\u0647 \u0627\u0644\u0645\u062f\u0631\u0633\u0629', 'err'); return; }
     if (!editId && (!school || !cls || !pass)) {
       window.showMsg('student-msg', '\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0648\u0627\u0644\u0645\u062f\u0631\u0633\u0629 \u0648\u0627\u0644\u0635\u0641 \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631', 'err'); return;
     }
@@ -2216,6 +3018,7 @@
         window.closeModal('modal-addstudent');
         window.loadStudents();
         renderClassesDirectory();
+        setTimeout(refreshManagedClassStudents, 500);
       } else {
         window.showMsg('student-msg', res.message || res.msg || '\u062d\u062f\u062b \u062e\u0637\u0623', 'err');
       }
@@ -2234,18 +3037,54 @@
     if (typeof window.moveToTrash === 'function') { window.moveToTrash(s, 'student'); window.renderStudentsTable(); }
   };
 
-  window.openAddCreator = function () { window.openModal('modal-addcreator'); window.showMsg('creator-msg', '', ''); };
+  window.openAddCreator = function () {
+    window.A._editCreatorId = null;
+    document.getElementById('creator-name').value = '';
+    document.getElementById('creator-email').value = '';
+    document.getElementById('creator-pass').value = '';
+    var titleEl = document.getElementById('creator-modal-title');
+    if (titleEl) titleEl.textContent = '\u0625\u0636\u0627\u0641\u0629 \u0645\u0628\u062a\u0643\u0631';
+    var btnEl = document.getElementById('creator-submit-btn');
+    if (btnEl) btnEl.textContent = '\u0625\u0636\u0627\u0641\u0629';
+    window.openModal('modal-addcreator');
+    window.showMsg('creator-msg', '', '');
+  };
+
+  window.openEditCreator = function (id) {
+    var c = (window.A.creators || []).find(function (x) { return x.id === id; });
+    if (!c) return;
+    window.A._editCreatorId = id;
+    document.getElementById('creator-name').value = c.name || '';
+    document.getElementById('creator-email').value = c.email || '';
+    document.getElementById('creator-pass').value = '';
+    var titleEl = document.getElementById('creator-modal-title');
+    if (titleEl) titleEl.textContent = '\u062a\u0639\u062f\u064a\u0644 \u0645\u0628\u062a\u0643\u0631';
+    var btnEl = document.getElementById('creator-submit-btn');
+    if (btnEl) btnEl.textContent = '\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a';
+    window.openModal('modal-addcreator');
+    window.showMsg('creator-msg', '', '');
+  };
+
   window.doAddCreator = function () {
     var name = document.getElementById('creator-name').value.trim();
     var email = document.getElementById('creator-email').value.trim();
     var pass = document.getElementById('creator-pass').value;
-    if (!name || !email || !pass) { window.showMsg('creator-msg', '\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631', 'err'); return; }
-    window.CQ_API.adminCreateUser({ name: name, email: email, passwordHash: hashText(pass), role: 'creator' }, window.A.token).then(function (res) {
+    var editId = window.A._editCreatorId || null;
+    if (!name || !email || (!editId && !pass)) { window.showMsg('creator-msg', '\u064a\u0631\u062c\u0649 \u0625\u062f\u062e\u0627\u0644 \u0627\u0644\u0627\u0633\u0645 \u0648\u0627\u0644\u0628\u0631\u064a\u062f' + (editId ? '' : ' \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631'), 'err'); return; }
+    var promise = editId
+      ? window.CQ_API.adminUpdateUser(editId, { name: name, email: email }, window.A.token)
+      : window.CQ_API.adminCreateUser({ name: name, email: email, passwordHash: hashText(pass), role: 'creator' }, window.A.token);
+    promise.then(function (res) {
       if (res.success || res.ok) {
+        window.A._editCreatorId = null;
         window.closeModal('modal-addcreator');
         var newUser = res.user || { id: res.userId || ('tmp-' + Date.now()), name: name, email: email, role: 'creator', status: 'active' };
         window.A.creators = window.A.creators || [];
-        if (!window.A.creators.find(function(c) { return c.email === newUser.email; })) {
+        var existing = editId ? window.A.creators.find(function(c) { return c.id === editId; }) : null;
+        if (existing) {
+          existing.name = name;
+          existing.email = email;
+        } else if (!window.A.creators.find(function(c) { return c.email === newUser.email; })) {
           window.A.creators.push(newUser);
         }
         window.renderCreatorsTable();
