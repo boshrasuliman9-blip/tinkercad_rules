@@ -459,13 +459,20 @@ function updateStats() {
   var stStudents = document.getElementById('st-students');
   var stChallenges = document.getElementById('st-challenges');
   var heroSummary = document.getElementById('hero-summary');
+  var heroSchools = document.getElementById('hero-schools-count');
+  var heroTeachers = document.getElementById('hero-teachers-count');
+  var heroStudents = document.getElementById('hero-students-count');
+  var publishedChallenges = A.challenges.filter(function(c){ return c.status === 'published'; }).length;
 
   if (stSchools)    stSchools.textContent    = A.schools.length;
   if (stTeachers)   stTeachers.textContent   = A.teachers.length;
   if (stStudents)   stStudents.textContent   = A.students.length;
-  if (stChallenges) stChallenges.textContent = A.challenges.filter(function(c){ return c.status === 'published'; }).length;
+  if (stChallenges) stChallenges.textContent = publishedChallenges;
+  if (heroSchools) heroSchools.textContent = A.schools.length;
+  if (heroTeachers) heroTeachers.textContent = A.teachers.length;
+  if (heroStudents) heroStudents.textContent = A.students.length;
   if (heroSummary)  heroSummary.textContent  =
-    A.schools.length + ' مدرسة | ' + A.teachers.length + ' معلم | ' + A.students.length + ' طالب';
+    'ملخص مباشر لحالة المنصة';
 }
 
 /* ── Action Menu ── */
@@ -1591,4 +1598,194 @@ function doClearTrash() {
   });
 }
 
-window.addEventListener('DOMContentLoaded', initAuth);
+/* ════════════════════════════════
+   Widget System
+   ════════════════════════════════ */
+var _widgetSortable = null;
+var _customizeActive = false;
+
+var WIDGET_LABELS = {
+  'w-stats':       'الإحصائيات',
+  'w-quickaccess': 'الوصول السريع',
+  'w-commands':    'لوحة الأوامر',
+  'w-challenges':  'آخر التحديات',
+  'w-teachers':    'آخر المعلمين',
+  'w-activity':    'آخر النشاطات',
+  'w-permissions': 'صلاحيات الأدمن'
+};
+
+function _saveWidgetState() {
+  var grid = document.getElementById('widget-grid');
+  if (!grid) return;
+  var order = [];
+  var hidden = [];
+  grid.querySelectorAll('.widget[data-widget-id]').forEach(function(w) {
+    var id = w.getAttribute('data-widget-id');
+    order.push(id);
+    if (w.classList.contains('w-hidden')) hidden.push(id);
+  });
+  try { localStorage.setItem('cq_widget_order', JSON.stringify(order)); } catch(e) {}
+  try { localStorage.setItem('cq_widget_hidden', JSON.stringify(hidden)); } catch(e) {}
+}
+
+function _loadWidgetState() {
+  var grid = document.getElementById('widget-grid');
+  if (!grid) return;
+  var order, hidden;
+  try { order  = JSON.parse(localStorage.getItem('cq_widget_order')  || 'null'); } catch(e) {}
+  try { hidden = JSON.parse(localStorage.getItem('cq_widget_hidden') || '[]');   } catch(e) { hidden = []; }
+
+  if (order && Array.isArray(order)) {
+    order.forEach(function(id) {
+      var w = grid.querySelector('[data-widget-id="' + id + '"]');
+      if (w) grid.appendChild(w);
+    });
+  }
+  (hidden || []).forEach(function(id) {
+    var w = grid.querySelector('[data-widget-id="' + id + '"]');
+    if (w) w.classList.add('w-hidden');
+  });
+  _renderRestoreArea();
+}
+
+function _renderRestoreArea() {
+  var area = document.getElementById('widget-restore-area');
+  if (!area) return;
+  area.innerHTML = '';
+  document.querySelectorAll('.widget.w-hidden[data-widget-id]').forEach(function(w) {
+    var id    = w.getAttribute('data-widget-id');
+    var label = WIDGET_LABELS[id] || id;
+    var pill  = document.createElement('button');
+    pill.className = 'widget-restore-pill';
+    pill.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ' + label;
+    pill.onclick = function() { showWidget(id); };
+    area.appendChild(pill);
+  });
+}
+
+function hideWidget(id) {
+  var w = document.querySelector('[data-widget-id="' + id + '"]');
+  if (!w) return;
+  w.classList.add('w-hidden');
+  _saveWidgetState();
+  _renderRestoreArea();
+}
+
+function showWidget(id) {
+  var w = document.querySelector('[data-widget-id="' + id + '"]');
+  if (!w) return;
+  w.classList.remove('w-hidden');
+  _saveWidgetState();
+  _renderRestoreArea();
+}
+
+function toggleCustomizeMode() {
+  _customizeActive = !_customizeActive;
+  var toolbar  = document.getElementById('widget-toolbar');
+  var custBtn  = document.getElementById('widget-customize-btn');
+  var doneBtn  = document.getElementById('widget-done-btn');
+  if (toolbar)  toolbar.classList.toggle('customize-active', _customizeActive);
+  if (custBtn)  custBtn.style.display = _customizeActive ? 'none' : '';
+  if (doneBtn)  doneBtn.style.display = _customizeActive ? '' : 'none';
+
+  var grid = document.getElementById('widget-grid');
+  if (grid) grid.classList.toggle('customize-active', _customizeActive);
+
+  if (_customizeActive && !_widgetSortable && typeof Sortable !== 'undefined') {
+    _widgetSortable = Sortable.create(grid, {
+      animation: 200,
+      handle: '.widget-handle',
+      ghostClass: 'widget-ghost',
+      chosenClass: 'widget-chosen',
+      dragClass: 'widget-drag',
+      onEnd: function() { _saveWidgetState(); }
+    });
+  }
+}
+
+function togglePermissionsPanel() {}   /* kept for backward compat — no-op */
+
+/* ════════════════════════════════
+   Quick Access inner customize
+   ════════════════════════════════ */
+var _qaCustomizeActive = false;
+
+var QA_LABELS = {
+  'qa-requests':  'طلبات التسجيل',
+  'qa-schools':   'المدارس/المراكز',
+  'qa-classes':   'الصفوف والدورات',
+  'qa-teachers':  'المعلمون',
+  'qa-students':  'الطلاب',
+  'qa-challenges':'التحديات',
+  'qa-creators':  'المبتكرون',
+  'qa-notifs':    'الإشعارات',
+  'qa-trash':     'سلة المهملات'
+};
+
+function _saveQAState() {
+  var hidden = [];
+  document.querySelectorAll('.quick-action.qa-hidden[data-qa-id]').forEach(function(c) {
+    hidden.push(c.getAttribute('data-qa-id'));
+  });
+  try { localStorage.setItem('cq_qa_hidden', JSON.stringify(hidden)); } catch(e) {}
+}
+
+function _loadQAState() {
+  var hidden;
+  try { hidden = JSON.parse(localStorage.getItem('cq_qa_hidden') || '[]'); } catch(e) { hidden = []; }
+  (hidden || []).forEach(function(id) {
+    var c = document.querySelector('.quick-action[data-qa-id="' + id + '"]');
+    if (c) c.classList.add('qa-hidden');
+  });
+  _renderQARestoreRow();
+}
+
+function _renderQARestoreRow() {
+  var row = document.getElementById('qa-restore-row');
+  if (!row) return;
+  row.innerHTML = '';
+  var hiddenCards = document.querySelectorAll('.quick-action.qa-hidden[data-qa-id]');
+  if (!hiddenCards.length) { row.style.display = 'none'; return; }
+  row.style.display = _qaCustomizeActive ? 'flex' : 'none';
+  hiddenCards.forEach(function(c) {
+    var id    = c.getAttribute('data-qa-id');
+    var label = QA_LABELS[id] || id;
+    var chip  = document.createElement('button');
+    chip.className = 'qa-restore-chip';
+    chip.innerHTML = '+ ' + label;
+    chip.onclick   = function() { showQA(id); };
+    row.appendChild(chip);
+  });
+}
+
+function hideQA(id) {
+  var c = document.querySelector('.quick-action[data-qa-id="' + id + '"]');
+  if (c) c.classList.add('qa-hidden');
+  _saveQAState();
+  _renderQARestoreRow();
+}
+
+function showQA(id) {
+  var c = document.querySelector('.quick-action[data-qa-id="' + id + '"]');
+  if (c) c.classList.remove('qa-hidden');
+  _saveQAState();
+  _renderQARestoreRow();
+}
+
+function toggleQACustomize() {
+  _qaCustomizeActive = !_qaCustomizeActive;
+  var grid = document.getElementById('qa-grid');
+  var btn  = document.getElementById('qa-customize-btn');
+  if (grid) grid.classList.toggle('qa-customize-active', _qaCustomizeActive);
+  if (btn)  btn.textContent = _qaCustomizeActive ? '✓ تم' : '';
+  if (btn)  btn.innerHTML   = _qaCustomizeActive
+    ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> تم'
+    : '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> تخصيص';
+  _renderQARestoreRow();
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  initAuth();
+  _loadWidgetState();
+  _loadQAState();
+});

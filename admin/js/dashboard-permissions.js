@@ -183,10 +183,35 @@
     var schoolsEl = document.getElementById('cmd-school-coverage');
 
     if (pendingEl) pendingEl.textContent = pendingTeachers + pendingStudents + pendingCreators + pendingSubs;
-    if (draftsEl) draftsEl.textContent = drafts;
-    if (usersEl) usersEl.textContent = managedUsers;
+    if (draftsEl)  draftsEl.textContent  = drafts;
+    if (usersEl)   usersEl.textContent   = managedUsers;
     if (schoolsEl) schoolsEl.textContent = state.schools.length;
+    document.querySelectorAll('#command-grid .skeleton-val').forEach(function(el){ el.remove(); });
   }
+
+  /* ── Admin Guide navigation ── */
+  var _guideSection = 0;
+  var _guideTotalSections = 6;
+
+  window.setGuideSection = function (n) {
+    _guideSection = Math.max(0, Math.min(n, _guideTotalSections - 1));
+    document.querySelectorAll('.guide-section').forEach(function (el) {
+      el.classList.toggle('active', parseInt(el.dataset.section) === _guideSection);
+    });
+    document.querySelectorAll('.guide-tab').forEach(function (btn) {
+      btn.classList.toggle('active', parseInt(btn.dataset.section) === _guideSection);
+    });
+    document.querySelectorAll('.guide-dot-el').forEach(function (dot, i) {
+      dot.classList.toggle('active', i === _guideSection);
+    });
+    var prev = document.getElementById('guide-prev-btn');
+    var next = document.getElementById('guide-next-btn');
+    if (prev) prev.disabled = _guideSection === 0;
+    if (next) next.disabled = _guideSection === _guideTotalSections - 1;
+  };
+
+  window.nextGuideSection = function () { window.setGuideSection(_guideSection + 1); };
+  window.prevGuideSection = function () { window.setGuideSection(_guideSection - 1); };
 
   function renderAdminPermissions() {
     var pillList = document.getElementById('permission-pill-list');
@@ -253,6 +278,39 @@
     }
   }
 
+  var _activityFilter = 'all';
+
+  window.setActivityFilter = function (filter) {
+    _activityFilter = filter;
+    document.querySelectorAll('.activity-filter-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+    renderOverviewActivity();
+  };
+
+  function _filterNotifs(notifs, filter) {
+    if (filter === 'all') return notifs;
+    return notifs.filter(function (n) {
+      var title = n.title || n.text || n.message || '';
+      var type  = n.type || '';
+      if (filter === 'teachers')   return type === 'user_request' && title.indexOf('\u0645\u0639\u0644\u0645') >= 0;
+      if (filter === 'students')   return type === 'user_request' && title.indexOf('\u0637\u0627\u0644\u0628') >= 0;
+      if (filter === 'creators')   return type === 'user_request' && title.indexOf('\u0645\u0628\u062a\u0643\u0631') >= 0;
+      if (filter === 'challenges') return type === 'new_challenge' || type === 'challenge' || title.indexOf('\u062a\u062d\u062f\u064a') >= 0;
+      return true;
+    });
+  }
+
+  var ACTIVITY_ICONS = {
+    user_request:  '\ud83d\udc64',
+    new_challenge: '\u26a1',
+    challenge:     '\u26a1',
+    submission:    '\ud83d\udcdd',
+    grade:         '\u2705',
+    reset_link:    '\ud83d\udd11',
+    info:          '\ud83d\udd14'
+  };
+
   function renderOverviewActivity() {
     var state = getState();
     var ov = document.getElementById('ov-activity');
@@ -265,19 +323,26 @@
     }
 
     if (!ov) return;
-    if (!state.notifs.length) {
-      ov.innerHTML = '<div class="empty"><div class="empty-icon">!</div>\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0634\u0627\u0637\u0627\u062a \u0628\u0639\u062f</div>';
+
+    var filtered = _filterNotifs(state.notifs, _activityFilter);
+
+    if (!filtered.length) {
+      ov.innerHTML = '<div class="empty"><div class="empty-icon">' +
+        (_activityFilter === 'all' ? '!' : '\ud83d\udd0d') +
+        '</div>' + (_activityFilter === 'all' ? '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0634\u0627\u0637\u0627\u062a \u0628\u0639\u062f' : '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0634\u0627\u0637\u0627\u062a \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u0641\u0626\u0629') + '</div>';
       return;
     }
 
-    ov.innerHTML = state.notifs.slice(0, 4).map(function (n) {
-      var title = n.title || n.text || n.message || '\u062a\u0646\u0628\u064a\u0647';
-      var when = typeof window.fmtDate === 'function' ? window.fmtDate(n.createdAt) : '';
+    ov.innerHTML = filtered.slice(0, 6).map(function (n) {
+      var title    = n.title || n.text || n.message || '\u062a\u0646\u0628\u064a\u0647';
+      var when     = typeof window.fmtDate === 'function' ? window.fmtDate(n.createdAt) : '';
+      var icon     = ACTIVITY_ICONS[n.type] || '\ud83d\udd14';
       var badgeHtml = !n.readAt
         ? '<span class="badge badge-blue">\u062c\u062f\u064a\u062f</span>'
         : '<span class="badge badge-draft">\u0645\u0642\u0631\u0648\u0621</span>';
 
       return '<div class="mini-item">' +
+        '<div class="mini-meta" style="font-size:1.25rem;min-width:28px;text-align:center">' + icon + '</div>' +
         '<div class="mini-main">' +
           '<div class="mini-title">' + title + '</div>' +
           '<div class="mini-sub">' + when + '</div>' +

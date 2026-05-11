@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة الأدمن - إنجاز</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./css/dashboard.css?v=admin-20260511-cf-fix12">
+<link rel="stylesheet" href="./css/dashboard.css?v=admin-20260511-widgets-v20">
 </head>
 <body>
 
@@ -106,7 +106,7 @@
           <svg class="bell-svg" viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
         </button>
       </div>
-      <a href="./index.html" class="topbar-home">
+      <a href="#" class="topbar-home" onclick="event.preventDefault();showSection('overview')">
         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         الرئيسية
       </a>
@@ -116,146 +116,575 @@
     <!-- ════ نظرة عامة ════ -->
     <div class="section active" id="section-overview">
 
-      <!-- Hero موحد -->
+      <!-- Hero ثابت -->
       <div class="hero-panel">
         <div>
           <div class="hero-kicker">لوحة تشغيل الأدمن</div>
-          <div class="hero-welcome">مرحباً <span id="ov-name"></span> 👋</div>
+          <div class="hero-welcome">مرحباً <span id="ov-name"></span></div>
           <div class="hero-date" id="ov-date"></div>
-          <div class="hero-sub">أدر المدارس، الصفوف، المعلمين، الطلاب، والمبتكرين من مكان واحد مع صلاحيات واضحة لكل جهة.</div>
+          <div class="hero-sub">إدارة شاملة للمنصة — مدارس، معلمون، طلاب، وتحديات.</div>
           <div class="hero-actions">
-            <button class="btn btn-hero" onclick="showSection('challenges')">إدارة التحديات</button>
+            <button class="btn btn-hero" onclick="showSection('schools')">إدارة المدارس</button>
             <button class="btn btn-hero-outline" onclick="showSection('teachers')">إدارة المعلمين</button>
-            <button class="btn btn-hero-outline" onclick="showSection('schools')">إدارة المدارس</button>
+            <button class="btn btn-hero-outline" onclick="showSection('challenges')">إدارة التحديات</button>
           </div>
         </div>
         <div class="hero-side">
           <div>
             <div class="hero-side-label">إجمالي المنصة</div>
             <div class="hero-side-value" id="hero-summary">جار تحميل البيانات...</div>
+            <div class="hero-mini-metrics" aria-label="ملخص المنصة">
+              <div class="hero-mini-metric">
+                <span class="hero-mini-val" id="hero-schools-count">—</span>
+                <span class="hero-mini-lbl">مدارس/مراكز</span>
+              </div>
+              <div class="hero-mini-metric">
+                <span class="hero-mini-val" id="hero-teachers-count">—</span>
+                <span class="hero-mini-lbl">معلمون</span>
+              </div>
+              <div class="hero-mini-metric">
+                <span class="hero-mini-val" id="hero-students-count">—</span>
+                <span class="hero-mini-lbl">طلاب</span>
+              </div>
+            </div>
           </div>
           <div class="hero-side-note">نظرة شاملة على نشاط المنصة وآخر التحديثات.</div>
         </div>
       </div>
 
-      <!-- إحصائيات -->
-      <div class="stats-row">
-        <div class="stat-card blue">
-          <div class="stat-val" id="st-schools">—</div>
-          <div class="stat-lbl">المدارس/المراكز</div>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-val" id="st-teachers">—</div>
-          <div class="stat-lbl">المعلمون</div>
-        </div>
-        <div class="stat-card orange">
-          <div class="stat-val" id="st-students">—</div>
-          <div class="stat-lbl">الطلاب</div>
-        </div>
-        <div class="stat-card purple">
-          <div class="stat-val" id="st-challenges">—</div>
-          <div class="stat-lbl">التحديات المنشورة</div>
-        </div>
+      <!-- شريط التخصيص -->
+      <div class="widget-toolbar" id="widget-toolbar">
+        <button class="widget-customize-btn" id="widget-customize-btn" onclick="toggleCustomizeMode()">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          تخصيص اللوحة
+        </button>
+        <div class="widget-restore-area" id="widget-restore-area"></div>
+        <button class="widget-done-btn" id="widget-done-btn" onclick="toggleCustomizeMode()" style="display:none">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          تم
+        </button>
       </div>
 
-      <!-- وصول سريع -->
-      <div class="quick-actions">
-        <button class="quick-action" onclick="showSection('requests')">
-          <span class="quick-action-icon">📋</span>
-          <span class="quick-action-title">طلبات التسجيل <span id="ov-req-badge" style="display:none;background:#ef4444;color:#fff;border-radius:999px;padding:1px 7px;font-size:.75rem;margin-right:4px">0</span></span>
-          <span class="quick-action-sub">مراجعة user_request القادمة من الموقع أو الإيميل وقبولها أو رفضها</span>
-        </button>
-        <button class="quick-action" onclick="showSection('schools')">
-          <span class="quick-action-icon">🏫</span>
-          <span class="quick-action-title">المدارس/المراكز</span>
-          <span class="quick-action-sub">إضافة المدارس للصفوف والمراكز للدورات</span>
-        </button>
-        <button class="quick-action" onclick="showSection('classes')">
-          <span class="quick-action-icon">🧩</span>
-          <span class="quick-action-title">الصفوف والدورات</span>
-          <span class="quick-action-sub">مدارس للصفوف ومراكز للدورات بدون خلط</span>
-        </button>
-        <button class="quick-action" onclick="showSection('teachers')">
-          <span class="quick-action-icon">👤</span>
-          <span class="quick-action-title">المعلمون</span>
-          <span class="quick-action-sub">تسجيل وإدارة حسابات المعلمين</span>
-        </button>
-        <button class="quick-action" onclick="showSection('students')">
-          <span class="quick-action-icon">🎓</span>
-          <span class="quick-action-title">الطلاب</span>
-          <span class="quick-action-sub">عرض جميع الطلاب عبر المدارس</span>
-        </button>
-        <button class="quick-action" onclick="showSection('challenges')">
-          <span class="quick-action-icon">⚡</span>
-          <span class="quick-action-title">التحديات</span>
-          <span class="quick-action-sub">إدارة التحديات ونشرها دون إنشاء تحديات جديدة من لوحة الأدمن</span>
-        </button>
-      </div>
-      <div class="admin-command-grid">
-        <button class="command-card" onclick="showSection('requests')">
-          <span class="command-card-label">طلبات تحت المراجعة</span>
-          <strong class="command-card-value" id="cmd-pending-total">0</strong>
-          <span class="command-card-sub">معلمون، طلاب، مبتكرون، وتسليمات</span>
-        </button>
-        <button class="command-card" onclick="showSection('challenges')">
-          <span class="command-card-label">تحديات جاهزة للنشر</span>
-          <strong class="command-card-value" id="cmd-draft-challenges">0</strong>
-          <span class="command-card-sub">مسودات يمكن للأدمن مراجعتها ونشرها</span>
-        </button>
-        <button class="command-card" onclick="showSection('teachers')">
-          <span class="command-card-label">حسابات تحت الإدارة</span>
-          <strong class="command-card-value" id="cmd-managed-users">0</strong>
-          <span class="command-card-sub">إدارة المعلمين والطلاب والمبتكرين من واجهة واحدة</span>
-        </button>
-        <button class="command-card" onclick="showSection('schools')">
-          <span class="command-card-label">نطاق المنصة</span>
-          <strong class="command-card-value" id="cmd-school-coverage">0</strong>
-          <span class="command-card-sub">مدارس ومراكز مرتبطة بإدارة الأدمن</span>
-        </button>
-      </div>
-      <div class="overview-grid">
-        <div class="overview-stack">
-          <div class="panel">
-            <div class="panel-hd">
-              <span class="panel-title">آخر التحديات المضافة</span>
-              <button class="btn btn-sm btn-outline" onclick="showSection('challenges')">عرض الكل</button>
+      <!-- شبكة الـ Widgets -->
+      <div class="widget-grid" id="widget-grid">
+
+        <!-- Widget: الإحصائيات -->
+        <div class="widget" data-widget-id="w-stats">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">الإحصائيات</span>
+            <button class="widget-hide-btn" onclick="hideWidget('w-stats')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+          </div>
+          <div class="widget-body">
+            <div class="stats-row">
+              <div class="stat-card blue"><div class="stat-val" id="st-schools">—</div><div class="stat-lbl">المدارس/المراكز</div></div>
+              <div class="stat-card green"><div class="stat-val" id="st-teachers">—</div><div class="stat-lbl">المعلمون</div></div>
+              <div class="stat-card orange"><div class="stat-val" id="st-students">—</div><div class="stat-lbl">الطلاب</div></div>
+              <div class="stat-card purple"><div class="stat-val" id="st-challenges">—</div><div class="stat-lbl">التحديات المنشورة</div></div>
             </div>
+          </div>
+        </div>
+
+        <!-- Widget: الوصول السريع -->
+        <div class="widget" data-widget-id="w-quickaccess">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">الوصول السريع</span>
+            <button class="qa-customize-btn" id="qa-customize-btn" onclick="toggleQACustomize()" title="تخصيص الكروت">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              تخصيص
+            </button>
+            <button class="widget-hide-btn" onclick="hideWidget('w-quickaccess')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+          </div>
+          <div class="widget-body">
+            <div class="quick-actions" id="qa-grid">
+              <button class="quick-action" data-qa-id="qa-requests" title="طلبات التسجيل" onclick="showSection('requests')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-requests')" title="إزالة">✕</span>
+                <span class="quick-action-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+                <span id="ov-req-badge" class="quick-action-badge" style="display:none">0</span>
+                <span class="quick-action-title">طلبات التسجيل</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-schools" title="المدارس/المراكز" onclick="showSection('schools')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-schools')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/></svg></span>
+                <span class="quick-action-title">المدارس/المراكز</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-classes" title="الصفوف والدورات" onclick="showSection('classes')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-classes')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/><path d="M8 3v4"/><path d="M16 10v4"/><path d="M8 17v4"/></svg></span>
+                <span class="quick-action-title">الصفوف والدورات</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-teachers" title="المعلمون" onclick="showSection('teachers')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-teachers')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg></span>
+                <span class="quick-action-title">المعلمون</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-students" title="الطلاب" onclick="showSection('students')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-students')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9.5L12 4l9.5 5.5L12 15 2.5 9.5Z"/><path d="M6.5 12v5c0 1.5 3 3 5.5 3s5.5-1.5 5.5-3v-5"/></svg></span>
+                <span class="quick-action-title">الطلاب</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-challenges" title="التحديات" onclick="showSection('challenges')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-challenges')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg></span>
+                <span class="quick-action-title">التحديات</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-creators" title="المبتكرون" onclick="showSection('creators')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-creators')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
+                <span class="quick-action-title">المبتكرون</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-notifs" title="الإشعارات" onclick="showSection('notifs')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-notifs')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+                <span class="quick-action-title">الإشعارات</span>
+              </button>
+              <button class="quick-action" data-qa-id="qa-trash" title="سلة المهملات" onclick="showSection('trash')">
+                <span class="qa-remove-btn" onclick="event.stopPropagation();hideQA('qa-trash')" title="إزالة">✕</span>
+                <span class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+                <span class="quick-action-title">سلة المهملات</span>
+              </button>
+            </div>
+            <!-- منطقة استعادة الكروت المخفية -->
+            <div class="qa-restore-row" id="qa-restore-row" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Widget: لوحة الأوامر -->
+        <div class="widget" data-widget-id="w-commands">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">لوحة الأوامر</span>
+            <button class="widget-hide-btn" onclick="hideWidget('w-commands')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+          </div>
+          <div class="widget-body">
+            <div class="admin-command-grid" id="command-grid">
+              <button class="command-card" onclick="showSection('requests')">
+                <span class="command-card-label">طلبات تحت المراجعة</span>
+                <strong class="command-card-value" id="cmd-pending-total"><span class="skeleton-val"></span></strong>
+                <span class="command-card-sub">معلمون، طلاب، مبتكرون، وتسليمات</span>
+              </button>
+              <button class="command-card" onclick="showSection('challenges')">
+                <span class="command-card-label">تحديات جاهزة للنشر</span>
+                <strong class="command-card-value" id="cmd-draft-challenges"><span class="skeleton-val"></span></strong>
+                <span class="command-card-sub">مسودات يمكن للأدمن مراجعتها ونشرها</span>
+              </button>
+              <button class="command-card" onclick="showSection('teachers')">
+                <span class="command-card-label">حسابات تحت الإدارة</span>
+                <strong class="command-card-value" id="cmd-managed-users"><span class="skeleton-val"></span></strong>
+                <span class="command-card-sub">إدارة المعلمين والطلاب والمبتكرين من واجهة واحدة</span>
+              </button>
+              <button class="command-card" onclick="showSection('schools')">
+                <span class="command-card-label">نطاق المنصة</span>
+                <strong class="command-card-value" id="cmd-school-coverage"><span class="skeleton-val"></span></strong>
+                <span class="command-card-sub">مدارس ومراكز مرتبطة بإدارة الأدمن</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget: آخر التحديات -->
+        <div class="widget" data-widget-id="w-challenges">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">آخر التحديات المضافة</span>
+            <button class="widget-hide-btn" onclick="hideWidget('w-challenges')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+            <button class="btn btn-sm btn-outline" style="margin-right:auto" onclick="showSection('challenges')">عرض الكل</button>
+          </div>
+          <div class="widget-body">
             <div id="ov-challenges-list"><div class="empty"><div class="empty-icon">⚡</div>لا توجد تحديات بعد</div></div>
           </div>
-          <div class="panel">
-            <div class="panel-hd">
-              <span class="panel-title">آخر المعلمين المسجلين</span>
-              <button class="btn btn-sm btn-outline" onclick="showSection('teachers')">عرض الكل</button>
-            </div>
+        </div>
+
+        <!-- Widget: آخر المعلمين -->
+        <div class="widget" data-widget-id="w-teachers">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">آخر المعلمين المسجلين</span>
+            <button class="widget-hide-btn" onclick="hideWidget('w-teachers')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+            <button class="btn btn-sm btn-outline" style="margin-right:auto" onclick="showSection('teachers')">عرض الكل</button>
+          </div>
+          <div class="widget-body">
             <div id="ov-teachers-list" class="mini-list"><div class="empty"><div class="empty-icon">👤</div>لا يوجد معلمون بعد</div></div>
           </div>
         </div>
-        <div class="overview-stack">
-          <div class="panel">
-            <div class="panel-hd">
-              <span class="panel-title">آخر النشاطات</span>
-              <button class="btn btn-sm btn-outline" onclick="showSection('notifs')">كل الإشعارات</button>
-            </div>
+
+        <!-- Widget: آخر النشاطات -->
+        <div class="widget" data-widget-id="w-activity">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">آخر النشاطات</span>
+            <button class="widget-hide-btn" onclick="hideWidget('w-activity')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+            <button class="btn btn-sm btn-outline" style="margin-right:auto" onclick="showSection('notifs')">كل الإشعارات</button>
+          </div>
+          <div class="activity-filter-bar" id="activity-filter-bar">
+            <button class="activity-filter-btn active" data-filter="all"        onclick="setActivityFilter('all')">الكل</button>
+            <button class="activity-filter-btn"        data-filter="teachers"   onclick="setActivityFilter('teachers')">المعلمون</button>
+            <button class="activity-filter-btn"        data-filter="students"   onclick="setActivityFilter('students')">الطلاب</button>
+            <button class="activity-filter-btn"        data-filter="creators"   onclick="setActivityFilter('creators')">المبتكرون</button>
+            <button class="activity-filter-btn"        data-filter="challenges" onclick="setActivityFilter('challenges')">التحديات</button>
+          </div>
+          <div class="widget-body">
             <div id="ov-activity" class="mini-list"><div class="empty"><div class="empty-icon">🔔</div>لا توجد نشاطات بعد</div></div>
           </div>
-          <div class="panel">
-            <div class="panel-hd"><span class="panel-title">صلاحيات الأدمن</span></div>
-            <div class="permission-panel-copy">
-              هذه الواجهة تجمع الإجراءات التي يقدر الأدمن يديرها من اللوحة، مع توضيح ما هو متاح في الواجهة وما يظل مرتبطًا بالخادم.
-            </div>
-            <div class="permission-pill-list" id="permission-pill-list"></div>
-            <div class="permission-matrix" id="permission-matrix"></div>
-            <div class="permission-limits">
-              <div class="permission-limits-title">حدود الواجهة</div>
-              <div class="guide-list">
-                <div class="guide-item"><span class="guide-dot"></span><span>يمكن للأدمن إدارة المحتوى والمستخدمين عندما تكون خدمات المنصة متصلة بشكل طبيعي.</span></div>
-                <div class="guide-item"><span class="guide-dot"></span><span>تغيير بنية قاعدة البيانات أو صلاحيات الخادم ليس جزءًا من هذه اللوحة.</span></div>
-                <div class="guide-item"><span class="guide-dot"></span><span>القدرات المعروضة هنا تعكس الإجراءات المربوطة حاليًا عبر `CQ_API` من دون تعديل عقود الباك إند.</span></div>
+        </div>
+
+        <!-- Widget: صلاحيات الأدمن -->
+        <div class="widget" data-widget-id="w-permissions">
+          <div class="widget-header">
+            <span class="widget-handle" title="اسحب لإعادة الترتيب">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </span>
+            <span class="widget-title">صلاحيات الأدمن</span>
+            <button class="widget-hide-btn" onclick="hideWidget('w-permissions')" title="إخفاء">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              إخفاء
+            </button>
+          </div>
+          <!-- Guide tabs -->
+          <div class="guide-tabs" id="guide-tabs">
+            <button class="guide-tab active" data-section="0" onclick="setGuideSection(0)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              النظرة العامة
+            </button>
+            <button class="guide-tab" data-section="1" onclick="setGuideSection(1)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              المستخدمون
+            </button>
+            <button class="guide-tab" data-section="2" onclick="setGuideSection(2)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/></svg>
+              المدارس
+            </button>
+            <button class="guide-tab" data-section="3" onclick="setGuideSection(3)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg>
+              التحديات
+            </button>
+            <button class="guide-tab" data-section="4" onclick="setGuideSection(4)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              صلاحياتك
+            </button>
+            <button class="guide-tab" data-section="5" onclick="setGuideSection(5)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              نصائح
+            </button>
+          </div>
+
+          <div class="widget-body guide-body" id="permission-body">
+
+            <!-- ── Section 0: النظرة العامة ── -->
+            <div class="guide-section active" data-section="0">
+              <div class="guide-section-header">
+                <div class="guide-section-icon" style="background:rgba(37,99,235,.1);color:#2563eb">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div>
+                  <div class="guide-section-title">Circuit Quest — كيف تشتغل المنصة؟</div>
+                  <div class="guide-section-sub">منصة تعليمية للإلكترونيات تخدم 4 أدوار</div>
+                </div>
+              </div>
+              <div class="guide-roles">
+                <div class="guide-role-card" style="border-color:#2563eb">
+                  <div class="guide-role-dot" style="background:#2563eb"></div>
+                  <div class="guide-role-info">
+                    <div class="guide-role-title">الأدمن</div>
+                    <div class="guide-role-desc">يدير المنصة بالكامل — المستخدمون، المدارس، التحديات، الإعدادات</div>
+                  </div>
+                </div>
+                <div class="guide-role-card" style="border-color:#16a34a">
+                  <div class="guide-role-dot" style="background:#16a34a"></div>
+                  <div class="guide-role-info">
+                    <div class="guide-role-title">المعلم</div>
+                    <div class="guide-role-desc">يدير صفوفه وطلابه ويوزع التحديات ويراجع الحلول</div>
+                  </div>
+                </div>
+                <div class="guide-role-card" style="border-color:#7c3aed">
+                  <div class="guide-role-dot" style="background:#7c3aed"></div>
+                  <div class="guide-role-info">
+                    <div class="guide-role-title">المبتكر</div>
+                    <div class="guide-role-desc">يبتكر تحديات جديدة ويرسلها للأدمن لمراجعتها ونشرها</div>
+                  </div>
+                </div>
+                <div class="guide-role-card" style="border-color:#ea580c">
+                  <div class="guide-role-dot" style="background:#ea580c"></div>
+                  <div class="guide-role-info">
+                    <div class="guide-role-title">الطالب</div>
+                    <div class="guide-role-desc">يحل التحديات عبر كود خاص ويسلم الحل لمعلمه</div>
+                  </div>
+                </div>
+              </div>
+              <div class="guide-flow">
+                <div class="guide-flow-step">المبتكر ينشئ تحدياً</div>
+                <div class="guide-flow-arrow">←</div>
+                <div class="guide-flow-step">الأدمن ينشره</div>
+                <div class="guide-flow-arrow">←</div>
+                <div class="guide-flow-step">المعلم يوزعه</div>
+                <div class="guide-flow-arrow">←</div>
+                <div class="guide-flow-step">الطالب يحله</div>
               </div>
             </div>
+
+            <!-- ── Section 1: المستخدمون ── -->
+            <div class="guide-section" data-section="1">
+              <div class="guide-section-header">
+                <div class="guide-section-icon" style="background:rgba(37,99,235,.1);color:#2563eb">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div>
+                  <div class="guide-section-title">إدارة المستخدمين</div>
+                  <div class="guide-section-sub">معلمون · طلاب · مبتكرون</div>
+                </div>
+              </div>
+              <div class="guide-steps">
+                <div class="guide-step">
+                  <div class="guide-step-num">١</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">طلبات التسجيل</div>
+                    <div class="guide-step-desc">كل تسجيل جديد يصلك كـ "طلب" — تراجعه وتقبله أو ترفضه، وتُرسل إيميل تلقائي للمستخدم.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٢</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">إنشاء مستخدم يدوياً</div>
+                    <div class="guide-step-desc">من "المعلمون" أو "الطلاب" تضغط "إضافة" وتملأ البيانات، يُنشأ الحساب فوراً بدون انتظار طلب.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٣</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">استيراد Excel</div>
+                    <div class="guide-step-desc">ترفع ملف Excel بأسماء الطلاب أو المعلمين لتضيفهم دفعة واحدة. يُنشأ لكل مستخدم رمز تعريفي فريد.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٤</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">رابط إعادة كلمة المرور</div>
+                    <div class="guide-step-desc">من جدول المستخدمين تنقر "رابط تسجيل" لأي مستخدم وتشاركه الرابط لإعادة ضبط كلمة مروره.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Section 2: المدارس والصفوف ── -->
+            <div class="guide-section" data-section="2">
+              <div class="guide-section-header">
+                <div class="guide-section-icon" style="background:rgba(37,99,235,.1);color:#2563eb">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 10.5L12 4l8 6.5V21H4V10.5Z"/><path d="M9 21v-7h6v7"/></svg>
+                </div>
+                <div>
+                  <div class="guide-section-title">المدارس والصفوف</div>
+                  <div class="guide-section-sub">مدارس للصفوف · مراكز للدورات</div>
+                </div>
+              </div>
+              <div class="guide-steps">
+                <div class="guide-step">
+                  <div class="guide-step-num">١</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">أنشئ مدرسة أو مركز</div>
+                    <div class="guide-step-desc">المدارس مرتبطة بـ "صفوف دراسية"، والمراكز مرتبطة بـ "دورات تدريبية". لا تخلط بينهم.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٢</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">أنشئ الصفوف</div>
+                    <div class="guide-step-desc">اختر الصف (السادس–الثاني عشر) والشعبة (أ–ز) وحدد المعلم المسؤول. الطلاب يُربطون بالصف تلقائياً عبر اسم الصف والمدرسة.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٣</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">ربط المعلم بمدرسة</div>
+                    <div class="guide-step-desc">من تبويب "المدارس" في تفاصيل المعلم، أضف المدارس التي يعمل فيها. معلم واحد يقدر يخدم أكثر من مدرسة.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="guide-note">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                عند تعديل اسم الصف أو الشعبة، يتحدث سجل جميع الطلاب المرتبطين به تلقائياً.
+              </div>
+            </div>
+
+            <!-- ── Section 3: التحديات ── -->
+            <div class="guide-section" data-section="3">
+              <div class="guide-section-header">
+                <div class="guide-section-icon" style="background:rgba(37,99,235,.1);color:#2563eb">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg>
+                </div>
+                <div>
+                  <div class="guide-section-title">التحديات</div>
+                  <div class="guide-section-sub">دورة حياة التحدي من الإنشاء للنشر</div>
+                </div>
+              </div>
+              <div class="guide-steps">
+                <div class="guide-step">
+                  <div class="guide-step-num">١</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">المبتكر يُنشئ التحدي</div>
+                    <div class="guide-step-desc">التحدي يُرفع كـ "مسودة" من لوحة المبتكر، مع عنوان، وصف، صورة غلاف، ورابط TinkerCad.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٢</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">الأدمن يراجع وينشر</div>
+                    <div class="guide-step-desc">من قسم "التحديات" تراجع التحدي وتضغط "نشر". عند النشر يصل إشعار لجميع المعلمين النشطين.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٣</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">المعلم يوزع التحدي</div>
+                    <div class="guide-step-desc">المعلم يختار صف ويحدد تاريخ انتهاء، فيُنشأ كود فريد لكل طالب في الصف تلقائياً.</div>
+                  </div>
+                </div>
+                <div class="guide-step">
+                  <div class="guide-step-num">٤</div>
+                  <div class="guide-step-body">
+                    <div class="guide-step-title">الطالب يحل ويسلم</div>
+                    <div class="guide-step-desc">الطالب يدخل كوده، يفتح TinkerCad، ينهي التحدي ويضغط "سلّم". المعلم يراجع ويقبل أو يرفض.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Section 4: صلاحياتك ── -->
+            <div class="guide-section" data-section="4">
+              <div class="guide-section-header">
+                <div class="guide-section-icon" style="background:rgba(37,99,235,.1);color:#2563eb">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <div>
+                  <div class="guide-section-title">صلاحياتك كأدمن</div>
+                  <div class="guide-section-sub">ما تقدر تعمله من هذه اللوحة</div>
+                </div>
+              </div>
+              <div class="guide-perms">
+                <div class="guide-perm-row">
+                  <div class="guide-perm-badge ok">مفعّل</div>
+                  <div class="guide-perm-label">إدارة المستخدمين</div>
+                  <div class="guide-perm-desc">إنشاء / عرض / تعديل / حذف / تفعيل / تعطيل</div>
+                </div>
+                <div class="guide-perm-row">
+                  <div class="guide-perm-badge ok">مفعّل</div>
+                  <div class="guide-perm-label">المدارس والصفوف</div>
+                  <div class="guide-perm-desc">إنشاء / تعديل / حذف المدارس والصفوف والدورات</div>
+                </div>
+                <div class="guide-perm-row">
+                  <div class="guide-perm-badge ok">مفعّل</div>
+                  <div class="guide-perm-label">التحديات</div>
+                  <div class="guide-perm-desc">مراجعة / تعديل / نشر / إلغاء نشر / حذف</div>
+                </div>
+                <div class="guide-perm-row">
+                  <div class="guide-perm-badge ok">مفعّل</div>
+                  <div class="guide-perm-label">طلبات التسجيل</div>
+                  <div class="guide-perm-desc">قبول / رفض مع إرسال إيميل تلقائي</div>
+                </div>
+                <div class="guide-perm-row">
+                  <div class="guide-perm-badge ok">مفعّل</div>
+                  <div class="guide-perm-label">روابط كلمة المرور</div>
+                  <div class="guide-perm-desc">توليد رابط إعادة تعيين لأي مستخدم</div>
+                </div>
+                <div class="guide-perm-row">
+                  <div class="guide-perm-badge limited">خلفي</div>
+                  <div class="guide-perm-label">قاعدة البيانات</div>
+                  <div class="guide-perm-desc">بنية الجداول والصلاحيات تبقى في Google Apps Script</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Section 5: نصائح ── -->
+            <div class="guide-section" data-section="5">
+              <div class="guide-section-header">
+                <div class="guide-section-icon" style="background:rgba(37,99,235,.1);color:#2563eb">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                  <div class="guide-section-title">نصائح مهمة</div>
+                  <div class="guide-section-sub">اقرأها قبل ما تبدأ</div>
+                </div>
+              </div>
+              <div class="guide-tips">
+                <div class="guide-tip warning">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <div>أنشئ المدرسة أولاً قبل إضافة الصفوف أو المعلمين المرتبطين بها.</div>
+                </div>
+                <div class="guide-tip warning">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <div>لا تخلط المدارس مع المراكز — المدارس للصفوف والمراكز للدورات فقط.</div>
+                </div>
+                <div class="guide-tip info">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <div>عند قبول طالب، يتلقى كودات التحديات المعيّنة لصفه تلقائياً.</div>
+                </div>
+                <div class="guide-tip info">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <div>رمز SECRET في الباك إند هو <code style="font-family:monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px">cq2024</code> — لا تشاركه.</div>
+                </div>
+                <div class="guide-tip ok">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <div>يمكنك تخصيص هذه اللوحة بسحب الويدجتس وإخفاء غير المهم من زر "تخصيص اللوحة".</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /guide-body -->
+
+          <!-- Guide navigation footer -->
+          <div class="guide-footer">
+            <button class="guide-nav-btn" id="guide-prev-btn" onclick="prevGuideSection()" disabled>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              السابق
+            </button>
+            <div class="guide-dots" id="guide-dots">
+              <span class="guide-dot-el active" onclick="setGuideSection(0)"></span>
+              <span class="guide-dot-el" onclick="setGuideSection(1)"></span>
+              <span class="guide-dot-el" onclick="setGuideSection(2)"></span>
+              <span class="guide-dot-el" onclick="setGuideSection(3)"></span>
+              <span class="guide-dot-el" onclick="setGuideSection(4)"></span>
+              <span class="guide-dot-el" onclick="setGuideSection(5)"></span>
+            </div>
+            <button class="guide-nav-btn" id="guide-next-btn" onclick="nextGuideSection()">
+              التالي
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
           </div>
         </div>
-      </div>
+
+      </div><!-- /widget-grid -->
     </div>
 
     <!-- ════ المدارس/المراكز ════ -->
@@ -1242,10 +1671,11 @@
 
 <div id="action-menu-dropdown"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
 <script src="../js/config.js?v=admin-20260503-2"></script>
 <script src="../js/api.js?v=admin-20260506-timeout"></script>
-<script src="./js/dashboard.js?v=admin-20260511-cf-fix12"></script>
-<script src="./js/dashboard-permissions.js?v=admin-20260511-cf-fix12"></script>
+<script src="./js/dashboard.js?v=admin-20260511-widgets-v20"></script>
+<script src="./js/dashboard-permissions.js?v=admin-20260511-widgets-v20"></script>
 
 </body>
 </html>
