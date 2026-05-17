@@ -246,6 +246,16 @@ document.addEventListener('DOMContentLoaded', function () {
       stepTimerOrb.parentNode.insertAdjacentElement('afterend', timeUpPanel);
       timeUpPanel.classList.add('is-visible');
     }
+    /* انتهى الوقت — افتح قسم رفع الحل مباشرة */
+    lockProjectReview();
+    removeStepTimerOrb();
+    if (submitGate) submitGate.classList.add('hidden');
+    var aiSection = document.getElementById('ai-eval-section');
+    if (aiSection) {
+      aiSection.classList.remove('hidden');
+      aiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof CQ_AI !== 'undefined') CQ_AI.init('led');
+    }
   }
   function setWiringTimerText(text) {
     if (wiringStepDuration) wiringStepDuration.textContent = text;
@@ -601,7 +611,12 @@ document.addEventListener('DOMContentLoaded', function () {
       lockProjectReview();
       removeStepTimerOrb();
       if (submitGate) submitGate.classList.add('hidden');
-      if (nextTrack) { nextTrack.classList.remove('hidden'); nextTrack.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      var aiSection = document.getElementById('ai-eval-section');
+      if (aiSection) {
+        aiSection.classList.remove('hidden');
+        aiSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (typeof CQ_AI !== 'undefined') CQ_AI.init('led');
+      }
     });
   }
 
@@ -619,14 +634,152 @@ document.addEventListener('DOMContentLoaded', function () {
     if (toggle) toggle.addEventListener('click', toggleCompleted);
   });
 
+  /* ── Progress persistence ── */
+  var _codeId      = new URLSearchParams(window.location.search).get('codeId') || 'default';
+  var PROGRESS_KEY = 'cq_led_prog_' + _codeId;
+
+  function saveProgress() {
+    var state = {
+      wiringDone:      wiringStepCards.map(function(c){ return c.classList.contains('is-completed'); }),
+      step1Complete:   !!(completeStep1 && completeStep1.closest('.step-panel') && completeStep1.closest('.step-panel').classList.contains('is-completed')),
+      progDone:        programmingStepCards.map(function(c){ return c.classList.contains('is-completed'); }),
+      step2Complete:   !!(completeStep2 && completeStep2.closest('.step-panel') && completeStep2.closest('.step-panel').classList.contains('is-completed')),
+      submitted:       !!(document.getElementById('ai-eval-section') && !document.getElementById('ai-eval-section').classList.contains('hidden')),
+      challengeStarted: realStepUnlockedFromGuide
+    };
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(state));
+  }
+
+  function restoreProgress() {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(PROGRESS_KEY)); } catch(e) {}
+    if (!saved) return false;
+
+    /* إذا تم التسليم — أظهر قسم AI مباشرة */
+    if (saved.submitted) {
+      if (wiringStepsStage) wiringStepsStage.classList.remove('is-hidden');
+      if (componentsStage)  componentsStage.classList.add('is-started', 'is-collapsed');
+      if (startChallengeWrap) startChallengeWrap.style.display = 'none';
+      lockProjectReview();
+      removeStepTimerOrb();
+      if (submitGate) submitGate.classList.add('hidden');
+      var aiSection = document.getElementById('ai-eval-section');
+      if (aiSection) {
+        aiSection.classList.remove('hidden');
+        if (typeof CQ_AI !== 'undefined') CQ_AI.init('led');
+      }
+      _restoreWiringAndProg(saved);
+      return true;
+    }
+
+    /* إذا انتهت الخطوة الثانية — أظهر submit gate */
+    if (saved.step2Complete) {
+      if (wiringStepsStage) wiringStepsStage.classList.remove('is-hidden');
+      if (componentsStage)  componentsStage.classList.add('is-started', 'is-collapsed');
+      if (startChallengeWrap) startChallengeWrap.style.display = 'none';
+      _restoreWiringAndProg(saved);
+      moveStepTimerToSubmitGate();
+      if (submitGate) submitGate.classList.remove('hidden');
+      return true;
+    }
+
+    /* إذا انتهت الخطوة الأولى على الأقل */
+    if (saved.step1Complete || (saved.wiringDone && saved.wiringDone.some(Boolean))) {
+      if (wiringStepsStage) wiringStepsStage.classList.remove('is-hidden');
+      if (componentsStage)  componentsStage.classList.add('is-started', 'is-collapsed');
+      if (componentsGrid)   componentsGrid.style.display = 'none';
+      if (componentsToggle) { componentsToggle.textContent = 'إظهار القطع المطلوبة'; componentsToggle.style.display = 'inline-flex'; }
+      if (startChallengeWrap) startChallengeWrap.style.display = 'none';
+      if (dummyGuideStep) dummyGuideStep.classList.add('is-hidden');
+      realStepUnlockedFromGuide = true;
+      _restoreWiringAndProg(saved);
+      return true;
+    }
+
+    return false;
+  }
+
+  function _restoreWiringAndProg(saved) {
+    /* Wiring substeps */
+    (saved.wiringDone || []).forEach(function(done, i) {
+      if (!done || !wiringStepCards[i]) return;
+      wiringStepCards[i].classList.remove('is-locked', 'is-unlocked', 'is-expanded');
+      wiringStepCards[i].classList.add('is-completed');
+      var s = wiringStepCards[i].querySelector('.wiring-substep-status');
+      if (s) s.textContent = '✅ مكتملة';
+    });
+
+    /* Unlock first incomplete wiring substep */
+    var firstIncompleteWiring = wiringStepCards.findIndex(function(c){ return !c.classList.contains('is-completed'); });
+    if (firstIncompleteWiring >= 0 && !saved.step1Complete) {
+      unlockWiringSubstep(firstIncompleteWiring);
+    }
+
+    /* Step 1 complete */
+    if (saved.step1Complete) {
+      var p1 = document.querySelector('.step-panel[data-step="1"]');
+      if (p1) { p1.classList.add('is-completed'); p1.classList.remove('is-unlocked', 'is-expanded', 'is-header-hidden'); setStepStatus(p1, '✅ مكتملة'); }
+      markTopStepCompleted('1');
+      var p2 = document.querySelector('.step-panel[data-step="2"]');
+      if (p2) { p2.classList.remove('is-locked', 'is-hidden'); p2.classList.add('is-unlocked', 'is-header-hidden'); }
+    }
+
+    /* Programming substeps */
+    (saved.progDone || []).forEach(function(done, i) {
+      if (!done || !programmingStepCards[i]) return;
+      programmingStepCards[i].classList.remove('is-locked', 'is-unlocked', 'is-expanded');
+      programmingStepCards[i].classList.add('is-completed');
+      var s = programmingStepCards[i].querySelector('.wiring-substep-status');
+      if (s) s.textContent = '✅ مكتملة';
+    });
+
+    /* Unlock first incomplete programming substep */
+    if (saved.step1Complete && !saved.step2Complete) {
+      var firstIncProg = programmingStepCards.findIndex(function(c){ return !c.classList.contains('is-completed'); });
+      if (firstIncProg >= 0) unlockProgrammingSubstep(firstIncProg);
+    }
+
+    /* Step 2 complete */
+    if (saved.step2Complete) {
+      var pp2 = document.querySelector('.step-panel[data-step="2"]');
+      if (pp2) { pp2.classList.add('is-completed'); pp2.classList.remove('is-unlocked', 'is-expanded', 'is-header-hidden'); setStepStatus(pp2, '✅ مكتملة'); }
+      markTopStepCompleted('2');
+    }
+
+    updateWiringCounter();
+    updateWiringAction();
+    updateCodingAction();
+  }
+
+  /* ── Hook saveProgress into all completion events ── */
+  completeWiringSubsteps.forEach(function(btn) {
+    btn.addEventListener('click', function() { window.setTimeout(saveProgress, 50); });
+  });
+  completeProgrammingSubsteps.forEach(function(btn) {
+    btn.addEventListener('click', function() { window.setTimeout(saveProgress, 50); });
+  });
+  if (completeStep1) completeStep1.addEventListener('click', function(){ window.setTimeout(saveProgress, 50); });
+  if (completeStep2) completeStep2.addEventListener('click', function(){ window.setTimeout(saveProgress, 50); });
+  if (submitConfirmBtn) {
+    var _origConfirm = submitConfirmBtn.onclick;
+    submitConfirmBtn.addEventListener('click', function(){
+      window.setTimeout(function(){
+        var state = null;
+        try { state = JSON.parse(localStorage.getItem(PROGRESS_KEY)); } catch(e) {}
+        if (state) { state.submitted = true; localStorage.setItem(PROGRESS_KEY, JSON.stringify(state)); }
+      }, 100);
+    });
+  }
+
   updateWiringCounter();
   updateWiringAction();
   updateCodingAction();
   refreshWiringSubsteps();
   updateWiringTimerLabel();
 
-  /* ── Auto-start guide when coming from intro page ── */
-  if (new URLSearchParams(window.location.search).get('autostart') === '1' && startChallengeBtn) {
+  /* ── Restore progress OR auto-start guide ── */
+  var wasRestored = restoreProgress();
+  if (!wasRestored && new URLSearchParams(window.location.search).get('autostart') === '1' && startChallengeBtn) {
     window.setTimeout(function() { startChallengeBtn.click(); }, 500);
   }
 });

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿ا<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -469,12 +469,54 @@
     </div>
   </div>
 
-  <!-- ══ Finish CTA ══ -->
-  <div class="finish-cta hidden" id="next-track-cta">
-    <div class="finish-icon">📸</div>
-    <div class="finish-title">أنجزت التحدي؟</div>
-    <p class="finish-sub">اضغط Start Simulation، التقط صورة شاشة للدائرة وهي تعمل، ثم أرسلها</p>
-    <a href="../track-3.html" class="btn-finish">📤 سلّم مشروعك ←</a>
+  <!-- ══ AI Evaluation ══ -->
+  <div class="ai-eval-section hidden" id="ai-eval-section">
+
+    <!-- Upload step -->
+    <div id="ai-upload-step">
+      <div class="ai-eval-header">
+        <div class="ai-eval-icon">📸</div>
+        <div class="ai-eval-title">ارفع صورة دائرتك</div>
+        <p class="ai-eval-sub">التقط صورة شاشة من Tinkercad وارفعها — الذكاء الاصطناعي سيتحقق منها تلقائياً</p>
+      </div>
+
+      <label class="ai-dropzone" id="ai-dropzone" for="ai-file-input">
+        <div class="ai-dropzone-icon">🖼️</div>
+        <div class="ai-dropzone-text">اضغط هنا لاختيار الصورة</div>
+        <div class="ai-dropzone-hint">PNG أو JPG — أقصى حجم 10MB</div>
+        <input type="file" id="ai-file-input" accept="image/*" hidden>
+      </label>
+
+      <div class="ai-preview-wrap hidden" id="ai-preview-wrap">
+        <img id="ai-preview-img" alt="معاينة الصورة" class="ai-preview-img">
+        <button type="button" class="ai-change-btn" id="ai-change-btn">تغيير الصورة</button>
+      </div>
+
+      <button type="button" class="ai-submit-btn" id="ai-submit-btn" disabled>
+        تحقق من الدائرة بالذكاء الاصطناعي ←
+      </button>
+    </div>
+
+    <!-- Loading step -->
+    <div class="ai-loading hidden" id="ai-loading">
+      <div class="ai-spinner"></div>
+      <div class="ai-loading-text">جاري إرسال حلك للمراجعة...</div>
+    </div>
+
+    <!-- Pending step — يظهر بعد الإرسال الناجح -->
+    <div class="ai-pending hidden" id="ai-pending">
+      <div class="ai-pending-icon">⏳</div>
+      <div class="ai-pending-title">تم إرسال حلك!</div>
+      <p class="ai-pending-sub">سيراجع المعلم أو المشرف حلّك ويُعلمك بالنتيجة قريباً.</p>
+      <a href="../../index.html" class="ai-home-btn">العودة للرئيسية</a>
+    </div>
+
+    <!-- Connection error -->
+    <div class="ai-conn-error hidden" id="ai-conn-error">
+      <div class="ai-conn-error-icon">⚠️</div>
+      <p class="ai-conn-error-text">تعذر الاتصال بخادم التقييم. تأكد أن الـ Python server يعمل ثم حاول مرة ثانية.</p>
+    </div>
+
   </div>
 
 </main>
@@ -502,6 +544,7 @@
 <script src="../../../js/api.js"></script>
 <script src="../../../js/main.js"></script>
 <script src="../../../js/notif-bell.js"></script>
+<script src="../../../js/ai-evaluator.js"></script>
 <script src="../js/track-2-led-challenge.js"></script>
 </body>
 </html>
