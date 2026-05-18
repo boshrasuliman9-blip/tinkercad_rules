@@ -16,6 +16,14 @@ __pycache__/
 *.py[cod]
 backend/database.json
 
+# Environment variables (sensitive keys)
+.env
+ai-server/.env
+
+# Log files
+*.log
+ai-server/*.log
+
 # CAD/3D source files
 *.SLDPRT
 *.SLDASM

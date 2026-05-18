@@ -333,7 +333,7 @@ var CQ_AI = (function () {
       ? '<div class="ai-result-actions"><button class="ai-retry-btn" onclick="' + retryOnclick + '">جرّب مرة ثانية</button></div>'
       : '<div class="ai-result-actions">' +
           '<button class="ai-retry-btn" onclick="' + retryOnclick + '">غيّر الصورة وجرّب</button>' +
-          '<button class="ai-review-btn" onclick="(function(){var s=document.querySelector(\'[data-step=\\\"1\\\"]\');if(s)s.scrollIntoView({behavior:\'smooth\',block:\'start\'});})()">راجع خطوات التوصيل</button>' +
+          '<button class="ai-review-btn" onclick="(function(){var s=document.querySelector(\'[data-step]\');if(s)s.scrollIntoView({behavior:\'smooth\',block:\'start\'});})()">راجع خطوات التوصيل</button>' +
         '</div>';
 
     var imgHtml = _currentImageData
