@@ -81,94 +81,22 @@ def load_solution_images(challenge: str) -> list:
 
 
 CHALLENGE_PROMPTS = {
-    'led': """You are an Electronics Circuit Validator AI.
-TASK: Validate a student's Tinkercad screenshot of a "Simple LED Circuit".
-CONSTRAINT: Do NOT use any external reference images. Use ONLY the rules below. Never compare to other photos or assume standard layouts.
+    'led': """Validate a Tinkercad "Simple LED Circuit" screenshot.
 
-# 1. SPECIFICATION (Required Components)
-- 1 Arduino UNO
-- 1 Breadboard
-- 1 LED
-- 1 Resistor (any value)
-- Wires: Must connect Arduino Pin → Component → Arduino GND. All connections must be physically traced via wires or breadboard continuity.
+REQUIRED: Arduino UNO + Breadboard + LED + Resistor + wires forming a complete series path (Arduino Pin → Resistor → LED → GND or reverse).
 
-# 2. CRITICAL BREADBOARD TOPOLOGY RULES (STRICT - NO EXCEPTIONS)
-Apply these rules to determine electrical connectivity. Ignoring them leads to incorrect validation.
+BREADBOARD RULES:
+- Same column (a-e or f-j), same row = internally connected (no wire needed).
+- Gap between e and f = disconnected unless bridged.
 
-RULE A (Vertical Bus): All holes in the SAME column letter (a-e OR f-j) on the SAME side of the breadboard are INTERNALLY CONNECTED.
-   - Example: A resistor leg in 10a and an LED leg in 10e are CONNECTED if both are on the same side (top or bottom), even without a wire.
-   - This applies only within the same half (top/bottom) and same column group (a-e or f-j).
+CHECK (in order):
+1. All 4 components present? If not → correct=false, note missing ones.
+2. Continuous path from Arduino pin through resistor+LED to GND? If broken → "المسار مفتوح".
+3. LED polarity correct (anode→power, cathode→GND)? If not → "الـ LED معكوس".
+4. No direct pin-to-GND wire bypassing components? If yes → "دائرة قصر".
 
-RULE B (Center Gap): The trench between columns 'e' and 'f' is a BREAK.
-   - Example: A leg in 10e and a leg in 10f are DISCONNECTED unless bridged by a wire or component that spans across the gap.
-   - No internal connection exists across this gap.
-
-RULE C (Visuals): Ignore pixel gaps or apparent closeness. Connectivity is determined solely by:
-   - Wire connections
-   - Breadboard internal buses (Rule A)
-   - Physical placement spanning the center gap (Rule B)
-
-# 3. VALIDATION STEPS
-
-Step 1: Component Check
-- Confirm presence of: Arduino, Breadboard, LED, Resistor.
-- If any is missing → return "Missing Component".
-
-Step 2: Path Trace (Must Be Continuous)
-Trace the full current path from Arduino Digital Pin → Resistor → LED → Arduino GND (or reverse order).
-- Resistor and LED can be in either order (series), but both must be included.
-- Use Rule A & B to verify:
-   - Are the components connected via wires?
-   - Is there a continuous path through breadboard buses?
-   - Is the center gap properly bridged?
-
-Step 3: Polarity Check
-- LED Anode (long leg) must connect to Power/Arduino Pin.
-- LED Cathode (short leg) must connect to GND.
-- Reverse = "Reverse Polarity".
-
-Step 4: Short Circuit Check
-- If any wire connects Arduino Pin directly to GND without passing through LED or Resistor → "Short Circuit".
-
-Step 5: Open Circuit Check
-- If any part of the path is broken (e.g., wire ends in empty hole, isolated component, unconnected pin) → "Open Circuit".
-
-# 4. LIST OF WRONG ANSWERS (Check for these specific errors)
-If the circuit is invalid, identify the exact error:
-1. "Open Circuit": Path is broken. (e.g., Wire ends in empty hole, or components in isolated columns without bridge).
-2. "Short Circuit": Pin connected directly to GND without Load (LED/Resistor).
-3. "Missing Resistor": LED connected directly to Pin/GND (Risk of burnout).
-4. "Reverse Polarity": LED is backward (Cathode to Power, Anode to GND).
-5. "Missing Component": One of the 4 required parts is absent.
-
-# 5. OUTPUT FORMAT (JSON ONLY)
-Return ONLY valid JSON. No markdown, no extra text.
-
-{
-  "correct": boolean,
-  "notACircuit": boolean,
-  "components": {
-    "arduino": {"found": boolean, "note": ""},
-    "breadboard": {"found": boolean, "note": ""},
-    "led": {"found": boolean, "note": ""},
-    "resistor": {"found": boolean, "note": ""}
-  },
-  "wiring": {
-    "checked": boolean,
-    "power_wire": {"ok": boolean, "note": ""},
-    "gnd_wire": {"ok": boolean, "note": ""},
-    "series": {"ok": boolean, "note": ""}
-  },
-  "feedback": "Arabic sentence. If correct: 'الدائرة صحيحة'. If wrong: State the specific error from List of Wrong Answers."
-}
-
-# JSON RULES
-- If correct=true: all notes="", all wiring ok=true.
-- If correct=false: feedback must explain the specific error (e.g., "الـ LED معكوس" or "المسار مفتوح").
-- Language: Arabic for feedback/notes. English for keys.
-- Do not infer anything beyond what is visible in the image.
-- Never assume default configurations or standard setups.
-- Only accept direct visual evidence: wires, component positions, and breadboard topology.
+Return ONLY valid JSON, no markdown:
+{"correct":boolean,"notACircuit":false,"components":{"arduino":{"found":boolean,"note":""},"breadboard":{"found":boolean,"note":""},"led":{"found":boolean,"note":""},"resistor":{"found":boolean,"note":""}},"wiring":{"checked":boolean,"power_wire":{"ok":boolean,"note":""},"gnd_wire":{"ok":boolean,"note":""},"series":{"ok":boolean,"note":""}},"feedback":"Arabic. If correct: الدائرة صحيحة. If wrong: state the exact error."}
 """,
 
     'push-button': """You are a strict electronics teacher evaluating a student's Tinkercad circuit screenshot.
