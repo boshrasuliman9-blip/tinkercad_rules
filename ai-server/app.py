@@ -169,7 +169,7 @@ Return ONLY valid JSON. No markdown, no extra text.
 }
 
 # JSON RULES
-- If led_glowing=true: set correct=true, skip wiring checks, all notes="".
+- If led_glowing=true: correct MUST be true — a glowing LED is the strongest possible signal that the circuit works. Set correct=true and all wiring ok=true, all notes="".
 - If correct=true (any reason): all notes="", all wiring ok=true.
 - If correct=false: feedback must be one of the five defined errors.
 - Language: Arabic for feedback/notes. English for keys.
@@ -180,20 +180,32 @@ Return ONLY valid JSON. No markdown, no extra text.
 }
 
 
-LED_GLOW_CHECK_PROMPT = """Look at this Tinkercad screenshot.
+LED_GLOW_CHECK_PROMPT = """Look at this Tinkercad screenshot carefully.
 
-TASK: Is the external LED on the Breadboard GLOWING or DARK?
+TASK: Is the external LED on the Breadboard GLOWING or DARK right now?
 
-RULES:
-- IGNORE the Arduino's built-in LEDs (labeled L, RX, TX, ON on the Arduino board itself).
-- FOCUS ONLY on the LED plugged into the Breadboard.
-- GLOWING = bright, with a visible halo or light-bloom effect. Tinkercad ON colors: bright Green, Yellow, Orange, Blue, Red, or White.
-- DARK = dim, dull, muted color, no halo, no brightness.
+STEP 1 — Find the correct LED:
+- IGNORE the Arduino board's built-in indicator LEDs (the small ones labeled L, RX, TX, ON directly on the Arduino PCB).
+- LOOK ONLY at the LED component inserted into the holes of the white Breadboard.
+
+STEP 2 — Judge its state:
+GLOWING (simulation is ON and LED is lit):
+  - The LED body appears BRIGHT and VIVID — strong saturated color (bright Yellow, bright Green, bright Red, bright Orange, bright Blue, or White).
+  - There is a soft glow, halo, or bloom of light visible around or behind the LED body.
+  - The surrounding breadboard area near the LED may appear slightly lighter.
+
+DARK (simulation is OFF, or LED has no current):
+  - The LED body is DIM, DULL, or MUTED — low-saturation tint (pale yellow, pale red, dark-grey, etc.).
+  - NO halo, NO glow, NO bloom around the component.
+  - Looks like a small plastic component with no light emission.
+
+IMPORTANT: When in doubt — if the LED looks even slightly bright or vivid — reply GLOWING.
+Only reply DARK if you are confident there is NO glow at all.
 
 Reply with EXACTLY ONE word: GLOWING or DARK"""
 
 
-def call_led_glow_check(image_data: str) -> str:
+def _single_led_glow_call(image_data: str, attempt: int) -> str:
     try:
         response = MultiModalConversation.call(
             model=AI_FAST_MODEL,
@@ -206,21 +218,33 @@ def call_led_glow_check(image_data: str) -> str:
             }]
         )
         if response.status_code != 200:
-            print(f'[led-glow] error: {response.code} {response.message}')
-            return 'DARK'
+            print(f'[led-glow #{attempt}] error: {response.code} {response.message}')
+            return 'GLOWING'
         text = response.output.choices[0].message.content[0]['text']
-        result = text.strip().split()[0].upper() if text.strip() else 'DARK'
+        result = text.strip().split()[0].upper() if text.strip() else 'GLOWING'
         if result not in ('GLOWING', 'DARK'):
-            result = 'DARK'
+            result = 'GLOWING'
 
         usage = response.usage or {}
         in_tok  = usage.get('input_tokens',  0)
         out_tok = usage.get('output_tokens', 0)
-        print(f'[led-glow] result={result} | input={in_tok} output={out_tok} total={in_tok+out_tok}')
+        print(f'[led-glow #{attempt}] result={result} | input={in_tok} output={out_tok} total={in_tok+out_tok}')
         return result
     except Exception as ex:
-        print(f'[led-glow] error: {ex}')
-        return 'DARK'
+        print(f'[led-glow #{attempt}] error: {ex}')
+        return 'GLOWING'
+
+
+def call_led_glow_check(image_data: str) -> str:
+    r1 = _single_led_glow_call(image_data, 1)
+    if r1 == 'GLOWING':
+        return 'GLOWING'
+    # First call said DARK — confirm with a second call before trusting it
+    print('[led-glow] first call said DARK — running confirmation...')
+    r2 = _single_led_glow_call(image_data, 2)
+    final = 'DARK' if r2 == 'DARK' else 'GLOWING'
+    print(f'[led-glow] final={final} (r1={r1}, r2={r2})')
+    return final
 
 
 OPEN_CIRCUIT_PROMPT = """You are checking a Tinkercad breadboard circuit image for an OPEN CIRCUIT.
@@ -323,9 +347,9 @@ def call_pre_validator(image_data: str) -> str:
 
 
 PRE_VALIDATOR_MESSAGES = {
-    'NOT_A_CIRCUIT': {'notACircuit': True,  'correct': False, 'feedback': 'الصورة لا تمثل دارة إلكترونية. يرجى رفع لقطة شاشة لدائرتك من Tinkercad.'},
-    'PARTIAL_IMAGE': {'notACircuit': False, 'correct': False, 'feedback': 'الصورة مقتطعة — يرجى التقاط صورة كاملة تظهر الـ Arduino والـ Breadboard معاً.'},
-    'UNCLEAR_IMAGE': {'notACircuit': False, 'correct': False, 'feedback': 'الصورة غير واضحة — يرجى رفع صورة أوضح حتى نتمكن من تقييم الدائرة.'},
+    'NOT_A_CIRCUIT': {'notACircuit': True,  'imageIssue': True, 'correct': False, 'feedback': 'الصورة لا تمثل دارة إلكترونية. يرجى رفع لقطة شاشة لدائرتك من Tinkercad.'},
+    'PARTIAL_IMAGE': {'notACircuit': False, 'imageIssue': True, 'correct': False, 'feedback': 'الصورة مقتطعة — يرجى التقاط صورة كاملة تظهر الـ Arduino والـ Breadboard معاً.'},
+    'UNCLEAR_IMAGE': {'notACircuit': False, 'imageIssue': True, 'correct': False, 'feedback': 'الصورة غير واضحة — يرجى رفع صورة أوضح حتى نتمكن من تقييم الدائرة.'},
 }
 
 
