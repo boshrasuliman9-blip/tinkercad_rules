@@ -21,8 +21,8 @@ app = Flask(__name__)
 CORS(app)
 
 DASHSCOPE_API_KEY   = os.environ.get('DASHSCOPE_API_KEY', '')
-AI_MODEL            = os.environ.get('AI_MODEL',      'qwen-vl-plus')
-AI_FAST_MODEL       = os.environ.get('AI_FAST_MODEL', 'qwen-vl-plus')
+AI_MODEL            = os.environ.get('AI_MODEL',      'qwen-vl-max')
+AI_FAST_MODEL       = os.environ.get('AI_FAST_MODEL', 'qwen-vl-max')
 GAS_SCRIPT_URL      = os.environ.get('GAS_SCRIPT_URL', '')
 UPLOAD_SECRET       = os.environ.get('UPLOAD_SECRET', '')
 
@@ -81,57 +81,208 @@ def load_solution_images(challenge: str) -> list:
 
 
 CHALLENGE_PROMPTS = {
-    'led': """Validate a Tinkercad "Simple LED Circuit" screenshot.
+   'led': """You are an Electronics Circuit Validator AI.
+TASK: Validate a student's Tinkercad screenshot of a "Simple LED Circuit".
+CONSTRAINT: Do NOT use any external reference images. Do NOT compare this image to any other image, diagram, or standard layout. Use ONLY the rules below.
 
-REQUIRED: Arduino UNO + Breadboard + LED + Resistor + wires forming a complete series path (Arduino Pin → Resistor → LED → GND or reverse).
+# CRITICAL: DO NOT ASSUME CONNECTIONS BASED ON VISUAL PROXIMITY
+- Two components are connected ONLY if:
+   - There is a visible wire between them, OR
+   - They are in the same column and same side (a-e or f-j), OR
+   - A component spans the center gap (e-f).
+- If none of these apply, they are DISCONNECTED.
+- Never assume that two nearby components are connected just because they look close.
 
-BREADBOARD RULES:
-- Same column (a-e or f-j), same row = internally connected (no wire needed).
-- Gap between e and f = disconnected unless bridged.
-
-CHECK (in order):
-1. All 4 components present? If not → correct=false, note missing ones.
-2. Continuous path from Arduino pin through resistor+LED to GND? If broken → "المسار مفتوح".
-3. LED polarity correct (anode→power, cathode→GND)? If not → "الـ LED معكوس".
-4. No direct pin-to-GND wire bypassing components? If yes → "دائرة قصر".
-
-Return ONLY valid JSON, no markdown:
-{"correct":boolean,"notACircuit":false,"components":{"arduino":{"found":boolean,"note":""},"breadboard":{"found":boolean,"note":""},"led":{"found":boolean,"note":""},"resistor":{"found":boolean,"note":""}},"wiring":{"checked":boolean,"power_wire":{"ok":boolean,"note":""},"gnd_wire":{"ok":boolean,"note":""},"series":{"ok":boolean,"note":""}},"feedback":"Arabic. If correct: الدائرة صحيحة. If wrong: state the exact error."}
-""",
-
-    'push-button': """You are a strict electronics teacher evaluating a student's Tinkercad circuit screenshot.
-
-CHALLENGE: "Push Button LED" — Control exactly 1 LED using exactly 1 push button connected to Arduino UNO.
-
-REJECT (notACircuit=true) if image is not a circuit at all.
-
-REQUIRED COMPONENTS (all must be present):
-- 1 Arduino UNO board
+# 1. SPECIFICATION (Required Components)
+- 1 Arduino UNO
 - 1 Breadboard
-- 1 LED on the breadboard
-- 1 Resistor in series with the LED
-- 1 Push Button (small square component with 4 legs) on the breadboard
-- At least 3 wires
+- 1 LED
+- 1 Resistor (any value)
+- Wires: Must connect Arduino Pin → Component → Arduino GND.
 
-VERDICT:
-- correct=true: ALL components present and connected with wires
-- correct=false: any component missing or no wires
+# 2. BREADBOARD TOPOLOGY RULES (STRICT)
+RULE A (Vertical Bus): All holes in the SAME column letter (a-e OR f-j) on the SAME side (top or bottom) are INTERNALLY CONNECTED.
+RULE B (Center Gap): The trench between columns 'e' and 'f' is a BREAK.
+RULE C (Visuals): Ignore pixel gaps. Connectivity is determined solely by wires and breadboard buses.
 
-Respond with ONLY this JSON:
-{"correct": true, "feedback": "2-3 sentences in Arabic describing what you see", "issues": [], "notACircuit": false}
+# 3. VALIDATION STEPS
 
-Rules:
-- correct=true → issues=[]
-- correct=false → issues lists every missing/wrong thing in Arabic
-- notACircuit=true → correct=false, feedback="الصورة لا تمثل دارة إلكترونية"
+Step 1: Component Check (FIRST — runs always)
+- Scan the image for: Arduino UNO, Breadboard, LED (on breadboard), Resistor (on breadboard).
+- IGNORE Arduino's built-in LEDs (L, RX, TX, ON) — only count external components on the breadboard.
+- If ANY component is missing → set correct=false, return "Missing Component" immediately. Do NOT proceed to Step 2.
+- If ALL 4 components are present → proceed to Step 2.
 
-Additional Constraints:
-- Do not assume pull-up/pull-down resistors unless visible.
-- Only count physical wires shown in the image.
-- Push button must be placed on breadboard and wired correctly.
-- No assumptions about internal Arduino behavior.
-"""
+Step 2: LED Glow Status (Pre-Verified — do NOT re-evaluate from image)
+- A dedicated focused check has already determined the LED's glow state.
+- Find the result in the "# PRE-CHECKED FACT" section at the end of this prompt.
+- GLOWING → set led_glowing=true. Proceed to Steps 3–5 to validate the full circuit.
+- DARK   → set led_glowing=false. Proceed to Steps 3–5 to find the specific error.
+- Always complete all remaining steps — do NOT skip or return early based on glow alone.
+
+Step 3: Path Trace (Must Be Continuous)
+Trace the full current path from Arduino Digital Pin → Resistor → LED → Arduino GND (or reverse order).
+- Resistor and LED can be in either order (series), but both must be included.
+- Use Rule A & B to verify:
+   - Are the components connected via wires?
+   - Is there a continuous path through breadboard buses?
+   - Is the center gap properly bridged?
+
+Step 4: Polarity Check
+- LED Anode (long leg) must face Power/Pin.
+- LED Cathode (short leg) must face GND.
+- Reverse = "Reverse Polarity".
+
+Step 5: Short Circuit Check
+- If any wire connects Arduino Pin directly to GND without passing through LED or Resistor → "Short Circuit".
+
+Step 6: Open Circuit Check
+- If any part of the path is broken (e.g., wire ends in empty hole, isolated component, unconnected pin) → "Open Circuit".
+
+# 4. LIST OF WRONG ANSWERS
+1. "Open Circuit": Path is broken.
+2. "Short Circuit": Pin connected directly to GND without load.
+3. "Missing Resistor": LED connected directly to Pin/GND.
+4. "Reverse Polarity": LED is backward.
+5. "Missing Component": One of the 4 required parts is absent.
+
+# 5. OUTPUT FORMAT (JSON ONLY)
+Return ONLY valid JSON. No markdown, no extra text.
+
+{
+  "correct": boolean,
+  "notACircuit": boolean,
+  "led_glowing": boolean,
+  "components": {
+    "arduino": {"found": boolean, "note": ""},
+    "breadboard": {"found": boolean, "note": ""},
+    "led": {"found": boolean, "note": ""},
+    "resistor": {"found": boolean, "note": ""}
+  },
+  "wiring": {
+    "checked": boolean,
+    "power_wire": {"ok": boolean, "note": ""},
+    "gnd_wire": {"ok": boolean, "note": ""},
+    "series": {"ok": boolean, "note": ""}
+  },
+  "feedback": "Arabic sentence. If correct: 'الدائرة صحيحة'. If wrong: State the specific error."
 }
+
+# JSON RULES
+- If led_glowing=true: set correct=true, skip wiring checks, all notes="".
+- If correct=true (any reason): all notes="", all wiring ok=true.
+- If correct=false: feedback must be one of the five defined errors.
+- Language: Arabic for feedback/notes. English for keys.
+- Do not infer anything beyond what is visible in the image.
+- Never assume default configurations or standard setups.
+"""
+
+}
+
+
+LED_GLOW_CHECK_PROMPT = """Look at this Tinkercad screenshot.
+
+TASK: Is the external LED on the Breadboard GLOWING or DARK?
+
+RULES:
+- IGNORE the Arduino's built-in LEDs (labeled L, RX, TX, ON on the Arduino board itself).
+- FOCUS ONLY on the LED plugged into the Breadboard.
+- GLOWING = bright, with a visible halo or light-bloom effect. Tinkercad ON colors: bright Green, Yellow, Orange, Blue, Red, or White.
+- DARK = dim, dull, muted color, no halo, no brightness.
+
+Reply with EXACTLY ONE word: GLOWING or DARK"""
+
+
+def call_led_glow_check(image_data: str) -> str:
+    try:
+        response = MultiModalConversation.call(
+            model=AI_FAST_MODEL,
+            messages=[{
+                'role': 'user',
+                'content': [
+                    {'image': image_data},
+                    {'text': LED_GLOW_CHECK_PROMPT}
+                ]
+            }]
+        )
+        if response.status_code != 200:
+            print(f'[led-glow] error: {response.code} {response.message}')
+            return 'DARK'
+        text = response.output.choices[0].message.content[0]['text']
+        result = text.strip().split()[0].upper() if text.strip() else 'DARK'
+        if result not in ('GLOWING', 'DARK'):
+            result = 'DARK'
+
+        usage = response.usage or {}
+        in_tok  = usage.get('input_tokens',  0)
+        out_tok = usage.get('output_tokens', 0)
+        print(f'[led-glow] result={result} | input={in_tok} output={out_tok} total={in_tok+out_tok}')
+        return result
+    except Exception as ex:
+        print(f'[led-glow] error: {ex}')
+        return 'DARK'
+
+
+OPEN_CIRCUIT_PROMPT = """You are checking a Tinkercad breadboard circuit image for an OPEN CIRCUIT.
+
+BREADBOARD RULES (critical):
+- Holes in the SAME COLUMN (a-e OR f-j) on the SAME SIDE (top or bottom) are INTERNALLY CONNECTED — no wire needed.
+- The CENTER GAP between columns 'e' and 'f' is a BREAK — a wire must bridge it.
+- Each numbered row is independent — holes in different rows are NOT connected unless bridged by a wire.
+
+TASK: Trace the electrical path step by step:
+1. Find the wire from Arduino power/digital pin → breadboard
+2. Follow the path through the resistor (check if it's in series)
+3. Continue through the LED (check both legs)
+4. Find the wire back to Arduino GND
+
+IMPORTANT RULES:
+- Only reply OPEN if you can clearly see a definite break or disconnection in the path.
+- If the path appears connected but a detail is unclear or partially visible → reply CLOSED.
+- When in doubt → reply CLOSED.
+- Do NOT reply OPEN based on assumptions — only on clear visual evidence of a gap.
+
+Reply with ONLY one word: OPEN or CLOSED"""
+
+
+def _single_open_circuit_call(image_data: str, attempt: int) -> str:
+    try:
+        response = MultiModalConversation.call(
+            model=AI_MODEL,
+            messages=[{
+                'role': 'user',
+                'content': [
+                    {'image': image_data},
+                    {'text': OPEN_CIRCUIT_PROMPT}
+                ]
+            }]
+        )
+        if response.status_code != 200:
+            print(f'[open-circuit #{attempt}] error: {response.code} {response.message}')
+            return 'CLOSED'
+        text = response.output.choices[0].message.content[0]['text']
+        result = text.strip().split()[0].upper() if text.strip() else 'CLOSED'
+
+        usage = response.usage or {}
+        in_tok  = usage.get('input_tokens',  0)
+        out_tok = usage.get('output_tokens', 0)
+        print(f'[open-circuit #{attempt}] result={result} | input={in_tok} output={out_tok} total={in_tok+out_tok}')
+        return result
+    except Exception as ex:
+        print(f'[open-circuit #{attempt}] error: {ex}')
+        return 'CLOSED'
+
+
+def call_open_circuit_check(image_data: str) -> str:
+    r1 = _single_open_circuit_call(image_data, 1)
+    if r1 != 'OPEN':
+        return 'CLOSED'
+    # First call said OPEN — confirm with a second call
+    print('[open-circuit] first call said OPEN — running confirmation...')
+    r2 = _single_open_circuit_call(image_data, 2)
+    final = 'OPEN' if r2 == 'OPEN' else 'CLOSED'
+    print(f'[open-circuit] final={final} (r1={r1}, r2={r2})')
+    return final
 
 
 PRE_VALIDATOR_PROMPT = """Analyze the image. Reply with EXACTLY ONE word from this list:
@@ -178,8 +329,9 @@ PRE_VALIDATOR_MESSAGES = {
 }
 
 
-def call_ai(image_data: str, challenge: str) -> dict:
+def call_ai(image_data: str, challenge: str, led_glow: str = 'DARK') -> dict:
     prompt = CHALLENGE_PROMPTS.get(challenge, CHALLENGE_PROMPTS['led'])
+    prompt += f'\n\n# PRE-CHECKED FACT (ground truth — do not override)\nLED Glow Pre-Check: {led_glow}\nThis result is definitive. Use it directly in Step 2. Do not re-evaluate glow from the image.\n'
 
     content = [
         {'image': image_data},
@@ -200,6 +352,7 @@ def call_ai(image_data: str, challenge: str) -> dict:
         raise ValueError(f'{response.code}: {response.message}')
 
     text = response.output.choices[0].message.content[0]['text']
+    print(f'[DEBUG] AI response: {text}')
 
     usage         = response.usage or {}
     input_tokens  = usage.get('input_tokens',  0)
@@ -241,7 +394,7 @@ def evaluate():
         if pre in PRE_VALIDATOR_MESSAGES:
             msg = PRE_VALIDATOR_MESSAGES[pre]
             print(f'\n[#{img_num}] challenge={challenge} | status={pre}')
-            if pre != 'PARTIAL_IMAGE':
+            if pre != 'NOT_A_CIRCUIT':
                 threading.Thread(
                     target=upload_to_gdrive,
                     args=(image_data, challenge, False, student_id, student_name),
@@ -249,27 +402,57 @@ def evaluate():
                 ).start()
             return jsonify(msg)
 
-        result, total_tok, _, out_tok, img_tok, txt_tok = call_ai(image_data, challenge)
+        # LED glow pre-check (dedicated focused call — more accurate than in-prompt detection)
+        led_glow = call_led_glow_check(image_data)
 
-        status = 'CORRECT' if result.get('correct') else 'WRONG'
-        print(f'\n[#{img_num}] challenge={challenge} | status={status}')
-        print('========= TOKEN USAGE =========')
+        # Main evaluation (glow result injected as ground truth)
+        result, total_tok, _, out_tok, img_tok, txt_tok = call_ai(image_data, challenge, led_glow)
+
+        print(f'\n[#{img_num}] challenge={challenge} | components={("OK" if result.get("correct") else "MISSING")}')
+        print('========= TOKEN USAGE (components) =========')
         print(f'  Input tokens  : {img_tok + txt_tok:>8,}')
         if img_tok:
             print(f'  Image tokens  : {img_tok:>8,}  (ضمن الـ input)')
         print(f'  Output tokens : {out_tok:>8,}')
-        print(f'  ─────────────────────────────')
         print(f'  Total         : {total_tok:>8,}')
-        print('================================\n')
+        print('=============================================\n')
 
-        if not result.get('notACircuit', False):
+        if result.get('notACircuit', False):
+            return jsonify(result)
+
+        # If AI already caught a component/wiring error — return immediately
+        if not result.get('correct', False):
             threading.Thread(
                 target=upload_to_gdrive,
-                args=(image_data, challenge, result.get('correct', False),
-                      student_id, student_name),
+                args=(image_data, challenge, False, student_id, student_name),
                 daemon=True
             ).start()
+            return jsonify(result)
 
+        # AI said correct — always run open circuit check as final safety net
+        circuit_status = call_open_circuit_check(image_data)
+        if circuit_status == 'OPEN':
+            print(f'[#{img_num}] open circuit detected')
+            threading.Thread(
+                target=upload_to_gdrive,
+                args=(image_data, challenge, False, student_id, student_name),
+                daemon=True
+            ).start()
+            return jsonify({
+                'correct': False,
+                'notACircuit': False,
+                'components': result.get('components', {}),
+                'wiring': {'series': {'ok': False, 'note': 'المسار مفتوح — تحقق من أن الأسلاك موصولة بشكل صحيح'}},
+                'feedback': 'المسار مفتوح — الدائرة غير مكتملة، تحقق من توصيل جميع الأسلاك.'
+            })
+
+        print(f'[#{img_num}] CORRECT')
+        threading.Thread(
+            target=upload_to_gdrive,
+            args=(image_data, challenge, True, student_id, student_name),
+            daemon=True
+        ).start()
+        result['feedback'] = 'الدائرة صحيحة'
         return jsonify(result)
     except Exception as e:
         return jsonify({
