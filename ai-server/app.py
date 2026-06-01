@@ -113,14 +113,7 @@ Step 1: Component Check (FIRST — runs always)
 - If ANY component is missing → set correct=false, return "Missing Component" immediately. Do NOT proceed to Step 2.
 - If ALL 4 components are present → proceed to Step 2.
 
-Step 2: LED Glow Status (Pre-Verified — do NOT re-evaluate from image)
-- A dedicated focused check has already determined the LED's glow state.
-- Find the result in the "# PRE-CHECKED FACT" section at the end of this prompt.
-- GLOWING → set led_glowing=true. Proceed to Steps 3–5 to validate the full circuit.
-- DARK   → set led_glowing=false. Proceed to Steps 3–5 to find the specific error.
-- Always complete all remaining steps — do NOT skip or return early based on glow alone.
-
-Step 3: Path Trace (Must Be Continuous)
+Step 2: Path Trace (Must Be Continuous)
 Trace the full current path from Arduino Digital Pin → Resistor → LED → Arduino GND (or reverse order).
 - Resistor and LED can be in either order (series), but both must be included.
 - Use Rule A & B to verify:
@@ -128,15 +121,15 @@ Trace the full current path from Arduino Digital Pin → Resistor → LED → Ar
    - Is there a continuous path through breadboard buses?
    - Is the center gap properly bridged?
 
-Step 4: Polarity Check
+Step 3: Polarity Check
 - LED Anode (long leg) must face Power/Pin.
 - LED Cathode (short leg) must face GND.
 - Reverse = "Reverse Polarity".
 
-Step 5: Short Circuit Check
+Step 4: Short Circuit Check
 - If any wire connects Arduino Pin directly to GND without passing through LED or Resistor → "Short Circuit".
 
-Step 6: Open Circuit Check
+Step 5: Open Circuit Check
 - If any part of the path is broken (e.g., wire ends in empty hole, isolated component, unconnected pin) → "Open Circuit".
 
 # 4. LIST OF WRONG ANSWERS
@@ -152,7 +145,6 @@ Return ONLY valid JSON. No markdown, no extra text.
 {
   "correct": boolean,
   "notACircuit": boolean,
-  "led_glowing": boolean,
   "components": {
     "arduino": {"found": boolean, "note": ""},
     "breadboard": {"found": boolean, "note": ""},
@@ -169,7 +161,6 @@ Return ONLY valid JSON. No markdown, no extra text.
 }
 
 # JSON RULES
-- If led_glowing=true: correct MUST be true — a glowing LED is the strongest possible signal that the circuit works. Set correct=true and all wiring ok=true, all notes="".
 - If correct=true (any reason): all notes="", all wiring ok=true.
 - If correct=false: feedback must be one of the five defined errors.
 - Language: Arabic for feedback/notes. English for keys.
@@ -179,72 +170,6 @@ Return ONLY valid JSON. No markdown, no extra text.
 
 }
 
-
-LED_GLOW_CHECK_PROMPT = """Look at this Tinkercad screenshot carefully.
-
-TASK: Is the external LED on the Breadboard GLOWING or DARK right now?
-
-STEP 1 — Find the correct LED:
-- IGNORE the Arduino board's built-in indicator LEDs (the small ones labeled L, RX, TX, ON directly on the Arduino PCB).
-- LOOK ONLY at the LED component inserted into the holes of the white Breadboard.
-
-STEP 2 — Judge its state:
-GLOWING (simulation is ON and LED is lit):
-  - The LED body appears BRIGHT and VIVID — strong saturated color (bright Yellow, bright Green, bright Red, bright Orange, bright Blue, or White).
-  - There is a soft glow, halo, or bloom of light visible around or behind the LED body.
-  - The surrounding breadboard area near the LED may appear slightly lighter.
-
-DARK (simulation is OFF, or LED has no current):
-  - The LED body is DIM, DULL, or MUTED — low-saturation tint (pale yellow, pale red, dark-grey, etc.).
-  - NO halo, NO glow, NO bloom around the component.
-  - Looks like a small plastic component with no light emission.
-
-IMPORTANT: When in doubt — if the LED looks even slightly bright or vivid — reply GLOWING.
-Only reply DARK if you are confident there is NO glow at all.
-
-Reply with EXACTLY ONE word: GLOWING or DARK"""
-
-
-def _single_led_glow_call(image_data: str, attempt: int) -> str:
-    try:
-        response = MultiModalConversation.call(
-            model=AI_FAST_MODEL,
-            messages=[{
-                'role': 'user',
-                'content': [
-                    {'image': image_data},
-                    {'text': LED_GLOW_CHECK_PROMPT}
-                ]
-            }]
-        )
-        if response.status_code != 200:
-            print(f'[led-glow #{attempt}] error: {response.code} {response.message}')
-            return 'GLOWING'
-        text = response.output.choices[0].message.content[0]['text']
-        result = text.strip().split()[0].upper() if text.strip() else 'GLOWING'
-        if result not in ('GLOWING', 'DARK'):
-            result = 'GLOWING'
-
-        usage = response.usage or {}
-        in_tok  = usage.get('input_tokens',  0)
-        out_tok = usage.get('output_tokens', 0)
-        print(f'[led-glow #{attempt}] result={result} | input={in_tok} output={out_tok} total={in_tok+out_tok}')
-        return result
-    except Exception as ex:
-        print(f'[led-glow #{attempt}] error: {ex}')
-        return 'GLOWING'
-
-
-def call_led_glow_check(image_data: str) -> str:
-    r1 = _single_led_glow_call(image_data, 1)
-    if r1 == 'GLOWING':
-        return 'GLOWING'
-    # First call said DARK — confirm with a second call before trusting it
-    print('[led-glow] first call said DARK — running confirmation...')
-    r2 = _single_led_glow_call(image_data, 2)
-    final = 'DARK' if r2 == 'DARK' else 'GLOWING'
-    print(f'[led-glow] final={final} (r1={r1}, r2={r2})')
-    return final
 
 
 OPEN_CIRCUIT_PROMPT = """You are checking a Tinkercad breadboard circuit image for an OPEN CIRCUIT.
@@ -353,9 +278,8 @@ PRE_VALIDATOR_MESSAGES = {
 }
 
 
-def call_ai(image_data: str, challenge: str, led_glow: str = 'DARK') -> dict:
+def call_ai(image_data: str, challenge: str) -> dict:
     prompt = CHALLENGE_PROMPTS.get(challenge, CHALLENGE_PROMPTS['led'])
-    prompt += f'\n\n# PRE-CHECKED FACT (ground truth — do not override)\nLED Glow Pre-Check: {led_glow}\nThis result is definitive. Use it directly in Step 2. Do not re-evaluate glow from the image.\n'
 
     content = [
         {'image': image_data},
@@ -426,11 +350,7 @@ def evaluate():
                 ).start()
             return jsonify(msg)
 
-        # LED glow pre-check (dedicated focused call — more accurate than in-prompt detection)
-        led_glow = call_led_glow_check(image_data)
-
-        # Main evaluation (glow result injected as ground truth)
-        result, total_tok, _, out_tok, img_tok, txt_tok = call_ai(image_data, challenge, led_glow)
+        result, total_tok, _, out_tok, img_tok, txt_tok = call_ai(image_data, challenge)
 
         print(f'\n[#{img_num}] challenge={challenge} | components={("OK" if result.get("correct") else "MISSING")}')
         print('========= TOKEN USAGE (components) =========')
@@ -492,4 +412,4 @@ def health():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)
